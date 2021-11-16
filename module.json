@@ -15,9 +15,10 @@
     }
   ],
   "dependencies": [
+    {
     "name": "lib-wrapper",
     "manifest": "https://raw.githubusercontent.com/ruipin/fvtt-lib-wrapper/master/module.json"
-
+    }
   ],
   "conflicts": [
     
@@ -27,7 +28,7 @@
   ],
   "scripts": [
     "/scripts/lib/lib.js"
-  ],
+  ], 
   "languages": [
     {
       "lang": "en",

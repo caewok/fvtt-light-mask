@@ -1,7 +1,7 @@
 {
   "name": "lightmask",
   "title": "Light Mask",
-  "description": "Mask lights using temporary walls.",
+  "description": "Mask Foundry VTT lights",
   "version": "This is auto replaced",
   "library": false,
   "manifestPlusVersion": "1.0.0",
@@ -16,8 +16,8 @@
   ],
   "dependencies": [
     {
-    "name": "lib-wrapper",
-    "manifest": "https://raw.githubusercontent.com/ruipin/fvtt-lib-wrapper/master/module.json"
+      "name": "lib-wrapper",
+      "manifest": "https://raw.githubusercontent.com/ruipin/fvtt-lib-wrapper/master/module.json"
     }
   ],
   "conflicts": [
@@ -26,9 +26,6 @@
   "esmodules": [
     "/scripts/module.js"
   ],
-  "scripts": [
-    "/scripts/lib/lib.js"
-  ], 
   "languages": [
     {
       "lang": "en",

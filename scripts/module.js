@@ -7,13 +7,25 @@ export const MODULE_ID = `lightmask`;
  */
 export function log(...args) {
   try (
-    const isDebugging = game.modules.get(`_dev_mode`)?.api?.getPackageDebugValue(MODULE_ID);
+    const isDebugging = true;// game.modules.get(`_dev_mode`)?.api?.getPackageDebugValue(MODULE_ID);
     if( isDebugging ) {
       console.log(MODULE_ID, `|`, ...args);
     }
     catch (e) {};
   )
 }
+
+Hooks.once(`init`, async function() {
+  log(`Initializing...`);
+});
+
+Hooks.once(`setup`, async function() {
+  log(`Setup...`);
+});
+
+Hooks.once(`ready`, async function() {
+  log(`Ready...`);
+})
 
 /**
  * Tell DevMode that we want a flag for debugging this module.
@@ -30,6 +42,8 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
  * follows approach in https://github.com/erithtotl/wall-height/blob/master/scripts/wall-height.js
  */
 Hooks.on("renderAmbientLightConfig", (app, html, data) => {
+  
+  log(`Hooking renderAmbientLightConfig!`).
   
   const moduleLabel = MODULE_ID;
   const pullDownLabel = `Shape`;

@@ -6,7 +6,6 @@ Hooks
 
 export const MODULE_ID = `lightmask`;
 
-
 /**
  * Log message only when debug flag is enabled from DevMode module.
  * @param {Object[]} args  Arguments passed to console.log.
@@ -48,24 +47,81 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
  */
 Hooks.on("renderAmbientLightConfig", (app, html, data) => {
   
-  log(`Hooking renderAmbientLightConfig!`);
+  log(`Hooking renderAmbientLightConfig!`, data);
   
-  const moduleLabel = MODULE_ID;
-  const pullDownLabel = `Shape`;
+  const moduleLabel = `Light Mask`;
+  const moduleScope = `lightMask`;
+  
+  const shapeLabel = `Shape`;
   const SHAPE_KEY = "Shape"
-  const shape = 1;
+  
+  const idLabel = `Custom: Add Wall IDs`;
+  const WALL_ID_KEY = `customWallIDs`
+  
+  /*
+  data.lightMaskShapes = { 
+    circle: "Circle", 
+    triangle: "Triangle",
+    square: "Square",
+    hexagon: "Hexagon",
+    custom: "Custom"
+  }
+  */
   
   // insert in the advanced tab after the last group
   // advanced tab is last tab
+  /*
   html.find(".form-group").last().after(`
   <fieldset>
-      <legend>${moduleLabel}</legend>
-          <div class="form-group">
-              <label>${pullDownLabel}</label>
-              <input name="flags.${MODULE_ID}.${SHAPE_KEY}" type="text" data-dtype="Number" value="${shape}">
-          </div>
-      </legend>
+    <legend>${moduleLabel}</legend>
+      <div class="form-group">
+        <label for="${moduleScope}.shapes">${shapeLabel}</label>
+        <select id="${moduleScope}.shapes" name="flags.${moduleScope}.${SHAPE_KEY}">
+          {{selectOptions lightMaskShapes selected=data.flags.${moduleScope}.${SHAPE_KEY} }}
+        </select>  
+      </div>
+          
+      <div class="form-group">
+        <label>${idLabel}</label>
+        <input name=flags.${moduleScope}.${WALL_ID_KEY}" type="text" data-dtype="text" value=${ids}>
+      </div>
+    </legend>
+  </fieldset>
+  `);
+  */
+  
+  const current_shape = data.data.flags?.lightMask?.Shape || "circle";
+  log(`Current shape is ${current_shape}.`);
+  
+  const current_custom = data.data.flags?.lightMask?.customWallIDs || "";
+  log(`Current custom is ${current_custom}.`);
+  
+  html.find(".form-group").last().after(`
+  <fieldset>
+    <legend>${moduleLabel}</legend>
+      <div class="form-group">
+        <label for="${moduleScope}.shapes">${shapeLabel}</label>
+        <select id="${moduleScope}.shapes" name="flags.lightMask.Shape">
+          <option value="circle" ${current_shape === "circle" ? "selected" : ""}>Circle</option>
+          <option value="triangle" ${current_shape === "triangle" ? "selected" : ""}>Triangle</option>
+          <option value="square" ${current_shape === "square" ? "selected" : ""}>Square</option>
+          <option value="hexagon" ${current_shape === "hexagon" ? "selected" : ""}>Hexagon</option>
+          <option value="custom" ${current_shape === "custom" ? "selected" : ""}>Custom</option>
+        </select>  
+      </div>
+          
+      <div class="form-group">
+        <label>${idLabel}</label>
+        <input name="flags.${moduleScope}.customWallIDs" type="text" data-dtype="text" value=${current_custom}>
+      </div>
+    </legend>
   </fieldset>
   `); 
+  
+  
+  // to find the data, get a light.
+  // l = [...canvas.lighting.sources][0]
+  // l.object.data.flags.lightmask
+  // or canvas.lighting.objects[0]
     
 });

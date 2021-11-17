@@ -1,3 +1,9 @@
+/* globals
+Hooks
+*/
+
+'use strict';
+
 export const MODULE_ID = `lightmask`;
 
 
@@ -6,13 +12,12 @@ export const MODULE_ID = `lightmask`;
  * @param {Object[]} args  Arguments passed to console.log.
  */
 export function log(...args) {
-  try (
+  try {
     const isDebugging = true;// game.modules.get(`_dev_mode`)?.api?.getPackageDebugValue(MODULE_ID);
     if( isDebugging ) {
       console.log(MODULE_ID, `|`, ...args);
     }
-    catch (e) {};
-  )
+  } catch (e) {}
 }
 
 Hooks.once(`init`, async function() {
@@ -43,7 +48,7 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
  */
 Hooks.on("renderAmbientLightConfig", (app, html, data) => {
   
-  log(`Hooking renderAmbientLightConfig!`).
+  log(`Hooking renderAmbientLightConfig!`);
   
   const moduleLabel = MODULE_ID;
   const pullDownLabel = `Shape`;

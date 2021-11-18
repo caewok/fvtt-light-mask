@@ -1,10 +1,13 @@
 /* globals
-Hooks
+Hooks,
+game
 */
 
 'use strict';
 
-export const MODULE_ID = `lightmask`;
+import { MODULE_ID, SHAPE_KEY, CUSTOM_WALLS_KEY } from "./const.js";
+import { registerLightMask } from "./patching.js";
+import { LightMaskClockwiseSweepPolygon } from "./LightMaskClockwiseSweepPolygon.js";
 
 /**
  * Log message only when debug flag is enabled from DevMode module.
@@ -21,6 +24,17 @@ export function log(...args) {
 
 Hooks.once(`init`, async function() {
   log(`Initializing...`);
+  
+  registerLightMask();
+  
+  game.modules.get(MODULE_ID).api = {
+    LightMaskClockwiseSweepPolygon: LightMaskClockwiseSweepPolygon
+  }
+  
+  // CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;
+  // or
+  // CONFIG.Canvas.losBackend = game.modules.get(`lightmask`).api.LightMaskClockwiseSweepPolygon
+   
 });
 
 Hooks.once(`setup`, async function() {
@@ -49,14 +63,9 @@ Hooks.on("renderAmbientLightConfig", (app, html, data) => {
   
   log(`Hooking renderAmbientLightConfig!`, data);
   
-  const moduleLabel = `Light Mask`;
-  const moduleScope = `lightMask`;
-  
-  const shapeLabel = `Shape`;
-  const SHAPE_KEY = "Shape"
-  
+  const moduleLabel = `Light Mask`;  
+  const shapeLabel = `Shape`;  
   const idLabel = `Custom: Add Wall IDs`;
-  const WALL_ID_KEY = `customWallIDs`
   
   /*
   data.lightMaskShapes = { 
@@ -90,29 +99,29 @@ Hooks.on("renderAmbientLightConfig", (app, html, data) => {
   `);
   */
   
-  const current_shape = data.data.flags?.lightMask?.Shape || "circle";
+  const current_shape = data.data.flags?.[MODULE_ID]?.[SHAPE_KEY] || "circle";
   log(`Current shape is ${current_shape}.`);
   
-  const current_custom = data.data.flags?.lightMask?.customWallIDs || "";
+  const current_custom = data.data.flags?.[MODULE_ID]?.[CUSTOM_WALLS_KEY] || null;
   log(`Current custom is ${current_custom}.`);
   
   html.find(".form-group").last().after(`
   <fieldset>
     <legend>${moduleLabel}</legend>
       <div class="form-group">
-        <label for="${moduleScope}.shapes">${shapeLabel}</label>
-        <select id="${moduleScope}.shapes" name="flags.lightMask.Shape">
+        <label for="${MODULE_ID}.shapes">${shapeLabel}</label>
+        <select id="${MODULE_ID}.shapes" name="flags.${MODULE_ID}.${SHAPE_KEY}">
           <option value="circle" ${current_shape === "circle" ? "selected" : ""}>Circle</option>
           <option value="triangle" ${current_shape === "triangle" ? "selected" : ""}>Triangle</option>
           <option value="square" ${current_shape === "square" ? "selected" : ""}>Square</option>
           <option value="hexagon" ${current_shape === "hexagon" ? "selected" : ""}>Hexagon</option>
-          <option value="custom" ${current_shape === "custom" ? "selected" : ""}>Custom</option>
+          <option value="none" ${current_shape === "none" ? "selected" : ""}>None</option>
         </select>  
       </div>
           
       <div class="form-group">
         <label>${idLabel}</label>
-        <input name="flags.${moduleScope}.customWallIDs" type="text" data-dtype="text" value=${current_custom}>
+        <input name="flags.${MODULE_ID}.${CUSTOM_WALLS_KEY}" type="text" data-dtype="text" value=${current_custom}>
       </div>
     </legend>
   </fieldset>

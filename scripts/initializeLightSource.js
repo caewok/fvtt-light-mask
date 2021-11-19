@@ -60,8 +60,7 @@ export function lightMaskInitializeLightSource(wrapped, data={}) {
   
   // if no flags present, just call the original to improve compatibility
   if(!this.object.data.flags?.[MODULE_ID]) { return wrapped(data); }
-  
-  log(`Initializing light source ${this.object.id}: ${MODULE_ID} present in flags.`);
+    
   const shape = this.object.document.getFlag(MODULE_ID, SHAPE_KEY);
   const custom_ids = this.object.document.getFlag(MODULE_ID, CUSTOM_IDS_KEY);
   

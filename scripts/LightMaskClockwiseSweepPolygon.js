@@ -38,57 +38,95 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     super.initialize(origin, config);
     this.config.object_id = config?.object_id;
   }
-
- /**
-  * Add walls when adding canvas boundary edges.
-  * Ensures that the walls could be properly trimmed by limited angle.
-  */
-  _addCanvasBoundaryEdges() {
-    const { type, object_id } = this.config;
   
-    log(`Adding canvas boundary edges for ${type}`);
+  
+ /**
+  * Translate walls and other obstacles into edges which limit visibility
+  * @private
+  */
+  _identifyEdges() {
+    const {type, hasLimitedAngle, hasLimitedRadius, object_id} = this.config;
+
+    // Add edges for placed Wall objects
+    const walls = this._getWalls();
+    for ( let wall of walls ) {
+      if ( !this.constructor.testWallInclusion(wall, this.origin, type) ) continue;
+      const edge = new PolygonEdge(wall.A, wall.B, wall.data[type]);
+      this.edges.add(edge);
+    }
+
+    // Add edges for the canvas boundary
+    // technically, we don't need this if we have a geometric boundary
+    this._addCanvasBoundaryEdges();
     
-    // call the original.
-    ClockwiseSweepPolygon.prototype._addCanvasBoundaryEdges.call(this);
-    
-    // check if we have a light and if so, if the shape mask has been set.
-    if(!type === "light") return;
-    
-    log(`Object id is ${object_id}.`);  
-    if(!object_id) return;
-    
-    // pull the light data
+    // For light mask, find the light data
     const light = canvas.lighting.placeables.find(l => l.id === object_id);
-    log(`Light`, light);
+    
     if(!light) {
       log(`Light ${object_id} not found. ${canvas.lighting.placeables.length} available.`, canvas.lighting.placeables, light);
-      return;
     }
     
-    const shape = light.document.getFlag(MODULE_ID, SHAPE_KEY);
-    if(shape === undefined) { return; }
+    // We would prefer to add edges here so they can be trimmed by limited angle
+    // This requires that radius constraint not remove the geometric shape boundary...
+    this._addGeometricEdges(light);
+    this._addCustomEdges(light);  
+
+    // Restrict edges to a limited angle
+    if ( hasLimitedAngle ) {
+      this._restrictEdgesByAngle();
+    }
     
-    this._addGeometricEdges(shape);
+    // Don't use radius limitation if the shape is "none"
+    const trim_radius = !light || light.document.getFlag(MODULE_ID, SHAPE_KEY) !== "none";
+
+    // Constrain edges to a limited radius
+    // we want this even if we have added geometric shape edges b/c we can still trim
+    // by radius
+    if ( hasLimitedRadius && trim_radius) {
+      this._constrainEdgesByRadius();
+    }
     
-    // add walls based on provided wall ids
+    // Drop the radius constraint going forward for non-circular shapes. 
+    // (don't need padding)
+    const drop_padding = hasLimitedRadius && light &&
+                        light.document.getFlag(MODULE_ID, SHAPE_KEY) !== "circle";
+                        
+    if(drop_padding) {
+      const cfg = this.config;
+      cfg.radius = 0; 
+      this.initialize(this.origin, cfg);
+    }                    
+  }
+
+ /**
+  * Add edges based on any custom edges supplied by the user.
+  * @param {AmbientLight} light
+  */
+  _addCustomEdges(light) {
+    if(!light) return;
+    
+    const type = this.config.type;
     const edges_cache = light.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY);
     log(`${Object.keys(edges_cache).length} custom edges to add.`);
     Object.values(edges_cache).forEach(data => {
+       log(`Adding custom edge ${data._id}`);
        const edge = new PolygonEdge({ x: data.c[0], y: data.c[1] },
                                     { x: data.c[2], y: data.c[3] },
                                     data[type]);
        this.edges.add(edge);
     });
-  }
+  } 
   
   
  /**
   * Adds geometric edges for the shape specified by the lightMask flag.
+  * @param {AmbientLight} light
   */
-  _addGeometricEdges(shape) {
-    // for a given shape, construct the edges
-    if(!shape) return;
-    
+  _addGeometricEdges(light) {
+    if(!light) return;
+    const shape = light.document.getFlag(MODULE_ID, SHAPE_KEY);
+    if(!shape) { return; }
+   
     log(`Adding walls for ${shape}.`);
     const angles = [];
     switch(shape) {

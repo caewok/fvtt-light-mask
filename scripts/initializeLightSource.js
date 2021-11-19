@@ -8,9 +8,43 @@ foundry
 // Version of LightSource Class to pass the light id to the fov creation
 // Needed so that ClockwisePolygonSweep can find the flags on the light data
 // passing only id is probably the lightest way to accomplish this.
-// Unfortunately, I don't see a way to accomplish this without an OVERRIDE
+// Unfortunately, I don't see a way to accomplish this without an OVERRIDE or MIXED
 
-import { MODULE_ID, SHAPE_KEY, CUSTOM_WALLS_KEY } from "./const.js";
+/*
+ When modifying a light in the UI, the flow is:
+1. Open the light configuration panel
+  1.1 renderAmbientLightConfig hook
+
+2. configuration change is made
+  2.1. LightSource.prototype.initialize() (real-time changes, at least for current user)
+    2.1.1 create losBackend
+    2.1.2 initializeLightSourceShaders hooks
+    2.1.3 lightingRefresh hook
+    2.1.4 sightRefresh hook
+
+3. Save by hitting UpdateLight
+  3.1 preUpdateAmbientLight hook
+  3.2 LightSource.prototype.initialize() (same as 2.1)
+  3.3 updateAmbientLight hook 
+  3.4 LightSource.prototype.initialize() (same as 2.1)
+  3.5 closeAmbientLightConfig hook
+  3.6 closeDocumentSheet hook
+  3.7 closeFormApplication hook
+  3.8 closeApplication hook
+
+Need to be able to tell when a user has updated the custom wall keys, locate the walls on the map, and store the relevant info for each wall (A, B, and type).
+
+Flags hate Maps, so store as object.
+
+In LightSource.prototype.initialize:
+1. check if the id list has changed by comparing to stored flag.
+2. update stored flag accordingly, but only for the local object. 
+3. hopefully Foundry will take care of the rest when closing the file.
+   the local object data can be used when creating the los polygon
+
+*/
+
+import { MODULE_ID, SHAPE_KEY, CUSTOM_IDS_KEY } from "./const.js";
 import { log } from "./module.js";
 
 /**
@@ -23,19 +57,17 @@ import { log } from "./module.js";
  */
 export function lightMaskInitializeLightSource(wrapped, data={}) {
   log(`Initializing light source ${this.object.id}`, this, data);
-
+  
   // if no flags present, just call the original to improve compatibility
   if(!this.object.data.flags?.[MODULE_ID]) { return wrapped(data); }
   
   log(`Initializing light source ${this.object.id}: ${MODULE_ID} present in flags.`);
-  if(this.object.data.flags[MODULE_ID]?.[SHAPE_KEY] === undefined || 
-     this.object.data.flags[MODULE_ID]?.[CUSTOM_WALLS_KEY] === undefined) { return wrapped(data); }
-  log(`Initializing light source ${this.object.id}: SHAPE_KEY and CUSTOM_WALLS_KEY present in flags.`);
+  const shape = this.object.document.getFlag(MODULE_ID, SHAPE_KEY);
+  const custom_ids = this.object.document.getFlag(MODULE_ID, CUSTOM_IDS_KEY);
   
-  if(this.object.data.flags[MODULE_ID][SHAPE_KEY] === "circle" &&
-     is.null(this.object.data.flags[MODULE_ID][CUSTOM_WALLS_KEY])) { return wrapped(data); }
-  log(`Initializing light source ${this.object.id}: not a default circle.`);
-
+  if(shape === undefined || custom_ids === undefined) { return wrapped(data); }
+  log(`Initializing light source ${this.object.id}: SHAPE_KEY and CUSTOM_IDS_KEY present in flags.`);
+  
   // Initialize new input data
   const changes = this._initializeData(data);
 
@@ -86,6 +118,5 @@ export function lightMaskInitializeLightSource(wrapped, data={}) {
   this._initializeBlending();
   return this;
   
-
-
 }
+

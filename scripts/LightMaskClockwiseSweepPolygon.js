@@ -11,7 +11,7 @@ canvas
 // Done by extending ClockwiseSweepPolygon
 
 import { log } from "./module.js";
-import { MODULE_ID, SHAPE_KEY, CUSTOM_WALLS_KEY } from "./const.js";
+import { MODULE_ID, SHAPE_KEY, CUSTOM_EDGES_KEY } from "./const.js";
 
 
 export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
@@ -44,26 +44,49 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   * Ensures that the walls could be properly trimmed by limited angle.
   */
   _addCanvasBoundaryEdges() {
-    log(`Adding canvas boundary edges for ${this.config.type}`);
+    const { type, object_id } = this.config;
+  
+    log(`Adding canvas boundary edges for ${type}`);
     
     // call the original.
     ClockwiseSweepPolygon.prototype._addCanvasBoundaryEdges.call(this);
     
     // check if we have a light and if so, if the shape mask has been set.
-    if(!this.config.type === "light") return;
+    if(!type === "light") return;
     
-    log(`Object id is ${this?.config.object_id}.`);  
-    if(!this?.config.object_id) return;
+    log(`Object id is ${object_id}.`);  
+    if(!object_id) return;
     
     // pull the light data
-    const light = canvas.lighting.placeables.find(l => l.id === this.config.object_id);
+    const light = canvas.lighting.placeables.find(l => l.id === object_id);
+    log(`Light`, light);
     if(!light) {
-      log(`Light ${light_source_id} not found. ${canvas.lighting.placeables.length} available.`, canvas.lighting.placeables, light);
+      log(`Light ${object_id} not found. ${canvas.lighting.placeables.length} available.`, canvas.lighting.placeables, light);
       return;
     }
     
+    const shape = light.document.getFlag(MODULE_ID, SHAPE_KEY);
+    if(shape === undefined) { return; }
+    
+    this._addGeometricEdges(shape);
+    
+    // add walls based on provided wall ids
+    const edges_cache = light.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY);
+    log(`${Object.keys(edges_cache).length} custom edges to add.`);
+    Object.values(edges_cache).forEach(data => {
+       const edge = new PolygonEdge({ x: data.c[0], y: data.c[1] },
+                                    { x: data.c[2], y: data.c[3] },
+                                    data[type]);
+       this.edges.add(edge);
+    });
+  }
+  
+  
+ /**
+  * Adds geometric edges for the shape specified by the lightMask flag.
+  */
+  _addGeometricEdges(shape) {
     // for a given shape, construct the edges
-    const shape = light.data.flags?.[MODULE_ID]?.[SHAPE_KEY];
     if(!shape) return;
     
     log(`Adding walls for ${shape}.`);
@@ -83,8 +106,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     }
     
     const poly_walls = this.constructGeometricShapeWalls(angles);
-    poly_walls.forEach(w => this.edges.add(w))
-    
+    poly_walls.forEach(w => this.edges.add(w))  
   }
   
  /**

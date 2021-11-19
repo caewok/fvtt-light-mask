@@ -1,11 +1,12 @@
 /* globals
 Hooks,
-game
+game, 
+canvas
 */
 
 'use strict';
 
-import { MODULE_ID, SHAPE_KEY, CUSTOM_WALLS_KEY } from "./const.js";
+import { MODULE_ID, SHAPE_KEY, CUSTOM_IDS_KEY } from "./const.js";
 import { registerLightMask } from "./patching.js";
 import { LightMaskClockwiseSweepPolygon } from "./LightMaskClockwiseSweepPolygon.js";
 
@@ -19,8 +20,22 @@ export function log(...args) {
     if( isDebugging ) {
       console.log(MODULE_ID, `|`, ...args);
     }
-  } catch (e) {}
+  } catch (e) { 
+    // empty 
+  }
 }
+
+function controlledWallIDs() {
+  const walls = canvas.walls.controlled;
+  if(walls.length === 0) {
+    console.warn("Please select one or more walls on the canvas.");
+    return;
+  }
+  
+  const id = walls.map(w => w.id);
+  return id.join(",");
+}
+
 
 Hooks.once(`init`, async function() {
   log(`Initializing...`);
@@ -28,12 +43,14 @@ Hooks.once(`init`, async function() {
   registerLightMask();
   
   game.modules.get(MODULE_ID).api = {
-    LightMaskClockwiseSweepPolygon: LightMaskClockwiseSweepPolygon
+    LightMaskClockwiseSweepPolygon: LightMaskClockwiseSweepPolygon,
+    controlledWallIDs: controlledWallIDs
   }
   
   // CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;
   // or
   // CONFIG.Canvas.losBackend = game.modules.get(`lightmask`).api.LightMaskClockwiseSweepPolygon
+  // game.modules.get(`lightmask`).api.controlledWallIDs()
    
 });
 
@@ -102,7 +119,7 @@ Hooks.on("renderAmbientLightConfig", (app, html, data) => {
   const current_shape = data.data.flags?.[MODULE_ID]?.[SHAPE_KEY] || "circle";
   log(`Current shape is ${current_shape}.`);
   
-  const current_custom = data.data.flags?.[MODULE_ID]?.[CUSTOM_WALLS_KEY] || null;
+  const current_custom = data.data.flags?.[MODULE_ID]?.[CUSTOM_IDS_KEY] || '';
   log(`Current custom is ${current_custom}.`);
   
   html.find(".form-group").last().after(`
@@ -121,7 +138,7 @@ Hooks.on("renderAmbientLightConfig", (app, html, data) => {
           
       <div class="form-group">
         <label>${idLabel}</label>
-        <input name="flags.${MODULE_ID}.${CUSTOM_WALLS_KEY}" type="text" data-dtype="text" value=${current_custom}>
+        <input name="flags.${MODULE_ID}.${CUSTOM_IDS_KEY}" type="text" data-dtype="text" value=${current_custom}>
       </div>
     </legend>
   </fieldset>

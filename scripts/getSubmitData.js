@@ -14,6 +14,8 @@ import { log } from "./module.js";
 export function lightMaskGetSubmitData(wrapped, updateData={}) {
   let data = wrapped(updateData);
   
+  log(`getSubmitData data`, data);
+  
   if(data) {
     const custom_ids_str = `flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`;
     const custom_cache_str = `flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`

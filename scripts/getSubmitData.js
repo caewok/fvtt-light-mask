@@ -14,11 +14,16 @@ import { log } from "./module.js";
 export function lightMaskGetSubmitData(wrapped, updateData={}) {
   let data = wrapped(updateData);
   
+  log(`getSubmitData data`, data, this);
+  
   if(data) {
     const custom_ids_str = `flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`;
     const custom_cache_str = `flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`
     const custom_ids = data[custom_ids_str] || "";
-    const edges_cache = data[custom_cache_str] || {};  
+    
+    // edges cache not in the data form; pull from underlying object
+    //const edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || {};
+    const edges_cache = this.object.data.flags?.[MODULE_ID]?.[CUSTOM_EDGES_KEY] || {}
     const newData = {};
     newData[custom_cache_str] = lightMaskUpdateCustomEdgeCache(custom_ids, edges_cache);    
     
@@ -26,7 +31,7 @@ export function lightMaskGetSubmitData(wrapped, updateData={}) {
     data = foundry.utils.flattenObject(foundry.utils.mergeObject(data, newData));
   }
   
-//   log(`_getSubmitData data`, data);
+  log(`_getSubmitData data after updating`, data);
   return data;
 }
 
@@ -35,7 +40,7 @@ export function lightMaskGetSubmitData(wrapped, updateData={}) {
  * The cache should correspond to the ids provided by the user.
  */
 function lightMaskUpdateCustomEdgeCache(custom_ids, edges_cache = {}) {  
-//   log(`edges_cache contains ${Object.keys(edges_cache).length} keys; custom ids: ${custom_ids}.`, edges_cache);
+  log(`edges_cache contains ${Object.keys(edges_cache).length} keys; custom ids: ${custom_ids}.`, edges_cache);
   
   if(!custom_ids || custom_ids === "") {
     // no custom ids, clear existing mapping

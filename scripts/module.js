@@ -65,6 +65,9 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
 /**
  * Add controls to the ambient light configuration
  */
-Hooks.on("renderAmbientLightConfig", lightMaskRenderAmbientLightConfig);
+Hooks.on("renderAmbientLightConfig", (app, html, data) => {
+  lightMaskRenderAmbientLightConfig(app, html, data);
+
+});
 
 

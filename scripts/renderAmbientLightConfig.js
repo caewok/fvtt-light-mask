@@ -85,19 +85,15 @@ export function lightMaskRenderAmbientLightConfig(app, html, data) {
         <input name="flags.${MODULE_ID}.${CUSTOM_IDS_KEY}" type="text" data-dtype="text" value=${current_custom}>
       </div>
       
+      <div class="form-group">
+        <label>${idButtonLabel}</label>
+        <button type="button" class="saveWallsButton" title=${idButtonLabel}>${idButtonLabel}</button>
+      </div>  
      
     </legend>
   </fieldset>
   `); 
-  
-  /*
-   <div class="form-group">
-        <label>${idButtonLabel}</label>
-        <button name="${CUSTOM_IDS_BUTTON_KEY}" type="button">${idButtonLabel}</button>
-      </div>  
-  
-  */
-  
+    
   // to find the data, get a light.
   // l = [...canvas.lighting.sources][0]
   // l.object.data.flags.lightmask
@@ -110,29 +106,57 @@ export function lightMaskRenderAmbientLightConfig(app, html, data) {
  * clicks the button to add custom wall ids.
  * @param {PointerEvent} event    The originating click event
  */
-export function lightMaskOnAddWallIDs(event) {
+export async function lightMaskOnAddWallIDs(event) {
   log(`lightMaskOnAddWallIDs`, event);
   
   const ids_to_add = controlledWallIDs();
   if(!ids_to_add) return;
-  log(`Ids to add: ${controlledWallIDs}`);
+  log(`Ids to add: ${ids_to_add}`);
   
   // somehow change the data and refresh...
+  
+  
+  const newData = {};
+  newData[`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`] = ids_to_add;
+  const previewData = this._getSubmitData(newData);
+  log(`previewData`, previewData);
+  
+  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  
+  this.render();
+  //this._refresh();
 }
 
 /** 
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
  */
 export function lightMaskActivateListeners(wrapped, html) {
-  log(`lightMaskActivateListeners`);
+  log(`lightMaskActivateListeners`, html, this);
+  
+  // this makes the config panel close but does not call _onAddWallIDs:
+  // html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
+  
+  // this makes the config panel close but does not call _onAddWallIDs:
+  //const saveWallsButton = html.find("button[id='saveWallsButton']");
+  //saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
+  
   wrapped(html);  
+  log(`lightMaskActivateListeners after`, html);
   
-  log(`lightMaskActivateListeners after wrap.`);
-
-  html.find(`button["name=${CUSTOM_IDS_BUTTON_KEY}"]`)
-      .click(this._onAddWallIDs.bind(this));
+  // this makes the config panel close but does not call _onAddWallIDs:
+  //html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
   
-  return     
+  // this makes the config panel close but does not call _onAddWallIDs:
+  //const saveWallsButton = html.find("button[id='saveWallsButton']");
+  //saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
+  
+  //saveWallsButton.on("click", event => { log(`saveWallsButton clicked!`, event) })  
+  
+  // works!
+//   html.on('click', '.saveWallsButton', (event) => {
+//     log(`saveWallsButton clicked!`, event);
+//   });
+   html.on('click', '.saveWallsButton', this._onAddWallIDs.bind(this));
 }
 
 /**

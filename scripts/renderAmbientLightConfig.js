@@ -22,8 +22,8 @@ export function lightMaskRenderAmbientLightConfig(app, html, data) {
   
   const moduleLabel = `Light Mask`;  
   const shapeLabel = `Shape`;  
-  const idLabel = `Custom: Add Wall IDs`;
-  const idButtonLabel = `Add selected walls`;
+  const idLabel = `Custom cached wall IDs`;
+  const idButtonLabel = `Cache selected walls`;
   
   
   // cannot get the following to work---should be possible to use 
@@ -167,6 +167,7 @@ export function controlledWallIDs() {
   const walls = canvas.walls.controlled;
   if(walls.length === 0) {
     console.warn("Please select one or more walls on the canvas.");
+    ui.notifications.warn("Please select one or more walls on the canvas.")
     return;
   }
   

@@ -38,8 +38,8 @@ Hooks.once(`init`, async function() {
     controlledWallIDs: controlledWallIDs
   }
   
-  // CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;
-  // or
+  CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;
+
   // CONFIG.Canvas.losBackend = game.modules.get(`lightmask`).api.LightMaskClockwiseSweepPolygon
   // game.modules.get(`lightmask`).api.controlledWallIDs()
    

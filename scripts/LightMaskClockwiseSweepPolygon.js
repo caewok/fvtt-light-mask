@@ -60,8 +60,13 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     this._addCanvasBoundaryEdges();
     
     // For light mask, find the light data
-    const light = canvas.lighting.placeables.find(l => l.id === object_id);
-    
+    let light;
+    if(typeof object_id === 'string' || object_id instanceof String) {
+      light = canvas.lighting.placeables.find(l => l.id === object_id);
+    } else {
+      light = object_id;
+    }
+        
     if(!light) {
       log(`Light ${object_id} not found. ${canvas.lighting.placeables.length} available.`, canvas.lighting.placeables, light);
     }

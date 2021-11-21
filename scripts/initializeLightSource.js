@@ -94,7 +94,7 @@ export function lightMaskInitializeLightSource(wrapped, data={}) {
     density: 60,
     radius: this.radius,
     rotation: this.data.rotation,
-    object_id: this.object.id  // changed
+    object_id: this.object.id || this.object  // sometimes the object has null for id 
   });
 
   // Flag to know if we use fov render texture

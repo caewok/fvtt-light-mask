@@ -159,11 +159,13 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     // track intersections
     // don't need to compare against each other b/c we know these boundaries
     // do not intersect.
-    const edges_array = Array.from(this.edges);
-    e1.identifyIntersections(edges_array);
-    e2.identifyIntersections(edges_array);
-    e3.identifyIntersections(edges_array);
-    e4.identifyIntersections(edges_array);
+    if(game.modules.get(`lightmask`).api.fix_border_edges) {
+      const edges_array = Array.from(this.edges);
+      e1.identifyIntersections(edges_array);
+      e2.identifyIntersections(edges_array);
+      e3.identifyIntersections(edges_array);
+      e4.identifyIntersections(edges_array);
+    }
     
     // Add canvas edges
     this.edges.add(e1);
@@ -246,6 +248,8 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     
     const type = this.config.type;
     const edges_cache = light.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY);
+    if(!edges_cache) return;
+    
     log(`${Object.keys(edges_cache).length} custom edges to add.`);
     Object.values(edges_cache).forEach(data => {
        log(`Adding custom edge ${data._id}`);

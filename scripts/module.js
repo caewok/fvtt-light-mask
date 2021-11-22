@@ -1,6 +1,8 @@
 /* globals
 Hooks,
-game
+game,
+benchmarkSight,
+CONFIG
 */
 
 'use strict';
@@ -16,7 +18,7 @@ import { lightMaskRenderAmbientLightConfig, controlledWallIDs } from "./renderAm
  */
 export function log(...args) {
   try {
-    const isDebugging = true;// game.modules.get(`_dev_mode`)?.api?.getPackageDebugValue(MODULE_ID);
+    const isDebugging = game.modules.get(`_dev_mode`)?.api?.getPackageDebugValue(MODULE_ID);
     if( isDebugging ) {
       console.log(MODULE_ID, `|`, ...args);
     }
@@ -27,6 +29,11 @@ export function log(...args) {
 
 
 
+async function lightMaskBenchmarkSight(n=1000, ...args) {
+  await benchmarkSight(n, ...args);
+  await LightMaskClockwiseSweepPolygon.benchmark(n, ...args);
+}
+
 
 Hooks.once(`init`, async function() {
   log(`Initializing...`);
@@ -35,7 +42,9 @@ Hooks.once(`init`, async function() {
   
   game.modules.get(MODULE_ID).api = {
     LightMaskClockwiseSweepPolygon: LightMaskClockwiseSweepPolygon,
-    controlledWallIDs: controlledWallIDs
+    controlledWallIDs: controlledWallIDs,
+    benchmark: lightMaskBenchmarkSight,
+    fix_border_edges: true
   }
   
   CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;

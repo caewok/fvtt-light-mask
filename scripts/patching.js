@@ -26,4 +26,3 @@ Object.defineProperty(AmbientLightConfig.prototype, "_onAddWallIDs", {
 });
 
 
-

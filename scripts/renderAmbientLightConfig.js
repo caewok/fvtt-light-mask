@@ -1,10 +1,12 @@
 /* globals
-canvas
+canvas,
+foundry,
+ui
 */
 
 'use strict';
 
-import { MODULE_ID, SHAPE_KEY, CUSTOM_IDS_KEY, CUSTOM_IDS_BUTTON_KEY } from "./const.js";
+import { MODULE_ID, SHAPE_KEY, CUSTOM_IDS_KEY } from "./const.js";
 import { log } from "./module.js";
 
 

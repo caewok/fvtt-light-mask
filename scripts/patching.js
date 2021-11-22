@@ -1,5 +1,6 @@
 /* globals
-libWrapper
+libWrapper,
+AmbientLightConfig,
 */
 
 `use strict`;
@@ -23,4 +24,6 @@ Object.defineProperty(AmbientLightConfig.prototype, "_onAddWallIDs", {
   writable: true,
   configurable: true
 });
+
+
 

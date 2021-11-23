@@ -15,21 +15,8 @@ export function lightMaskGetSubmitData(wrapped, updateData={}) {
   let data = wrapped(updateData);
   
   log(`getSubmitData data`, data, this);
-  
-  if(data) {
-    const custom_ids_str = `flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`;
-    const custom_cache_str = `flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`
-    const custom_ids = data[custom_ids_str] || "";
-    
-    // edges cache not in the data form; pull from underlying object
-    //const edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || {};
-    const edges_cache = this.object.data.flags?.[MODULE_ID]?.[CUSTOM_EDGES_KEY] || {}
-    const newData = {};
-    newData[custom_cache_str] = lightMaskUpdateCustomEdgeCache(custom_ids, edges_cache);    
-    
-//     log(`_getSubmitData newData`, data, newData);
-    data = foundry.utils.flattenObject(foundry.utils.mergeObject(data, newData));
-  }
+  const edges_cache = this.object.data.flags?.[MODULE_ID]?.[CUSTOM_EDGES_KEY] || {};
+  data = lightMaskUpdateCustomEdgeCache(data, edges_cache);
   
   log(`_getSubmitData data after updating`, data);
   return data;
@@ -39,12 +26,19 @@ export function lightMaskGetSubmitData(wrapped, updateData={}) {
  * Update the cache of wall data information for custom wall keys.
  * The cache should correspond to the ids provided by the user.
  */
-function lightMaskUpdateCustomEdgeCache(custom_ids, edges_cache = {}) {  
+function lightMaskUpdateCustomEdgeCache(data, edges_cache) {  
+  if(!data) return data;
+
+  const custom_ids_str = `flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`;
+  const custom_cache_str = `flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`
+  const custom_ids = data[custom_ids_str] || "";
+
   log(`edges_cache contains ${Object.keys(edges_cache).length} keys; custom ids: ${custom_ids}.`, edges_cache);
   
   if(!custom_ids || custom_ids === "") {
     // no custom ids, clear existing mapping
-    edges_cache = {};
+    data[`-=${custom_cache_str}`] = null;
+    
   } else {
     // ids exist. Update if necessary
     // Don't update unless necessary, b/c once custom ids are added by user, user may
@@ -75,14 +69,30 @@ function lightMaskUpdateCustomEdgeCache(custom_ids, edges_cache = {}) {
         _id: wall.data._id }
     });
     
+    const newData = {};
+    newData[custom_cache_str] = edges_cache;
+    data = foundry.utils.flattenObject(foundry.utils.mergeObject(data, newData));
+    
     // remove any id not listed from the cache
+    const remove_strings = [];
     Object.keys(edges_cache).forEach(id => {
       if(parsed_ids.includes(id)) { return; }
     
       log(`Removing id ${id} from cache.`);
-      delete edges_cache[id];
+      const remove_obj = {};
+      remove_obj[`${custom_cache_str}.-=${id}`] = null;
+      data = foundry.utils.flattenObject(foundry.utils.mergeObject(data, remove_obj));
+      
+      remove_strings.push(`${custom_cache_str}.-=${id}`)
     });
+    
+    // for updating the underlying later  
+    remove_strings.forEach(str => {
+      data[str] = null;
+    });
+    
+        
   }
   
-  return edges_cache;
+  return data;
 }

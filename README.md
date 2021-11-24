@@ -24,4 +24,35 @@ Add this [Manifest URL](https://github.com/caewok/fvtt-light-mask/releases/lates
 
 None.
 
+# Usage
+
+## Change geometric shape of the light border
+
+A dropdown menu in the ambient light configuration allows you to change the light border from the default circle to a triangle, square, or hexagon. Rotating the light rotates the shape accordingly. 
+
+For now, only the outside border shape is changed. If the light has a smaller bright than dim radius, the bright radius remains a circle. 
+
+### Triangle
+
+### Square
+
+### Hexagon
+
+## Add custom walls to the light border
+
+A text box lets you add one or more wall ids, for walls present on the canvas, as a comma-separated list. The specifications of these walls are then cached with the light object. Once added, you can delete the walls from the canvas and the light object will act as if the wall is still present on the canvas. 
+
+For ease of use, a button allows you to add selected walls. To do so, open the light configuration. With it open, change to the wall layer. Draw walls if necessary, then select all the walls that you wish to cache with the light object. Hit the button and you should see the wall ids added as a comma-separate list to the text box. Save the configuration. At this point, you can remove the walls from the scene and the light object will still act as if the walls are still present.
+
+This allows you, for example, to create a border around a pool of water or a fire pit, add a light, and ensure that the light remains solely within the border you designate. By then deleting the walls after, you can still allowing token movement over the area and token vision of the light. 
+
+
+# Wishlist of future improvements
+
+- Improve speed for rendering the line-of-sight polygon.
+- Provide a preview when the user adds or modifies temporary walls.
+- Switch the inside radius (bright --> dim transition) to match the chosen shape.
+- Offer the same options for ambient sounds.
+
+
 

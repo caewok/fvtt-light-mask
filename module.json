@@ -5,7 +5,7 @@
   "version": "This is auto replaced",
   "library": false,
   "manifestPlusVersion": "1.0.0",
-  "minimumCoreVersion": "9",
+  "minimumCoreVersion": "9.231",
   "compatibleCoreVersion": "9",
   "authors": [
     {
@@ -15,6 +15,11 @@
     }
   ],
   "dependencies": [
+    {
+      "name": "lib-wrapper",
+      "manifest": "https://raw.githubusercontent.com/ruipin/fvtt-lib-wrapper/master/module.json"
+    }
+  
   ],
   "conflicts": [
     

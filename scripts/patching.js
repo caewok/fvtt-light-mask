@@ -8,7 +8,7 @@ AmbientLightConfig,
 // Patches
 
 import { lightMaskInitializeLightSource } from "./initializeLightSource.js";
-import { lightMaskGetSubmitData } from "./getSubmitData.js";
+//import { lightMaskGetSubmitData } from "./getSubmitData.js";
 import { lightMaskActivateListeners, lightMaskOnAddWallIDs } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
 // import { log } from "./module.js";

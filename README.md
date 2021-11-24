@@ -32,21 +32,23 @@ A dropdown menu in the ambient light configuration allows you to change the ligh
 
 For now, only the outside border shape is changed. If the light has a smaller bright than dim radius, the bright radius remains a circle. 
 
+![Light Configuration Advanced Settings](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_settings.jpg)
+
 ### Triangle
 
-![Triangle-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_triangle.jpg)
+![Triangle-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
 
 ### Square
 
-![Square-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_triangle.jpg)
+![Square-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
 
 ### Hexagon
 
-![Hexagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_triangle.jpg)
+![Hexagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
 
 ### Light without border
 
-![No Border Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_none.jpg)
+![No Border Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_none.jpg)
 
 ## Add custom walls to the light border
 

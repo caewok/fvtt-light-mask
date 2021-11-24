@@ -34,9 +34,19 @@ For now, only the outside border shape is changed. If the light has a smaller br
 
 ### Triangle
 
+![Triangle-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_triangle.jpg)
+
 ### Square
 
+![Square-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_triangle.jpg)
+
 ### Hexagon
+
+![Hexagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_triangle.jpg)
+
+### Light without border
+
+![No Border Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshot/screenshot/light_none.jpg)
 
 ## Add custom walls to the light border
 
@@ -53,6 +63,7 @@ This allows you, for example, to create a border around a pool of water or a fir
 - Provide a preview when the user adds or modifies temporary walls.
 - Switch the inside radius (bright --> dim transition) to match the chosen shape.
 - Offer the same options for ambient sounds.
+- Option to have no light border (unlimited radius). The "none" setting should accomplish this in theory but Foundry is still coloring the light as if it had a border. 
 
 
 

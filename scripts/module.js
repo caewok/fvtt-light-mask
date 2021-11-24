@@ -11,6 +11,7 @@ import { MODULE_ID } from "./const.js";
 import { registerLightMask } from "./patching.js";
 import { LightMaskClockwiseSweepPolygon } from "./LightMaskClockwiseSweepPolygon.js";
 import { lightMaskRenderAmbientLightConfig, controlledWallIDs } from "./renderAmbientLightConfig.js";
+import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
 
 /**
  * Log message only when debug flag is enabled from DevMode module.
@@ -18,7 +19,7 @@ import { lightMaskRenderAmbientLightConfig, controlledWallIDs } from "./renderAm
  */
 export function log(...args) {
   try {
-    const isDebugging = game.modules.get(`_dev_mode`)?.api?.getPackageDebugValue(MODULE_ID);
+    const isDebugging = game.modules.get(`_dev-mode`)?.api?.getPackageDebugValue(MODULE_ID);
     if( isDebugging ) {
       console.log(MODULE_ID, `|`, ...args);
     }
@@ -77,6 +78,11 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
 Hooks.on("renderAmbientLightConfig", (app, html, data) => {
   lightMaskRenderAmbientLightConfig(app, html, data);
 
+});
+
+
+Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
+  lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
 
 

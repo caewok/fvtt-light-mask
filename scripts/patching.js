@@ -15,7 +15,7 @@ import { MODULE_ID } from "./const.js";
 
 export function registerLightMask() {
   libWrapper.register(MODULE_ID, 'LightSource.prototype.initialize', lightMaskInitializeLightSource, 'MIXED');
-  libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype._getSubmitData`, lightMaskGetSubmitData, 'WRAPPER');
+  //libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype._getSubmitData`, lightMaskGetSubmitData, 'WRAPPER');
   libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
 }
 

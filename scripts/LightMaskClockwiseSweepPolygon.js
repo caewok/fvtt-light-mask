@@ -5,7 +5,8 @@ PolygonVertex,
 Ray,
 canvas, 
 foundry,
-CONST
+CONST,
+game
 */
 
 `use strict`;
@@ -187,7 +188,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     log(`Adding walls for ${shape}.`);
     const angles = [];
     switch(shape) {
-      case "circle": return;
+      case "circle": return; 
       case "triangle": 
         angles.push(30, 150, 270); // 0, 120, 240 + 30
         break;
@@ -195,15 +196,23 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
         angles.push(45, 135, 225, 315); // 0, 90, 180, 270 + 45
         break;
       case "pentagon":
+      case "pentagram":
         angles.push(54, 126, 198, 270, 342); // 0, 72, 144, 216, 288 + 54
         break;  
       case "hexagon":
+      case "hexagram":
         angles.push(0, 60, 120, 180, 240, 300);
-        break;
+        break;        
       case "none": return;  // ignore for now  
     }
     
-    const poly_walls = this.constructGeometricShapeWalls(angles);
+    const star = shape === "pentagram" ? true :
+                 shape === "hexagram"  ? true :
+                 false;
+    
+    
+    const poly_walls = star ? this.constructGeometricStarWalls(angles) : 
+                              this.constructGeometricShapeWalls(angles);
     
     // for tracking intersections
     // don't need to compare against each other b/c we know these boundaries
@@ -222,7 +231,8 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   * Example:
   * constructGeometricShapeWalls([0, 120, 240]); // equilateral triangle
   * constructGeometricShapeWalls([45, 135, 225, 315]); // square
-  * @return [CCWSweepWall, CCWSweepWall, CCWSweepWall]
+  * @param {number} angles
+  * @return CCWSweepWall[]
   */
   constructGeometricShapeWalls(angles) {
     const origin = this.origin; 
@@ -240,6 +250,61 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
       return new LightMaskPolygonEdge(p.B, r[dest].B);
     });
   }
+  
+ /**
+  * Add edges to make a pentagram or hexagram shape.
+  * Angles describe where the outside points lie relative to the origin.
+  * Potentially rotated by rotation angle
+  * Center/origin to point === radius
+  * If a1 === 0, point would lie due east
+  * Diagonals are drawn to construct a star 
+  * and the outside edges of the star are returned.
+  * Example:
+  * constructGeometricStarWalls([0, 72, 144, 216, 288]) // pentagram
+  * constructGeometricStarWalls([0, 60, 120, 180, 240, 300]) // hexagram
+  * @param {number} outside_angles
+  * @return CCWSweepWall[]
+  */
+  constructGeometricStarWalls(outside_angles) {
+    const origin = this.origin; 
+    const rotation = this.config.rotation ?? 0;
+    const radius = this.config.radius;
+    const ln = outside_angles.length;
+        
+    // Use fromAngle to get the outside points relative to the origin
+    // each outside point is Ray.B
+    const outside_angles_translated = outside_angles.map(a => Math.normalizeRadians(Math.toRadians(a + rotation)));
+    const r = outside_angles_translated.map(a => Ray.fromAngle(origin.x, origin.y, a, radius));
+    
+    // construct five segments connecting the outside points to form a star
+    const diagonals = r.map((p, idx) => {
+      const dest = (idx + 2) % ln;
+      return new Ray(p.B, r[dest].B);
+    }); 
+   
+    // construct the outside edges of the star by locating the relevant intersections
+    // ensure the edges connect by re-using the intersections
+    const ix = diagonals.map((d, idx) => {
+      const near = (idx + (ln - 1)) % ln;
+      const near_d = diagonals[near];
+      return foundry.utils.lineLineIntersection(d.A, d.B, near_d.A, near_d.B);
+    });
+    
+    const edges = [];
+    diagonals.forEach((d, idx) => {
+      // diagonal goes A -- x1 -- x2 -- B
+      // e1 is A -- x1; e2 is x2 -- B
+      const x1 = ix[idx];
+      const x2 = ix[(idx + 1) % ln];
+      
+      const e1 = new LightMaskPolygonEdge(d.A, x1);
+      const e2 = new LightMaskPolygonEdge(x2, d.B);
+      
+      edges.push(e1, e2);    
+    });
+    
+    return edges;
+  } 
   
   
  /**

@@ -41,15 +41,15 @@ For now, only the outside border shape is changed. If the light has a smaller br
 
 ### Triangle
 
-![Triangle-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
+![Triangle-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg | width = 200)
 
 ### Square
 
-![Square-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_square.jpg)
+![Square-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_square.jpg | width = 300)
 
 ## Pentagon
 
-![Pentagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagon.jpg)
+![Pentagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagon.jpg | width = 100)
 
 ### Hexagon
 

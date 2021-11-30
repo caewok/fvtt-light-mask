@@ -7,7 +7,10 @@
 This module adds a toggle to Foundry VTT light configuration to "mask" the lights with a selected shape. Options include:
 - Triangle
 - Square
+- Pentagon
+- Pentagram
 - Hexagon
+- Hexagram
 - Arbitrary set of lines by pasting in a set of wall ids. Once added, the walls can be removed if desired from the canvas; the configured light will continue to apply them as a mask centered on the light location. 
 
 The chosen shape will be centered around the light, sized to the light radius, and will rotate if the light is rotated.
@@ -44,9 +47,21 @@ For now, only the outside border shape is changed. If the light has a smaller br
 
 ![Square-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
 
+## Pentagon
+
+![Pentagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagon.jpg)
+
 ### Hexagon
 
 ![Hexagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
+
+## Pentagram
+
+![Pentagram-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagram.jpg)
+
+## Hexagram
+
+![Hexagram-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_hexagram.jpg)
 
 ### Light without border
 

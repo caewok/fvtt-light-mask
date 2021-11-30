@@ -30,8 +30,7 @@ None.
 # Usage
 
 Open the configuration for an Ambient Light in the scene and look for the Light Mask portion in the Advanced Options tab.
-
-![Light Configuration Advanced Settings](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_custom_ids_.jpg)
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_custom_ids.jpg" width="400" alt="Light Configuration Advanced Settings">
 
 ## Change geometric shape of the light border
 
@@ -40,28 +39,22 @@ The dropdown menu allows you to change the light border from the default circle 
 For now, only the outside border shape is changed. If the light has a smaller bright than dim radius, the bright radius remains a circle. 
 
 ### Triangle
-
-![Triangle-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg" width="400" alt="Triangle-Shaped Light">
 
 ### Square
-
-![Square-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_square.jpg" width="400" alt="Square-Shaped Light">
 
 ## Pentagon
-
-![Pentagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagon.jpg)
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagon.jpg" width="400" alt="Pentagon-Shaped Light">
 
 ### Hexagon
-
-![Hexagon-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg)
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_hexagon.jpg" width="400" alt="Hexagon-Shaped Light">
 
 ## Pentagram
-
-![Pentagram-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagram.jpg)
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_pentagram.jpg" width="400" alt="Pentagram-Shaped Light">
 
 ## Hexagram
-
-![Hexagram-Shaped Light](https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_hexagram.jpg)
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_hexagram.jpg" width="400" alt="Hexagram-Shaped Light">
 
 ### Light without border
 

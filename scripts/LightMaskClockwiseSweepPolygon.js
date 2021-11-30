@@ -189,13 +189,13 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     switch(shape) {
       case "circle": return;
       case "triangle": 
-        angles.push(0, 120, 240);
+        angles.push(30, 150, 270); // 0, 120, 240 + 30
         break;
       case "square":
-        angles.push(0, 90, 180, 270);
+        angles.push(45, 135, 225, 315); // 0, 90, 180, 270 + 45
         break;
       case "pentagon":
-        angles.push(0, 72, 144, 216, 288);
+        angles.push(54, 126, 198, 270, 342); // 0, 72, 144, 216, 288 + 54
         break;  
       case "hexagon":
         angles.push(0, 60, 120, 180, 240, 300);

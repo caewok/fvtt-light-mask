@@ -77,7 +77,10 @@ export function lightMaskRenderAmbientLightConfig(app, html, data) {
           <option value="circle" ${current_shape === "circle" ? "selected" : ""}>Circle</option>
           <option value="triangle" ${current_shape === "triangle" ? "selected" : ""}>Triangle</option>
           <option value="square" ${current_shape === "square" ? "selected" : ""}>Square</option>
+          <option value="pentagon" ${current_shape === "pentagon" ? "selected" : ""}>Pentagon</option>
+          <option value="pentagram" ${current_shape === "pentagram" ? "selected" : ""}>Pentagram</option>
           <option value="hexagon" ${current_shape === "hexagon" ? "selected" : ""}>Hexagon</option>
+          <option value="hexagram" ${current_shape === "hexagram" ? "selected" : ""}>Hexagram</option>
           <option value="none" ${current_shape === "none" ? "selected" : ""}>None</option>
         </select>  
       </div>

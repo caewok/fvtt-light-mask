@@ -26,27 +26,10 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
    * @param {object} [config={}]      Configuration options which customize the polygon computation
    * @returns {PointSourcePolygon}    The computed polygon instance
    */
-//   static create(origin, config) {
-//     log(`Creating CWPolygon at origin ${origin.x}, ${origin.y}. ${config?.object_id}`, config);
-//   
-//     const poly = new this();
-//     poly.initialize(origin, config);
-//     return poly.compute();
-//   }
-
- /**
-  * Configure the light id
-  */
-  initialize(origin, config) {
-    log(`Initializing CWPolygon at origin ${origin.x}, ${origin.y}. ${config?.object_id}`, config);
-    super.initialize(origin, config);
-    this.config.object_id = config?.object_id;
-  }
-  
-  
+    
   /** @inheritdoc */
   _compute() {
-    const { hasLimitedRadius, object_id} = this.config;
+    const { hasLimitedRadius, source } = this.config;
 
     // Step 1 - Identify candidate edges
     this._identifyEdges();
@@ -59,15 +42,9 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     // (needed radius to detect if intersections w/in radius for Step 2)
     // (don't need radius padding in Step 3 b/c not a circle)
     // For light mask, find the light data
-    let light;
-    if(typeof object_id === 'string' || object_id instanceof String) {
-      light = canvas.lighting.placeables.find(l => l.id === object_id);
-    } else {
-      light = object_id;
-    }
-    
-    const drop_padding = hasLimitedRadius && light &&
-                         light.document.getFlag(MODULE_ID, SHAPE_KEY) !== "circle";
+    log(`Source:`, source);
+    const drop_padding = hasLimitedRadius &&
+                         source.object.document.getFlag(MODULE_ID, SHAPE_KEY) !== "circle";
                         
     if(drop_padding) {
       const cfg = this.config;
@@ -87,7 +64,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   * @private
   */
   _identifyEdges() {
-    const {type, hasLimitedAngle, hasLimitedRadius, object_id} = this.config;
+    const {type, hasLimitedAngle, hasLimitedRadius, source} = this.config;
 
     // Add edges for placed Wall objects
     const walls = this._getWalls();
@@ -98,25 +75,14 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     }
 
     // Add edges for the canvas boundary
-    // technically, we don't need this if we have a geometric boundary
-    this._addCanvasBoundaryEdges();
-    
-    // For light mask, find the light data
-    let light;
-    if(typeof object_id === 'string' || object_id instanceof String) {
-      light = canvas.lighting.placeables.find(l => l.id === object_id);
-    } else {
-      light = object_id;
-    }
-        
-    if(!light) {
-      log(`Light ${object_id} not found. ${canvas.lighting.placeables.length} available.`, canvas.lighting.placeables, light);
+    for ( let boundary of canvas.walls.boundaries ) {
+      this.edges.add(LightMaskPolygonEdge.fromWall(boundary));
     }
     
     // We would prefer to add edges here so they can be trimmed by limited angle
     // This requires that radius constraint not remove the geometric shape boundary...
-    this._addGeometricEdges(light);
-    this._addCustomEdges(light);  
+    this._addGeometricEdges();
+    this._addCustomEdges();  
 
     // Restrict edges to a limited angle
     if ( hasLimitedAngle ) {
@@ -124,7 +90,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     }
     
     // Don't use radius limitation if the shape is "none"
-    const trim_radius = !light || light.document.getFlag(MODULE_ID, SHAPE_KEY) !== "none";
+    const trim_radius = source.object.document.getFlag(MODULE_ID, SHAPE_KEY) !== "none";
 
     // Constrain edges to a limited radius
     // we want this even if we have added geometric shape edges b/c we can still trim
@@ -135,54 +101,15 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     
            
   }
-
- /**
-   * Override canvasBoundaryEdges to check for intersections.
-   * 
-   * Include additional edges for the bounds of the rectangular canvas.
-   * In the future this can be expanded to support arbitrary polygon bounds.
-   * @private
-   */ 
-  _addCanvasBoundaryEdges() {
-
-    // Define canvas vertices
-    const d = canvas.dimensions;
-    const c0 = {x: 0, y: 0};
-    const c1 = {x: d.width, y: 0};
-    const c2 = {x: d.width, y: d.height};
-    const c3 = {x: 0, y: d.height};
-    
-    const e1 = new LightMaskPolygonEdge(c0, c1);
-    const e2 = new LightMaskPolygonEdge(c1, c2);
-    const e3 = new LightMaskPolygonEdge(c2, c3);
-    const e4 = new LightMaskPolygonEdge(c3, c0);
-        
-    // track intersections
-    // don't need to compare against each other b/c we know these boundaries
-    // do not intersect.
-    if(game.modules.get(`lightmask`).api.fix_border_edges) {
-      const edges_array = Array.from(this.edges);
-      e1.identifyIntersections(edges_array);
-      e2.identifyIntersections(edges_array);
-      e3.identifyIntersections(edges_array);
-      e4.identifyIntersections(edges_array);
-    }
-    
-    // Add canvas edges
-    this.edges.add(e1);
-    this.edges.add(e2);
-    this.edges.add(e3);
-    this.edges.add(e4);
-  }
-
   
  /**
   * Adds geometric edges for the shape specified by the lightMask flag.
   * @param {AmbientLight} light
   */
-  _addGeometricEdges(light) {
-    if(!light) return;
-    const shape = light.document.getFlag(MODULE_ID, SHAPE_KEY);
+  _addGeometricEdges() {
+    const source = this.config.source;
+    
+    const shape = source.object.document.getFlag(MODULE_ID, SHAPE_KEY);
     if(!shape) { return; }
    
     log(`Adding walls for ${shape}.`);
@@ -237,7 +164,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   constructGeometricShapeWalls(angles) {
     const origin = this.origin; 
     const rotation = this.config.rotation ?? 0;
-    const radius = this.config.radius;
+    const radius = Math.max(this.config.radius - 1, 0); // ensure we are definitely inside the radius. Otherwise, the edges may get trimmed when radius is checked, causing light leakage.
 
     // Use fromAngle to get the points relative to the origin
     const a_translated = angles.map(a => Math.normalizeRadians(Math.toRadians(a + rotation)));
@@ -268,7 +195,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   constructGeometricStarWalls(outside_angles) {
     const origin = this.origin; 
     const rotation = this.config.rotation ?? 0;
-    const radius = this.config.radius;
+    const radius = Math.max(this.config.radius - 1, 0);
     const ln = outside_angles.length;
         
     // Use fromAngle to get the outside points relative to the origin
@@ -311,11 +238,10 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   * Add edges based on any custom edges supplied by the user.
   * @param {AmbientLight} light
   */
-  _addCustomEdges(light) {
-    if(!light) return;
+  _addCustomEdges() {
+    const { type, source } = this.config;
     
-    const type = this.config.type;
-    const edges_cache = light.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY);
+    const edges_cache = source.object.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY);
     if(!edges_cache || edges_cache.length === 0) return;
     
     log(`${edges_cache.length} custom edges to add.`);

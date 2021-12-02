@@ -15,6 +15,8 @@ import { MODULE_ID } from "./const.js";
 export function registerLightMask() {
   //libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype._getSubmitData`, lightMaskGetSubmitData, 'WRAPPER');
   libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
+  libWrapper.register(MODULE_ID, `AmbientSoundConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
+  
 }
 
 Object.defineProperty(AmbientLightConfig.prototype, "_onAddWallIDs", {
@@ -23,4 +25,8 @@ Object.defineProperty(AmbientLightConfig.prototype, "_onAddWallIDs", {
   configurable: true
 });
 
-
+Object.defineProperty(AmbientSoundConfig.prototype, "_onAddWallIDs", {
+  value: lightMaskOnAddWallIDs,
+  writable: true,
+  configurable: true
+});

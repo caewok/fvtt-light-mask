@@ -1,3 +1,9 @@
+## 0.0.3
+Updated for Foundry v9.232 (Testing 1). 
+- Use `config.source` instead of searching for light by id
+- Update `identifyEdges`, particularly the canvas boundary creation
+- Change size of the geometry to be slightly smaller than radius to avoid light-leakage issues. 
+
 ## 0.0.2
 Add pentagon, pentagram, and hexagram geometries. Align geometries to the grid when rotation is set to the default of 0.
 

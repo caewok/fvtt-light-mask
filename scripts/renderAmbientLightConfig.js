@@ -6,7 +6,7 @@ ui
 
 'use strict';
 
-import { MODULE_ID, SHAPE_KEY, CUSTOM_IDS_KEY } from "./const.js";
+import { MODULE_ID, SHAPE_KEY, CUSTOM_IDS_KEY, ROTATION_KEY } from "./const.js";
 import { log } from "./module.js";
 
 
@@ -20,12 +20,15 @@ import { log } from "./module.js";
  * follows approach in https://github.com/erithtotl/wall-height/blob/master/scripts/wall-height.js
  */
 export function lightMaskRenderAmbientLightConfig(app, html, data) {
-  log(`Hooking renderAmbientLightConfig!`, data);
+  const is_sound = Boolean(app instanceof AmbientSoundConfig);
+
+  log(`Hooking ${is_sound ? "renderAmbientSoundConfig!" : "renderAmbientLightConfig!"}`, app, html, data);
   
   const moduleLabel = `Light Mask`;  
   const shapeLabel = `Shape`;  
   const idLabel = `Custom cached wall IDs`;
   const idButtonLabel = `Cache selected walls`;
+  
   
   
   // cannot get the following to work---should be possible to use 
@@ -68,9 +71,44 @@ export function lightMaskRenderAmbientLightConfig(app, html, data) {
   const current_custom = data.data.flags?.[MODULE_ID]?.[CUSTOM_IDS_KEY] || '';
   log(`Current custom is ${current_custom}.`);
   
+  
+  
+  // From ambient light config template (doesn't work here):
+  /*
+  const sound_rotation_html = `
+    <div class="form-group">
+      <label>{{localize "LIGHT.Rotation" }} <span class="units">({{localize "Degrees"}})</span></label>
+        <div class="form-fields">
+          {{rangePicker name="rotation" value=data.rotation min="0" max="360"}}
+        </div>
+      <p class="hint">{{ localize 'LIGHT.AngleHint' }}</p>
+    </div>
+  `;
+  */
+  
+  let sound_rotation_html = ``;
+  if(is_sound) {
+    const rotationLabel = `Rotation Angle <span class="units">(Degrees)</span>`;
+    const current_rotation = data.data.flags?.[MODULE_ID]?.[ROTATION_KEY] || 0;
+    log(`Current rotation is ${current_rotation}`)
+  
+    sound_rotation_html = `
+      <div class="form-group">
+          <label>${rotationLabel}</label>
+          <input name="flags.${MODULE_ID}.${ROTATION_KEY}" type="range" min="0" max="360" step="1" value=${current_rotation}>
+      </div>
+    `  
+
+    log(`sound rotation html: \n${sound_rotation_html}`);
+  }
+  
+ 
+  
   html.find(".form-group").last().after(`
   <fieldset>
     <legend>${moduleLabel}</legend>
+      ${sound_rotation_html}
+    
       <div class="form-group">
         <label for="${MODULE_ID}.shapes">${shapeLabel}</label>
         <select id="${MODULE_ID}.shapes" name="flags.${MODULE_ID}.${SHAPE_KEY}">

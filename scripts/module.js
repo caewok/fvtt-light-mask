@@ -85,4 +85,18 @@ Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
 
+/**
+ * Add controls to the ambient sound configuration
+ */
+Hooks.on("renderAmbientSoundConfig", (app, html, data) => {
+  lightMaskRenderAmbientLightConfig(app, html, data);
+
+});
+
+
+Hooks.on("preUpdateAmbientSound", (doc, data, options, id) => {
+  lightMaskPreUpdateAmbientLight(doc, data, options, id);
+});
+
+
 

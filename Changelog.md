@@ -1,3 +1,6 @@
+## 0.0.4
+Added equivalent geometric shapes and custom walls for sound objects. Switched to using templates to render the object configuration additions and added localization. 
+
 ## 0.0.3
 Updated for Foundry v9.232 (Testing 1). 
 - Use `config.source` instead of searching for light by id

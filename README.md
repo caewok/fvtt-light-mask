@@ -86,6 +86,3 @@ This example shows how you could edit a simple fire pit to bound the light on al
 - Improve speed for rendering the line-of-sight polygon.
 - Provide a preview when the user adds or modifies temporary walls.
 - Switch the inside radius (bright --> dim transition) to match the chosen shape.
-√ Offer the same options for ambient sounds.
-
-

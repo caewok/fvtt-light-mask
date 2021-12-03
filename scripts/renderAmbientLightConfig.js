@@ -1,12 +1,14 @@
 /* globals
 canvas,
 foundry,
-ui
+ui,
+AmbientSoundConfig,
+renderTemplate
 */
 
 'use strict';
 
-import { MODULE_ID, SHAPE_KEY, CUSTOM_IDS_KEY, ROTATION_KEY } from "./const.js";
+import { MODULE_ID, CUSTOM_IDS_KEY } from "./const.js";
 import { log } from "./module.js";
 
 
@@ -19,129 +21,30 @@ import { log } from "./module.js";
  * templates/scene/ambient-light-config.html
  * follows approach in https://github.com/erithtotl/wall-height/blob/master/scripts/wall-height.js
  */
-export function lightMaskRenderAmbientLightConfig(app, html, data) {
+export async function lightMaskRenderAmbientLightConfig(app, html, data) {
   const is_sound = Boolean(app instanceof AmbientSoundConfig);
 
   log(`Hooking ${is_sound ? "renderAmbientSoundConfig!" : "renderAmbientLightConfig!"}`, app, html, data);
   
-  const moduleLabel = `Light Mask`;  
-  const shapeLabel = `Shape`;  
-  const idLabel = `Custom cached wall IDs`;
-  const idButtonLabel = `Cache selected walls`;
-  
-  
-  
-  // cannot get the following to work---should be possible to use 
-  // handlebars {{selectOptions}} to populate the drop-down menu.
-  /*
-  data.lightMaskShapes = { 
-    circle: "Circle", 
-    triangle: "Triangle",
-    square: "Square",
-    hexagon: "Hexagon",
-    custom: "Custom"
+  data.shapes = { 
+    circle: "lightmask.Circle", 
+    triangle: "lightmask.Triangle",
+    square: "lightmask.Square",
+    pentagon: "lightmask.Pentagon",
+    pentagram: "lightmask.Pentagram",
+    hexagon: "lightmask.Hexagon",
+    hexagram: "lightmask.Hexagram",
+    none: "lightmask.None"
   }
-  */
-  
-  // insert in the advanced tab after the last group
-  // advanced tab is last tab
-  /*
-  html.find(".form-group").last().after(`
-  <fieldset>
-    <legend>${moduleLabel}</legend>
-      <div class="form-group">
-        <label for="${moduleScope}.shapes">${shapeLabel}</label>
-        <select id="${moduleScope}.shapes" name="flags.${moduleScope}.${SHAPE_KEY}">
-          {{selectOptions lightMaskShapes selected=data.flags.${moduleScope}.${SHAPE_KEY} }}
-        </select>  
-      </div>
-          
-      <div class="form-group">
-        <label>${idLabel}</label>
-        <input name=flags.${moduleScope}.${WALL_ID_KEY}" type="text" data-dtype="text" value=${ids}>
-      </div>
-    </legend>
-  </fieldset>
-  `);
-  */
-  
-  const current_shape = data.data.flags?.[MODULE_ID]?.[SHAPE_KEY] || "circle";
-  log(`Current shape is ${current_shape}.`);
-  
-  const current_custom = data.data.flags?.[MODULE_ID]?.[CUSTOM_IDS_KEY] || '';
-  log(`Current custom is ${current_custom}.`);
-  
-  
-  
-  // From ambient light config template (doesn't work here):
-  /*
-  const sound_rotation_html = `
-    <div class="form-group">
-      <label>{{localize "LIGHT.Rotation" }} <span class="units">({{localize "Degrees"}})</span></label>
-        <div class="form-fields">
-          {{rangePicker name="rotation" value=data.rotation min="0" max="360"}}
-        </div>
-      <p class="hint">{{ localize 'LIGHT.AngleHint' }}</p>
-    </div>
-  `;
-  */
-  
-  let sound_rotation_html = ``;
-  if(is_sound) {
-    const rotationLabel = `Rotation Angle <span class="units">(Degrees)</span>`;
-    const current_rotation = data.data.flags?.[MODULE_ID]?.[ROTATION_KEY] || 0;
-    log(`Current rotation is ${current_rotation}`)
-  
-    sound_rotation_html = `
-      <div class="form-group">
-          <label>${rotationLabel}</label>
-          <input name="flags.${MODULE_ID}.${ROTATION_KEY}" type="range" min="0" max="360" step="1" value=${current_rotation}>
-      </div>
-    `  
 
-    log(`sound rotation html: \n${sound_rotation_html}`);
-  }
-  
+  const template = is_sound ? 
+                   `modules/${MODULE_ID}/templates/light-mask-ambient-sound-config.html` :
+                   `modules/${MODULE_ID}/templates/light-mask-ambient-light-config.html`;
+  const myHTML = await renderTemplate(template, data)
  
-  
-  html.find(".form-group").last().after(`
-  <fieldset>
-    <legend>${moduleLabel}</legend>
-      ${sound_rotation_html}
-    
-      <div class="form-group">
-        <label for="${MODULE_ID}.shapes">${shapeLabel}</label>
-        <select id="${MODULE_ID}.shapes" name="flags.${MODULE_ID}.${SHAPE_KEY}">
-          <option value="circle" ${current_shape === "circle" ? "selected" : ""}>Circle</option>
-          <option value="triangle" ${current_shape === "triangle" ? "selected" : ""}>Triangle</option>
-          <option value="square" ${current_shape === "square" ? "selected" : ""}>Square</option>
-          <option value="pentagon" ${current_shape === "pentagon" ? "selected" : ""}>Pentagon</option>
-          <option value="pentagram" ${current_shape === "pentagram" ? "selected" : ""}>Pentagram</option>
-          <option value="hexagon" ${current_shape === "hexagon" ? "selected" : ""}>Hexagon</option>
-          <option value="hexagram" ${current_shape === "hexagram" ? "selected" : ""}>Hexagram</option>
-          <option value="none" ${current_shape === "none" ? "selected" : ""}>None</option>
-        </select>  
-      </div>
-          
-      <div class="form-group">
-        <label>${idLabel}</label>
-        <input name="flags.${MODULE_ID}.${CUSTOM_IDS_KEY}" type="text" data-dtype="text" value=${current_custom}>
-      </div>
-      
-      <div class="form-group">
-        <label>${idButtonLabel}</label>
-        <button type="button" class="saveWallsButton" title=${idButtonLabel}>${idButtonLabel}</button>
-      </div>  
-     
-    </legend>
-  </fieldset>
-  `); 
-    
-  // to find the data, get a light.
-  // l = [...canvas.lighting.sources][0]
-  // l.object.data.flags.lightmask
-  // or canvas.lighting.objects[0]
-
+  log(`config rendered HTML`, myHTML);
+ 
+  html.find(".form-group").last().after(myHTML);
 }
 
 /**

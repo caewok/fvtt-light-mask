@@ -1,7 +1,7 @@
 {
   "name": "lightmask",
-  "title": "Light Mask",
-  "description": "Mask Foundry VTT lights",
+  "title": "Light/Sound Mask",
+  "description": "Mask Foundry VTT lights and sounds",
   "version": "This is auto replaced",
   "library": false,
   "manifestPlusVersion": "1.0.0",

@@ -1,3 +1,20 @@
 {
-    "MODULE.hello": "hello"
+    "lightmask.AmbientLightConfiguration.LegendTitle": "Light Mask",
+    "lightmask.AmbientLightConfiguration.Shapes.Name": "Shapes",
+    "lightmask.AmbientLightConfiguration.CachedWallID.Name": "Custom cached wall IDs",
+    "lightmask.AmbientLightConfiguration.CachedWallID.Button": "Cache selected walls",
+    
+    "lightmask.Circle": "Circle",
+    "lightmask.Triangle": "Triangle",
+    "lightmask.Square": "Square",
+    "lightmask.Pentagon": "Pentagon",
+    "lightmask.Pentagram": "Pentagram",
+    "lightmask.Hexagon": "Hexagon",
+    "lightmask.Hexagram": "Hexagram",
+    "lightmask.None": "None",
+    
+    "lightmask.AmbientSoundConfiguration.LegendTitle": "Light Mask",
+    "lightmask.AmbientSoundConfiguration.Shapes.Name": "Shapes",
+    "lightmask.AmbientSoundConfiguration.CachedWallID.Name": "Custom cached wall IDs",
+    "lightmask.AmbientSoundConfiguration.CachedWallID.Button": "Cache selected walls"
 }

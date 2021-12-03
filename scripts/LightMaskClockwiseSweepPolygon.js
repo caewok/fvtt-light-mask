@@ -15,10 +15,19 @@ game
 // Done by extending ClockwiseSweepPolygon
 
 import { log } from "./module.js";
-import { MODULE_ID, SHAPE_KEY, CUSTOM_EDGES_KEY } from "./const.js";
+import { MODULE_ID, SHAPE_KEY, CUSTOM_EDGES_KEY, ROTATION_KEY } from "./const.js";
 
 
 export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
+
+  initialize(origin, config) {
+    super.initialize(origin, config);
+    
+    const cfg = this.config;
+    cfg.shape = cfg.source.object.document.getFlag(MODULE_ID, SHAPE_KEY) || "circle";
+    cfg.rotation = cfg.source.object.document.getFlag(MODULE_ID, ROTATION_KEY) || cfg.rotation;
+    
+  }
 
   /**
    * Compute the polygon given a point origin and radius
@@ -29,7 +38,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     
   /** @inheritdoc */
   _compute() {
-    const { hasLimitedRadius, source } = this.config;
+    const { hasLimitedRadius, shape } = this.config;
 
     // Step 1 - Identify candidate edges
     this._identifyEdges();
@@ -42,9 +51,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     // (needed radius to detect if intersections w/in radius for Step 2)
     // (don't need radius padding in Step 3 b/c not a circle)
     // For light mask, find the light data
-    log(`Source:`, source);
-    const drop_padding = hasLimitedRadius &&
-                         source.object.document.getFlag(MODULE_ID, SHAPE_KEY) !== "circle";
+    const drop_padding = hasLimitedRadius && shape !== "circle";
                         
     if(drop_padding) {
       const cfg = this.config;
@@ -64,7 +71,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   * @private
   */
   _identifyEdges() {
-    const {type, hasLimitedAngle, hasLimitedRadius, source} = this.config;
+    const {type, hasLimitedAngle, hasLimitedRadius, shape} = this.config;
 
     // Add edges for placed Wall objects
     const walls = this._getWalls();
@@ -90,7 +97,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     }
     
     // Don't use radius limitation if the shape is "none"
-    const trim_radius = source.object.document.getFlag(MODULE_ID, SHAPE_KEY) !== "none";
+    const trim_radius = shape !== "none";
 
     // Constrain edges to a limited radius
     // we want this even if we have added geometric shape edges b/c we can still trim
@@ -106,11 +113,8 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   * Adds geometric edges for the shape specified by the lightMask flag.
   * @param {AmbientLight} light
   */
-  _addGeometricEdges() {
-    const source = this.config.source;
-    
-    const shape = source.object.document.getFlag(MODULE_ID, SHAPE_KEY);
-    if(!shape) { return; }
+  _addGeometricEdges() {    
+    const shape = this.config.shape;
    
     log(`Adding walls for ${shape}.`);
     const angles = [];
@@ -194,7 +198,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   */
   constructGeometricStarWalls(outside_angles) {
     const origin = this.origin; 
-    const rotation = this.config.rotation ?? 0;
+    const rotation = this.config.rotation;
     const radius = Math.max(this.config.radius - 1, 0);
     const ln = outside_angles.length;
         

@@ -1,0 +1,21 @@
+<fieldset>
+  <legend>{{ localize "lightmask.AmbientLightConfiguration.LegendTitle" }}</legend>
+  
+    <div class="form-group">
+      <label for="lightmask.shapes">{{ localize "lightmask.AmbientLightConfiguration.Shapes.Name" }}</label>
+      <select id="lightmask.shapes" name="flags.lightmask.shape">
+        {{ selectOptions shapes selected=data.flags.lightmask.shape localize=true }}
+      </select>  
+    </div>
+        
+    <div class="form-group">
+      <label>{{ localize "lightmask.AmbientLightConfiguration.CachedWallID.Name" }}</label>
+      <input name="flags.lightmask.customWallIDs" type="text" data-dtype="text" value={{ data.flags.lightmask.customWallIDs }}>
+    </div>
+    
+    <div class="form-group">
+      <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientLightConfiguration.CachedWallID.Button" }}</button>
+    </div>  
+   
+  </legend>
+</fieldset>

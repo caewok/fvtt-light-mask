@@ -1,3 +1,6 @@
+## 0.1.0
+Require Foundry 9.233 to avoid wall selection issues with 9.232. 
+
 ## 0.0.4
 Added equivalent geometric shapes and custom walls for sound objects. Switched to using templates to render the object configuration additions and added localization. 
 

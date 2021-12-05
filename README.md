@@ -30,6 +30,7 @@ None.
 # Usage
 
 Open the configuration for an Ambient Light in the scene and look for the Light Mask portion in the Advanced Options tab. For Ambient Sounds, the configuration is in the bottom of the main configuration screen. (Sounds do not currently have tabbed configurations.)
+
 <img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_custom_ids.jpg" width="400" alt="Light Configuration Advanced Settings">
 
 ## Change geometric shape of the light/sound border
@@ -85,6 +86,3 @@ This example shows how you could edit a simple fire pit to bound the light on al
 - Improve speed for rendering the line-of-sight polygon.
 - Provide a preview when the user adds or modifies temporary walls.
 - Switch the inside radius (bright --> dim transition) to match the chosen shape.
-√ Offer the same options for ambient sounds.
-
-

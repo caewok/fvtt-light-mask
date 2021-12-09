@@ -44,8 +44,7 @@ Hooks.once(`init`, async function() {
   game.modules.get(MODULE_ID).api = {
     LightMaskClockwiseSweepPolygon: LightMaskClockwiseSweepPolygon,
     controlledWallIDs: controlledWallIDs,
-    benchmark: lightMaskBenchmarkSight,
-    fix_border_edges: true
+    benchmark: lightMaskBenchmarkSight
   }
   
   CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;

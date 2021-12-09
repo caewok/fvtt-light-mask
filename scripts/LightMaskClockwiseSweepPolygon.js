@@ -54,10 +54,8 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     const drop_padding = hasLimitedRadius && shape !== "circle";
                         
     if(drop_padding) {
-      const cfg = this.config;
-      cfg.radius = undefined; 
-      this.initialize(this.origin, cfg);
-    }         
+      this.config.hasLimitedRadius = false;
+    }       
 
     // Step 3 - Radial sweep over endpoints
     this._executeSweep();

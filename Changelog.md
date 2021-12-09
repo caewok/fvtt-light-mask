@@ -1,3 +1,6 @@
+## 0.1.1
+Fix potential bug when using limited angle lights or sounds. 
+
 ## 0.1.0
 Require Foundry 9.233 to avoid wall selection issues with 9.232. 
 

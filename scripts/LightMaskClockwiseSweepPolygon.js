@@ -112,7 +112,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   * @param {AmbientLight} light
   */
   _addGeometricEdges() {    
-    const shape = this.config.shape;
+    const { shape } = this.config;
    
     log(`Adding walls for ${shape}.`);
     const angles = [];
@@ -142,7 +142,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     
     const poly_walls = star ? this.constructGeometricStarWalls(angles) : 
                               this.constructGeometricShapeWalls(angles);
-    
+        
     // for tracking intersections
     // don't need to compare against each other b/c we know these boundaries
     // do not intersect.
@@ -248,14 +248,15 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     
     log(`${edges_cache.length} custom edges to add.`);
     edges_cache.forEach(data => {
-       log(`Adding custom edge ${data._id}`);
-       const edge = new LightMaskPolygonEdge({ x: data.c[0], y: data.c[1] },
+      log(`Adding custom edge ${data._id}`);
+      const edge = new LightMaskPolygonEdge({ x: data.c[0], y: data.c[1] },
                                              { x: data.c[2], y: data.c[3] },
                                              data[type]);
-       // for tracking intersections                             
-       const edges_array = Array.from(this.edges);
-       edge.identifyIntersections(edges_array);                              
-       this.edges.add(edge);
+                                                                                          
+      // for tracking intersections                             
+      const edges_array = Array.from(this.edges);
+      edge.identifyIntersections(edges_array);                              
+      this.edges.add(edge);
     });
   } 
     
@@ -329,6 +330,8 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
    * @private
    */
   _identifyIntersections(wallEdgeMap) {
+    const { hasLimitedAngle, rMin, rMax } = this.config;
+     
     const processed = new Set();
     const o = this.origin;
     for ( let edge of this.edges ) {
@@ -350,7 +353,14 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
         // Register the intersection point as a vertex
         let v = PolygonVertex.fromPoint(i);
         if ( this.vertices.has(v.key) ) v = this.vertices.get(v.key);
-        else this.vertices.set(v.key, v);
+        else {
+          // if limited angle, test for inclusion
+          if(hasLimitedAngle) {      
+            v._inLimitedAngle = this.constructor.pointBetweenRays(v, rMin, rMax);
+          } 
+          
+          this.vertices.set(v.key, v);
+        }
         if ( !v.edges.has(edge) ) v.attachEdge(edge, 0);
         if ( !v.edges.has(other) ) v.attachEdge(other, 0);
       }

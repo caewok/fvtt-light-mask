@@ -474,7 +474,7 @@ class LightMaskPolygonEdge extends PolygonEdge {
   * @type {Point}
   */
   get leftEndpoint() {
-    if(this._leftEndpoint === undefined) {
+    if(typeof this._leftEndpoint === "undefined") {
       const is_left = compareXY(this.A, this.B) === -1;
       this._leftEndpoint = is_left ? this.A : this.B;
       this._rightEndpoint = is_left ? this.B : this.A;
@@ -487,7 +487,7 @@ class LightMaskPolygonEdge extends PolygonEdge {
   * @type {Point}
   */
   get rightEndpoint() {
-    if(this._rightEndpoint === undefined) {
+    if(typeof this._rightEndpoint === "undefined") {
       this._leftEndpoint = undefined;
       this.leftEndpoint; // trigger endpoint identification
     }

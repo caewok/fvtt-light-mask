@@ -2,32 +2,40 @@
   <legend>{{ localize "lightmask.AmbientSoundConfiguration.LegendTitle" }}</legend>
   
     <div class="form-group">
-        <label>{{ localize "LIGHT.Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
-        <div class="form-fields">
-          {{ rangePicker name="flags.lightmask.rotation" value=data.flags.lightmask.rotation min="0" max="360" }}
-        </div>
+      <label>{{ localize "LIGHT.Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
+      <div class="form-fields">
+        {{ rangePicker name="flags.lightmask.rotation" value=data.flags.lightmask.rotation min="0" max="360" }}
+      </div>
     </div>
   
     <div class="form-group">
       <label for="lightmask.shapes">{{ localize "lightmask.AmbientSoundConfiguration.Shapes.Name" }}</label>
-      <select id="lightmask.shapes" name="flags.lightmask.shape">
-        {{ selectOptions shapes selected=data.flags.lightmask.shape localize=true }}
-      </select>  
+      <div class="form-fields">
+        <select id="lightmask.shapes" name="flags.lightmask.shape">
+          {{ selectOptions shapes selected=data.flags.lightmask.shape localize=true }}
+        </select>  
+      </div>
     </div>
         
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Name" }}</label>
-      <input name="flags.lightmask.customWallIDs" type="text" data-dtype="text" value={{ data.flags.lightmask.customWallIDs }}>
+      <div class="form-fields">
+        <input name="flags.lightmask.customWallIDs" type="text" data-dtype="text" value={{ data.flags.lightmask.customWallIDs }}>
+      </div>
+      <p class="hint">{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Hint" }}</p>
     </div>
     
-    <div class="form-group">
-      <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Button" }}</button>
-    </div>  
     
     <div class="form-group">
       <label>{{localize "lightmask.AmbientSoundConfiguration.Relative.Name"}}
       <input type="checkbox" name="flags.lightmask.relative" {{ checked data.flags.lightmask.relative }}/>
+      <p class="hint">{{ localize "lightmask.AmbientSoundConfiguration.Relative.Hint" }}</p>
     </div>
+    
+    <div class="form-group">
+      <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Button.Name" }}</button>
+      <p class="hint">{{ localize "lightmask.AmbientLightConfiguration.CachedWallID.Button.Hint" }}</p>
+    </div>  
    
   </legend>
 </fieldset>

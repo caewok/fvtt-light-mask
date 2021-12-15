@@ -3,6 +3,7 @@
     "lightmask.AmbientLightConfiguration.Shapes.Name": "Shapes",
     "lightmask.AmbientLightConfiguration.CachedWallID.Name": "Custom cached wall IDs",
     "lightmask.AmbientLightConfiguration.CachedWallID.Button": "Cache selected walls",
+    "lightmask.AmbientLightConfiguration.Relative.Name": "Custom Walls Relative to Light",
     
     "lightmask.Circle": "Circle",
     "lightmask.Triangle": "Triangle",
@@ -16,5 +17,7 @@
     "lightmask.AmbientSoundConfiguration.LegendTitle": "Light Mask",
     "lightmask.AmbientSoundConfiguration.Shapes.Name": "Shapes",
     "lightmask.AmbientSoundConfiguration.CachedWallID.Name": "Custom cached wall IDs",
-    "lightmask.AmbientSoundConfiguration.CachedWallID.Button": "Cache selected walls"
+    "lightmask.AmbientSoundConfiguration.CachedWallID.Button": "Cache selected walls",
+    "lightmask.AmbientSoundConfiguration.Relative.Name": "Custom Walls Relative to Sound"
+    
 }

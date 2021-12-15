@@ -23,6 +23,11 @@
     <div class="form-group">
       <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Button" }}</button>
     </div>  
+    
+    <div class="form-group">
+      <label>{{localize "lightmask.AmbientSoundConfiguration.Relative.Name"}}
+      <input type="checkbox" name="flags.lightmask.relative" {{ checked data.flags.lightmask.relative }}/>
+    </div>
    
   </legend>
 </fieldset>

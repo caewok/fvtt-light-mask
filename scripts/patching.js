@@ -1,6 +1,7 @@
 /* globals
 libWrapper,
 AmbientLightConfig,
+AmbientSoundConfig
 */
 
 `use strict`;
@@ -8,7 +9,7 @@ AmbientLightConfig,
 // Patches
 
 //import { lightMaskGetSubmitData } from "./getSubmitData.js";
-import { lightMaskActivateListeners, lightMaskOnAddWallIDs } from "./renderAmbientLightConfig.js";
+import { lightMaskActivateListeners, lightMaskOnAddWallIDs, lightMaskOnCheckRelative } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
 // import { log } from "./module.js";
 
@@ -27,6 +28,18 @@ Object.defineProperty(AmbientLightConfig.prototype, "_onAddWallIDs", {
 
 Object.defineProperty(AmbientSoundConfig.prototype, "_onAddWallIDs", {
   value: lightMaskOnAddWallIDs,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(AmbientLightConfig.prototype, "_onCheckRelative", {
+  value: lightMaskOnCheckRelative,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(AmbientSoundConfig.prototype, "_onCheckRelative", {
+  value: lightMaskOnCheckRelative,
   writable: true,
   configurable: true
 });

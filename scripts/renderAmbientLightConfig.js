@@ -131,6 +131,7 @@ export function lightMaskActivateListeners(wrapped, html) {
 //     log(`saveWallsButton clicked!`, event);
 //   });
    html.on('click', '.saveWallsButton', this._onAddWallIDs.bind(this));
+   html.on('click', '.lightmaskRelativeCheckbox', this._onCheckRelative.bind(this));
 }
 
 /**

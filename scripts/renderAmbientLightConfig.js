@@ -8,8 +8,9 @@ renderTemplate
 
 'use strict';
 
-import { MODULE_ID, CUSTOM_IDS_KEY } from "./const.js";
+import { MODULE_ID, CUSTOM_IDS_KEY, CUSTOM_EDGES_KEY, RELATIVE_KEY, ORIGIN_KEY } from "./const.js";
 import { log } from "./module.js";
+import { lightMaskUpdateCustomEdgeCache } from "./preUpdateAmbientLight.js";
 
 
 /**
@@ -53,24 +54,51 @@ export async function lightMaskRenderAmbientLightConfig(app, html, data) {
  * @param {PointerEvent} event    The originating click event
  */
 export async function lightMaskOnAddWallIDs(event) {
-  log(`lightMaskOnAddWallIDs`, event);
+  log(`lightMaskOnAddWallIDs`, event, this);
   
   const ids_to_add = controlledWallIDs();
   if(!ids_to_add) return;
   log(`Ids to add: ${ids_to_add}`);
   
   // somehow change the data and refresh...
+  this.document.update({ [`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`]: ids_to_add });
   
+  let edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
+  this.document.update({ [ `flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`]: edges_cache });
+   
   
-  const newData = {};
-  newData[`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`] = ids_to_add;
-  const previewData = this._getSubmitData(newData);
-  log(`previewData`, previewData);
-  
-  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  // const newData = { [`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`]: ids_to_add };
+//   const previewData = this._getSubmitData(newData);
+//   log(`previewData`, previewData);
+//   
+//   foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
   
   this.render();
   //this._refresh();
+}
+
+export async function lightMaskOnCheckRelative(event) {
+  log(`lightMaskOnCheckRelative`, event, this);
+  
+  if(!event.target.checked) { return; } // can ignore if relative is now unchecked
+  
+  // cache the object origin
+  const new_origin = { x: this.object.data.x, 
+                       y: this.object.data.y };
+  
+  log(`lightMaskOnCheckRelative new origin ${new_origin.x}, ${new_origin.y}`);                     
+  
+  this.document.update({ [`flags.${MODULE_ID}.${ORIGIN_KEY}`]: new_origin });
+  
+  // const newData = { [`flags.${MODULE_ID}.${ORIGIN_KEY}`]: { x: this.object.data.x, 
+//                                                             y: this.object.data.y } };
+//   const previewData = this._getSubmitData(newData);
+//   log(`previewData`, previewData);
+//   
+//   foundry.utils.mergeObject(this.document.data, previewData2, {inplace: true});
+  
+//   this.render();
 }
 
 /** 

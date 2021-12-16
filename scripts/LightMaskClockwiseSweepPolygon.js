@@ -248,7 +248,7 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
     
     log(`${edges_cache.length} custom edges to add.`);
     edges_cache.forEach(data => {
-      log(`Adding custom edge ${data._id}`);
+      log(`Adding custom edge ${data.id}`);
       const edge = new LightMaskPolygonEdge({ x: data.c[0], y: data.c[1] },
                                              { x: data.c[2], y: data.c[3] },
                                              data[type]);

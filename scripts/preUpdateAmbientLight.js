@@ -74,7 +74,7 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   doc.data.update({ [`flags.${MODULE_ID}`]: updateObj });
 }
 
-function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
+export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
    if(!custom_ids || custom_ids === "") {
     // no custom ids, clear existing mapping
     edges_cache = [];

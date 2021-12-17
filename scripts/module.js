@@ -70,6 +70,22 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
   registerPackageDebugFlag(MODULE_ID);
 });
 
+/**
+ * Redraw lights/sounds once the canvas is loaded
+ * Cannot use walls to draw lights/sounds until canvas.walls.quadtree is loaded.
+ */
+Hooks.on("canvasReady", async (canvas) => {
+  log(`Refreshing templates on canvasReady.`);
+  canvas.lighting.placeables.forEach(l => {
+    // t.refresh();
+    l.updateSource();
+  });
+  
+  canvas.sounds.placeables.forEach(s => {
+    // t.refresh();
+    s.updateSource(); 
+  });
+});
 
 /**
  * Add controls to the ambient light configuration

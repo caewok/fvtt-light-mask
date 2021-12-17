@@ -1,6 +1,4 @@
 /* globals
-isObjectEmpty,
-updateObject,
 canvas
 */
 
@@ -26,52 +24,50 @@ import { log } from "./module.js";
 export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   log(`Hooking preUpdateAmbientLight ${id}!`, doc, new_data, options);
   
-  const updateObj = {};
-  let edges_cache = doc.data.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
-  if(new_data?.flags?.[MODULE_ID]?.[CUSTOM_IDS_KEY]) {
-    // add custom wall ids
-    const custom_ids = new_data.flags?.[MODULE_ID]?.[CUSTOM_IDS_KEY] || "";
-    //let edges_cache = doc.data.flags?.[MODULE_ID]?.[CUSTOM_EDGES_KEY] || [];
-  
-    log(`preUpdateAmbientLight ids are ${custom_ids} with cache size ${edges_cache.length}.`);
-    edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids)
-  
-    updateObj[CUSTOM_EDGES_KEY] = edges_cache;
+  const ids_to_add = new_data?.flags?.[MODULE_ID]?.[CUSTOM_IDS_KEY];
+  if(ids_to_add) {
+    // retrieve the existing cache, if any
+//     let edges_cache = doc.data.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+    let edges_cache = doc.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+    log(`edges_cache length ${edges_cache.length} before additions`, edges_cache);
+    edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
     
-    log(`preUpdateAmbientLight updating cache size ${edges_cache.length}`, edges_cache, updateObj);
+    // add the edges cache  
+    new_data[`flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`] = edges_cache;
   }
   
-  if(new_data?.flags?.[MODULE_ID]?.[RELATIVE_KEY]) {
-    // if relative is being set to true:
-    // - store origin
-    const new_origin = { x: doc.data.x, y: doc.data.y };
-    log(`preUpdateAmbientLight setting origin flag to ${new_origin.x}, ${new_origin.y}.`);
-    updateObj[ORIGIN_KEY] = new_origin;
-  }
- 
-  if(doc.data.document.getFlag(MODULE_ID, RELATIVE_KEY) &&  
-     Object.prototype.hasOwnProperty.call(new_data, "x")) {
-    // if relative is true:
-    // - get the x,y delta between new_data.x, new_data.y and the stored origin
-    // - change wall coordinates based on delta, if any
-    // - update the stored origin
-    const new_origin = { x: new_data.x || doc.data.x, y: new_data.y || doc.data.y };
-    const old_origin = doc.data.document.getFlag(MODULE_ID, ORIGIN_KEY) || new_origin;
-    log(`preUpdateAmbientLight setting origin flag to ${new_origin.x}, ${new_origin.y}, from ${old_origin.x}, ${old_origin.y}.`);
-    if(new_origin.x !== old_origin.x || new_origin.y !== old_origin.y) {
-      const delta = { dx: new_origin.x - old_origin.x, dy: new_origin.y - old_origin.y };
-      log(`preUpdateAmbientLight delta is ${delta.dx}, ${delta.dy}`);
+  // if relative is being set to true: store origin
+  // if x or y is being updated, update the origin if relative is already true
+  const relative_key = new_data?.flags?.[MODULE_ID]?.[RELATIVE_KEY];
+ //  const origin_updated = Object.prototype.hasOwnProperty.call(new_data, "x") || 
+//                          Object.prototype.hasOwnProperty.call(new_data, "y");
+//                          
+//   const update_origin = relative_key || 
+//     ( doc.getFlag(MODULE_ID, RELATIVE_KEY) && origin_updated );
       
-      edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);    
-      updateObj[ORIGIN_KEY] = new_origin;
-      updateObj[CUSTOM_EDGES_KEY] = edges_cache;
-    }  
+  if(relative_key) {
+    // prefer the new origin position, if any  
+    const new_origin = { x: new_data?.x || doc.data.x, 
+                         y: new_data?.y || doc.data.y };
+    log(`preUpdateAmbientLight updating origin to ${new_origin.x}, ${new_origin.y}`);
+    
+    new_data[`flags.${MODULE_ID}.${ORIGIN_KEY}`] = new_origin;
+  } else if(relative_key === false) {
+    // set the wall locations based on the last origin because when the user unchecks
+    // relative, we want the walls to stay at the last relative position (not their
+    // original position)
+    // theoretically possible, but unlikely, that edges cache was modified above
+    let edges_cache = new_data?.flags?.[MODULE_ID]?.[CUSTOM_EDGES_KEY] || doc.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];    
+    const new_origin = { x: new_data?.x || doc.data.x, 
+                         y: new_data?.y || doc.data.y };
+    
+    const stored_origin = doc.getFlag(MODULE_ID, ORIGIN_KEY) || new_origin;
+    const delta = { dx: new_origin.x - stored_origin.x, 
+                    dy: new_origin.y - stored_origin.y };
+    
+    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
+    new_data[`flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`] = edges_cache;
   }
-  
-  if(isObjectEmpty(updateObj)) return;
-  
-  log(`preUpdateAmbientLight updating using object`, updateObj);
-  doc.data.update({ [`flags.${MODULE_ID}`]: updateObj });
 }
 
 export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
@@ -116,7 +112,7 @@ export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
   return edges_cache; 
 }
 
-function lightMaskShiftCustomEdgeCache(edges_cache, delta) {
+export function lightMaskShiftCustomEdgeCache(edges_cache, delta) {
   log(`lightMaskShiftCustomEdgeCache delta is ${delta.dx}, ${delta.dy}`, edges_cache);
   edges_cache.forEach(e => {
     e.c[0] = e.c[0] + delta.dx;

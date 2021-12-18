@@ -71,6 +71,8 @@ For ease of use, a button allows you to add selected walls. To do so, open the l
 
 This allows you, for example, to create a border around a pool of water or a fire pit, add a light, and ensure that the light remains solely within the border you designate. By then deleting the walls after, you can still allowing token movement over the area and token vision of the light. 
 
+You can also check the "Relative" checkbox to make cached walls move with the light/sound object. So, for example, if you want "ice-cream cone" lights, you can cache two walls to form a "V" on a circle light to make the circle the ice cream sitting on the cone, then check relative so that if you drag your ice-cream cone light around, it keeps its shape.
+
 See the fire pit video below for an example of setting custom walls.
 
 # Example Videos

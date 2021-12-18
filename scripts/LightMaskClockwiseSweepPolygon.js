@@ -15,7 +15,12 @@ game
 // Done by extending ClockwiseSweepPolygon
 
 import { log } from "./module.js";
-import { MODULE_ID, SHAPE_KEY, CUSTOM_EDGES_KEY, ROTATION_KEY } from "./const.js";
+import { MODULE_ID, 
+         SHAPE_KEY, 
+         CUSTOM_EDGES_KEY, 
+         ROTATION_KEY, 
+         RELATIVE_KEY, 
+         ORIGIN_KEY } from "./const.js";
 
 
 export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
@@ -242,16 +247,28 @@ export class LightMaskClockwiseSweepPolygon extends ClockwiseSweepPolygon {
   */
   _addCustomEdges() {
     const { type, source } = this.config;
+    const current_origin = this.origin;
     
     const edges_cache = source.object.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY);
     if(!edges_cache || edges_cache.length === 0) return;
     
-    log(`${edges_cache.length} custom edges to add.`);
+    const is_relative = source.object.document.getFlag(MODULE_ID, RELATIVE_KEY);
+    const stored_origin = is_relative ? 
+                            (source.object.document.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin) : 
+                            current_origin;
+    
+    log(`_addCustomEdges origin ${stored_origin.x}, ${stored_origin.y} --> ${current_origin.x}, ${current_origin.y}`);    
+    const delta = { dx: current_origin.x - stored_origin.x, 
+                    dy: current_origin.y - stored_origin.y };
+    
+    log(`_addCustomEdges ${edges_cache.length} custom edges to add.`);
     edges_cache.forEach(data => {
-      log(`Adding custom edge ${data._id}`);
-      const edge = new LightMaskPolygonEdge({ x: data.c[0], y: data.c[1] },
-                                             { x: data.c[2], y: data.c[3] },
-                                             data[type]);
+      log(`_addCustomEdges Adding custom edge ${data.id}`);
+      const edge = new LightMaskPolygonEdge({ x: data.c[0] + delta.dx, 
+                                              y: data.c[1] + delta.dy },
+                                            { x: data.c[2] + delta.dx, 
+                                              y: data.c[3] + delta.dy },
+                                            data[type]);
                                                                                           
       // for tracking intersections                             
       const edges_array = Array.from(this.edges);
@@ -474,7 +491,7 @@ class LightMaskPolygonEdge extends PolygonEdge {
   * @type {Point}
   */
   get leftEndpoint() {
-    if(this._leftEndpoint === undefined) {
+    if(typeof this._leftEndpoint === "undefined") {
       const is_left = compareXY(this.A, this.B) === -1;
       this._leftEndpoint = is_left ? this.A : this.B;
       this._rightEndpoint = is_left ? this.B : this.A;
@@ -487,7 +504,7 @@ class LightMaskPolygonEdge extends PolygonEdge {
   * @type {Point}
   */
   get rightEndpoint() {
-    if(this._rightEndpoint === undefined) {
+    if(typeof this._rightEndpoint === "undefined") {
       this._leftEndpoint = undefined;
       this.leftEndpoint; // trigger endpoint identification
     }

@@ -8,8 +8,10 @@ renderTemplate
 
 'use strict';
 
-import { MODULE_ID, CUSTOM_IDS_KEY } from "./const.js";
+import { MODULE_ID, CUSTOM_IDS_KEY, CUSTOM_EDGES_KEY, ORIGIN_KEY } from "./const.js";
 import { log } from "./module.js";
+import { lightMaskUpdateCustomEdgeCache, 
+         lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";
 
 
 /**
@@ -53,24 +55,58 @@ export async function lightMaskRenderAmbientLightConfig(app, html, data) {
  * @param {PointerEvent} event    The originating click event
  */
 export async function lightMaskOnAddWallIDs(event) {
-  log(`lightMaskOnAddWallIDs`, event);
+  log(`lightMaskOnAddWallIDs`, event, this);
   
   const ids_to_add = controlledWallIDs();
   if(!ids_to_add) return;
   log(`Ids to add: ${ids_to_add}`);
   
   // somehow change the data and refresh...
+//   this.document.update({ [`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`]: ids_to_add });
   
+  let edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
+//   this.document.update({ [ `flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`]: edges_cache });
+   
   
-  const newData = {};
-  newData[`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`] = ids_to_add;
+  const newData = { [`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`]: ids_to_add,
+                    [ `flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`]: edges_cache };
   const previewData = this._getSubmitData(newData);
-  log(`previewData`, previewData);
-  
+//   log(`previewData`, previewData);
+//   
   foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
   
   this.render();
   //this._refresh();
+}
+
+export async function lightMaskOnCheckRelative(event) {
+  log(`lightMaskOnCheckRelative`, event, this);
+  
+  const current_origin = { x: this.object.data.x, 
+                           y: this.object.data.y }
+  const newData = {};
+  if(event.target.checked) { 
+    // update with the new origin
+    log(`lightMaskOnCheckRelative current origin ${current_origin.x}, ${current_origin}`);                     
+    newData[`flags.${MODULE_ID}.${ORIGIN_KEY}`] = current_origin;
+  
+  } else {
+    // set the wall locations based on the last origin because when the user unchecks
+    // relative, we want the walls to stay at the last relative position (not their
+    // original position)
+    let edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+    const stored_origin = this.document.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin;
+    const delta = { dx: current_origin.x - stored_origin.x, 
+                    dy: current_origin.y - stored_origin.y };
+    
+    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
+    newData[`flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`] = edges_cache;
+  }
+     
+  const previewData = this._getSubmitData(newData); 
+  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true}); 
+  this.render();
 }
 
 /** 
@@ -103,6 +139,7 @@ export function lightMaskActivateListeners(wrapped, html) {
 //     log(`saveWallsButton clicked!`, event);
 //   });
    html.on('click', '.saveWallsButton', this._onAddWallIDs.bind(this));
+   html.on('click', '.lightmaskRelativeCheckbox', this._onCheckRelative.bind(this));
 }
 
 /**

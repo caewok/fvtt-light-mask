@@ -20,6 +20,10 @@ import { findIntersectionsBruteRedBlack } from "./IntersectionsBrute.js";
 import { findIntersectionsSortSingle } from "./IntersectionsSort.js";
 import { LimitedAngleSweepPolygon } from "./LimitedAngle.js";
 
+// This import is needed only to check for lightmask properties and if not present,
+// fall back on default ClockwiseSweep. Could in theory run this ClockwiseSweep for all.
+import { MODULE_ID, SHAPE_KEY, CUSTOM_EDGES_KEY } from "../const.js";
+
 /*
 Basic concept:
 1. Custom shapes for light/sight/sound can be represented using temporary walls added
@@ -59,20 +63,24 @@ vertexOutsideBoundary: True if the vertex does not cross and is not contained by
 
 
 export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
-  constructor(...args) {
-    super(...args);
+  // constructor same as ClockwiseSweep
 
-    /**
-     * A mapping of PolygonEdges which define potential boundaries of the polygon.
-     * Keyed by edge.id, which may be equivalent to wall.id.
-     * PolygonEdge represents both existing walls and temporary edges added in this
-     * sweep class. To be able to link existing wall intersections with these edges,
-     * this.edges must be a Map, not a Set.
-     * @type {EdgeMap}
-     */
-    this.edges = new Map(); // ** NEW ** //
+  /**
+   * Check for whether LightMask is necessary and if not, fall back on default
+   * ClockwiseSweep.
+   * @override
+   * @param {Point} origin                          The origin source point
+   * @param {PointSourcePolygonConfig} [config={}]  Configuration options which customize the polygon computation
+   * @returns {PointSourcePolygon}                  The computed polygon instance
+   */
+  static create(origin, config = {}) {
+    const cso = config?.source?.object;
+    if (!cso || !(cso.document.getFlag(MODULE_ID, SHAPE_KEY)
+                 || cso.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY))) {
+      return ClockwiseSweepPolygon.create(origin, config);
+    }
 
-    this.collisions = []; // ** NEW ** Collisions formatted as [{x, y}, ...]
+    return super.create(origin, config);
   }
 
   /* -------------------------------------------- */
@@ -85,6 +93,19 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
   initialize(origin, config) {
     super.initialize(origin, {...config}); // For benchmark & debugging, it can be problematic if the original config object is modified
     const cfg = this.config;
+
+    // Edges and collisions originally in constructor, but moved here so as not to
+    // interfere with default ClockwiseSweep.
+    /**
+     * A mapping of PolygonEdges which define potential boundaries of the polygon.
+     * Keyed by edge.id, which may be equivalent to wall.id.
+     * PolygonEdge represents both existing walls and temporary edges added in this
+     * sweep class. To be able to link existing wall intersections with these edges,
+     * this.edges must be a Map, not a Set.
+     * @type {EdgeMap}
+     */
+    this.edges = new Map(); // ** NEW ** //
+    this.collisions = []; // ** NEW ** Collisions formatted as [{x, y}, ...]
 
     console.log(`LightMask initialize ${cfg.source.id} with radius ${cfg.radius}, rotation ${cfg.rotation}, and origin ${this.origin.x}, ${this.origin.y}`, cfg.source);
 
@@ -108,8 +129,6 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
         && cfg.source.object.boundaryPolygon(this.origin, cfg.radius, cfg.rotation));
       cfg.tempEdges ||= (cfg.source.object?.customEdges && cfg.source.object.customEdges(this.origin));
     }
-
-
 
     // Reset certain configuration values from what ClockwiseSweep did.
 
@@ -196,6 +215,7 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
 
   /** @inheritdoc */
   _compute() {
+
     // Step 1 - Identify candidate edges
     this._identifyEdges();
 

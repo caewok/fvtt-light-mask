@@ -3,11 +3,11 @@
 */
 "use strict";
 
-import { findIntersectionsSortSingle } from "./findIntersectionsSort.js";
-import { identifyIntersectionsWithNoEndpoint } from "./utilities.js";
-import { LightMaskPolygonEdge } from "./LightMaskPolygonEdge.js";
-import { MODULE_ID, log } from "./module.js";
-import { RELATIVE_KEY, ORIGIN_KEY, CUSTOM_EDGES_KEY } from "./const.js";
+import { findIntersectionsSortSingle } from "./ClockwiseSweep/IntersectionsSort.js";
+import { identifyIntersectionsWithNoEndpoint } from "./ClockwiseSweep/utilities.js";
+import { SimplePolygonEdge } from "./ClockwiseSweep/SimplePolygonEdge.js";
+import { log } from "./module.js";
+import { RELATIVE_KEY, ORIGIN_KEY, CUSTOM_EDGES_KEY, MODULE_ID } from "./const.js";
 
 /*
 Likely easiest if ClockwiseSweep checks the source object for a method to get a
@@ -28,7 +28,7 @@ Thus, it is assumed that this _customEdgeData function will access this, the sou
  * Added to the source as a method and then trigged by ClockwiseSweep.
  * Returns data used to construct edges: start point, end point, type
  */
-export function _customEdges(current_origin) {
+export function customEdges(current_origin) {
   // See class LightSource and initialize method
 
   const type = this.sourceType; // Or this.los.type? or passed parameter?
@@ -49,11 +49,11 @@ export function _customEdges(current_origin) {
   const edges = [];
   edges_cache.forEach(data => {
     log(`_addCustomEdges Adding custom edge ${data.id}`);
-    const edge = new LightMaskPolygonEdge({ x: data.c[0] + delta.dx,
-                                            y: data.c[1] + delta.dy }, // eslint-disable-line indent
-                                          { x: data.c[2] + delta.dx,   // eslint-disable-line indent
-                                            y: data.c[3] + delta.dy }, // eslint-disable-line indent
-                                          data[type]);                 // eslint-disable-line indent
+    const edge = new SimplePolygonEdge({ x: data.c[0] + delta.dx,
+                                         y: data.c[1] + delta.dy }, // eslint-disable-line indent
+                                       { x: data.c[2] + delta.dx,   // eslint-disable-line indent
+                                         y: data.c[3] + delta.dy }, // eslint-disable-line indent
+                                       data[type]);                 // eslint-disable-line indent
     edges.push(edge);
   });
 

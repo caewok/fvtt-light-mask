@@ -8,10 +8,18 @@ CONFIG
 'use strict';
 
 import { MODULE_ID } from "./const.js";
+
 import { registerLightMask } from "./patching.js";
-import { LightMaskClockwiseSweepPolygon } from "./LightMaskClockwiseSweepPolygon.js";
+import { registerPIXIPolygonMethods } from "./ClockwiseSweep/PIXIPolygon.js";
+import { registerPIXIRectangleMethods } from "./ClockwiseSweep/PIXIRectangle.js";
+import { registerPIXICircleMethods } from "./ClockwiseSweep/PIXICircle.js";
+import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge.js";
+
+import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
 import { lightMaskRenderAmbientLightConfig, controlledWallIDs } from "./renderAmbientLightConfig.js";
 import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
+
+import * as ClipperLib from "./ClockwiseSweep/clipper_unminified.js"; // eslint-disable-line no-unused-vars
 
 /**
  * Log message only when debug flag is enabled from DevMode module.
@@ -23,8 +31,8 @@ export function log(...args) {
     if( isDebugging ) {
       console.log(MODULE_ID, `|`, ...args);
     }
-  } catch (e) { 
-    // empty 
+  } catch (e) {
+    // empty
   }
 }
 
@@ -32,26 +40,30 @@ export function log(...args) {
 
 async function lightMaskBenchmarkSight(n=1000, ...args) {
   await benchmarkSight(n, ...args);
-  await LightMaskClockwiseSweepPolygon.benchmark(n, ...args);
+  await LightMaskClockwisePolygonSweep.benchmark(n, ...args);
 }
 
 
 Hooks.once(`init`, async function() {
   log(`Initializing...`);
-  
+
   registerLightMask();
-  
+  registerPIXIPolygonMethods();
+  registerPIXIRectangleMethods();
+  registerPIXICircleMethods();
+  registerPolygonVertexMethods();
+
   game.modules.get(MODULE_ID).api = {
-    LightMaskClockwiseSweepPolygon: LightMaskClockwiseSweepPolygon,
+    LightMaskClockwisePolygonSweep: LightMaskClockwisePolygonSweep,
     controlledWallIDs: controlledWallIDs,
     benchmark: lightMaskBenchmarkSight
   }
-  
-  CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;
+
+  CONFIG.Canvas.losBackend = LightMaskClockwisePolygonSweep;
 
   // CONFIG.Canvas.losBackend = game.modules.get(`lightmask`).api.LightMaskClockwiseSweepPolygon
   // game.modules.get(`lightmask`).api.controlledWallIDs()
-   
+
 });
 
 Hooks.once(`setup`, async function() {
@@ -80,10 +92,10 @@ Hooks.on("canvasReady", async (canvas) => {
     // t.refresh();
     l.updateSource();
   });
-  
+
   canvas.sounds.placeables.forEach(s => {
     // t.refresh();
-    s.updateSource(); 
+    s.updateSource();
   });
 });
 

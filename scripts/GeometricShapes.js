@@ -1,6 +1,7 @@
 /* globals
-
-
+PIXI,
+Ray,
+foundry
 */
 "use strict";
 
@@ -19,22 +20,22 @@ To be used as callback functions in ClockwiseSweep.
 export class RegularPolygon extends PIXI.Polygon {
   // Keep the PIXI.Polygon constructor as a private constructor
 
- /**
-  * Construct a regular polygon given specific parameters.
-  * @param {Number} sides       Number of sides.
-  * @param {Point}  origin      Center of the polygon.
-  * @param {Number} radius      Distance from origin to each vertex of the polygon.
-  * @param {Number} rotation    Angle in degrees describing rotation from due east.
-  * @return {RegularPolygon}
-  */
+  /**
+   * Construct a regular polygon given specific parameters.
+   * @param {Number} sides       Number of sides.
+   * @param {Point}  origin      Center of the polygon.
+   * @param {Number} radius      Distance from origin to each vertex of the polygon.
+   * @param {Number} rotation    Angle in degrees describing rotation from due east.
+   * @return {RegularPolygon}
+   */
   static build(sides, origin, radius, rotation = 0) {
-    if(sides < 3) {
+    if (sides < 3) {
       console.error("RegularPolygon must have at least 3 sides.");
       return;
     }
 
     const angles = Array(sides).fill(360).map((deg, idx) => (deg / sides) * idx);
-    const pts = geometricShapePoints(angles, origin, radius, rotation)
+    const pts = geometricShapePoints(angles, origin, radius, rotation);
     return new this(pts);
   }
 }
@@ -49,24 +50,24 @@ export class RegularPolygon extends PIXI.Polygon {
  * Both 3-points and 4-points are rejected as invalid.
  */
 export class RegularStar extends PIXI.Polygon {
- // Keep the PIXI.Polygon constructor as a private constructor
+  // Keep the PIXI.Polygon constructor as a private constructor
 
- /**
-  * Construct a regular star polygon given specific parameters.
-  * @param {Number} points      Number of points.
-  * @param {Point}  origin      Center of the polygon.
-  * @param {Number} radius      Distance from origin to each vertex of the polygon.
-  * @param {Number} rotation    Angle in degrees describing rotation from due east.
-  * @return {RegularPolygon}
-  */
+  /**
+   * Construct a regular star polygon given specific parameters.
+   * @param {Number} points      Number of points.
+   * @param {Point}  origin      Center of the polygon.
+   * @param {Number} radius      Distance from origin to each vertex of the polygon.
+   * @param {Number} rotation    Angle in degrees describing rotation from due east.
+   * @return {RegularPolygon}
+   */
   static build(points, origin, radius, rotation = 0) {
-    if(points < 5) {
+    if (points < 5) {
       console.error("RegularStarPolygon must have at least 5 points.");
       return;
     }
 
     const outside_angles = Array(points).fill(360).map((deg, idx) => (deg / points) * idx);
-    const outside_pts = geometricShapePoints(outside_angles, origin, radius, rotation)
+    const outside_pts = geometricShapePoints(outside_angles, origin, radius, rotation);
 
     // Construct the segments connecting the outside points to form a star.
     const diagonals = outside_pts.map((pt, idx) => {
@@ -84,8 +85,8 @@ export class RegularStar extends PIXI.Polygon {
     // Walk the star along diagonals to form the
     const pts = [];
     diagonals.forEach((d, idx) => {
-      // diagonal goes A1 -- x1 -- y1 -- B1
-      // for 5 points, we have:
+      // Diagonal goes A1 -- x1 -- y1 -- B1
+      // For 5 points, we have:
       // A1 -- x1 -- A2 -- x2 -- A3 -- x3 -- A4 -- x4 -- A5 -- x5
       pts.push(d.A, ix[idx]);
     });

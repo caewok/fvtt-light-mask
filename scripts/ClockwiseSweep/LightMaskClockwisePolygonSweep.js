@@ -128,6 +128,16 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
       cfg.boundaryPolygon ||= (cfg.source.object?.boundaryPolygon
         && cfg.source.object.boundaryPolygon(this.origin, cfg.radius, cfg.rotation));
       cfg.tempEdges ||= (cfg.source.object?.customEdges && cfg.source.object.customEdges(this.origin));
+
+      // If boundaryPolygon is "none", then drop any limited circle boundary
+      // This will cause the boundary to be "none"
+      if(cfg.boundaryPolygon === "none") {
+        cfg.boundaryPolygon = undefined;
+        cfg.hasLimitedRadius = false;
+//         cfg.radius = canvas.dimensions.maxR;   // not used in this LightMaskClockwisePolygonSweep
+        // cfg.radius2 = Math.pow(cfg.radius, 2); // not used in this LightMaskClockwisePolygonSweep
+//         cfg.radiusE = 0.5 / cfg.radius;        // not used in this LightMaskClockwisePolygonSweep
+      }
     }
 
     // Reset certain configuration values from what ClockwiseSweep did.

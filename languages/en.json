@@ -1,15 +1,20 @@
 {
-    "lightmask.AmbientLightConfiguration.LegendTitle": "Light Mask",
-    "lightmask.AmbientLightConfiguration.Shapes.Name": "Shapes",
-    "lightmask.AmbientLightConfiguration.CachedWallID.Name": "Cached wall IDs",
-    "lightmask.AmbientLightConfiguration.CachedWallID.Hint": "Comma-separated list of wall ids to cache for this light.",
-    "lightmask.AmbientLightConfiguration.CachedWallID.Button.Name": "Cache selected walls",
-    "lightmask.AmbientLightConfiguration.CachedWallID.Button.Hint": "Switch to the Walls Layer and select walls to cache, then hit 'Cache selected walls' to cache those walls.",
-    
-    "lightmask.AmbientLightConfiguration.Relative.Name": "Relative",
-    "lightmask.AmbientLightConfiguration.Relative.Hint": "Make cached walls move relative to the light when the light is moved.",
-    
-    
+    "lightmask.AmbientConfiguration.LegendTitle": "Light Mask",
+    "lightmask.AmbientConfiguration.Shapes.Name": "Shape",
+
+    "lightmask.AmbientConfiguration.CachedWallID.Name": "Cached wall IDs",
+    "lightmask.AmbientConfiguration.CachedWallID.Hint.Light": "Comma-separated list of wall ids to cache for this light.",
+    "lightmask.AmbientConfiguration.CachedWallID.Hint.Sound": "Comma-separated list of wall ids to cache for this sound.",
+    "lightmask.AmbientConfiguration.CachedWallID.Button.Name": "Cache selected walls",
+    "lightmask.AmbientConfiguration.CachedWallID.Button.Hint": "Switch to the Walls Layer and select walls to cache, then hit 'Cache selected walls' to cache those walls.",
+
+    "lightmask.AmbientConfiguration.Relative.Name": "Relative",
+    "lightmask.AmbientConfiguration.Relative.Hint.Light": "Make cached walls move relative to the light when this light is moved.",
+    "lightmask.AmbientConfiguration.Relative.Hint.Sound": "Make cached walls move relative to the sound when this sound is moved.",
+
+    "lightmask.AmbientConfiguration.NumSides.Name": "Sides/Points (if applicable)",
+    "lightmask.AmbientConfiguration.NumSides.Hint": "Min 3 for Regular Polygon; 5 for Regular Star; Ignored otherwise.",
+
     "lightmask.Circle": "Circle",
     "lightmask.Triangle": "Triangle",
     "lightmask.Square": "Square",
@@ -18,16 +23,6 @@
     "lightmask.Hexagon": "Hexagon",
     "lightmask.Hexagram": "Hexagram",
     "lightmask.None": "None",
-    
-    "lightmask.AmbientSoundConfiguration.LegendTitle": "Light Mask",
-    "lightmask.AmbientSoundConfiguration.Shapes.Name": "Shapes",
-    
-    "lightmask.AmbientSoundConfiguration.CachedWallID.Name": "Cached wall IDs",
-    "lightmask.AmbientSoundConfiguration.CachedWallID.Hint": "Comma-separated list of wall ids to cache for this sound.",
-    "lightmask.AmbientSoundConfiguration.CachedWallID.Button.Name": "Cache selected walls",
-    "lightmask.AmbientSoundConfiguration.CachedWallID.Button.Hint": "Switch to the Walls Layer and select walls to cache, then hit 'Cache selected walls' to cache those walls",
-    "lightmask.AmbientSoundConfiguration.Relative.Name": "Relative",
-    "lightmask.AmbientSoundConfiguration.Relative.Hint": "Make cached walls move relative to the sound when the sound is moved."
-    
-    
+    "lightmask.RegularPolygon": "Regular Polygon",
+    "lightmask.RegularStar": "Regular Star"
 }

@@ -3,7 +3,7 @@ PIXI
 */
 "use strict";
 
-import { SHAPE_KEY, ROTATION_KEY, MODULE_ID } from "./const.js";
+import { SHAPE_KEY, ROTATION_KEY, MODULE_ID, SIDES_KEY } from "./const.js";
 import { log } from "./module.js";
 import { RegularPolygon, RegularStar } from "./GeometricShapes.js";
 
@@ -22,24 +22,19 @@ export function boundaryPolygon(origin, radius, rotation = 0) {
   // TO-DO: Replace with sides/points and type circle, regular polygon or star or none
   // TO-DO: Add ellipse option
   const shape = this.document.getFlag(MODULE_ID, SHAPE_KEY) || "circle";
-  rotation = this.document.getFlag(MODULE_ID, ROTATION_KEY) || rotation; // Is this necessary?
+  const sides = this.document.getFlag(MODULE_ID, SIDES_KEY) || 3;
+  rotation = this.document.getFlag(MODULE_ID, ROTATION_KEY) || rotation; // Is this necessary? Possibly for sounds.
 
   log(`Using boundaryPolygon ${shape} at origin ${origin.x},${origin.y} with radius ${radius} and rotation ${rotation}`);
   switch (shape) {
-    case "circle": return undefined;//new PIXI.Circle(origin.x, origin.y, radius);
+    case "circle": return undefined; // Or new PIXI.Circle(origin.x, origin.y, radius);
 
-    case "triangle": return RegularPolygon.build(3, origin, radius, rotation);
+    case "polygon": return RegularPolygon.build(Math.max(3, sides), origin, radius, rotation);
 
-    case "square": return RegularPolygon.build(4, origin, radius, rotation);
+    case "star": return RegularStar.build(Math.max(5, sides), origin, radius, rotation);
 
-    case "pentagon": return RegularPolygon.build(5, origin, radius, rotation);
-
-    case "hexagon": return RegularPolygon.build(6, origin, radius, rotation);
-
-    case "pentagram": return RegularStar.build(5, origin, radius, rotation);
-
-    case "hexagram": return RegularStar.build(6, origin, radius, rotation);
-
-    case "none": return undefined;
+    case "none": return "none";
   }
 }
+
+

@@ -39,10 +39,25 @@ export async function lightMaskRenderAmbientLightConfig(app, html, data) {
                    `modules/${MODULE_ID}/templates/light-mask-ambient-sound-config.html` :
                    `modules/${MODULE_ID}/templates/light-mask-ambient-light-config.html`;
   const myHTML = await renderTemplate(template, data)
-
   log(`config rendered HTML`, myHTML);
 
   html.find(".form-group").last().after(myHTML);
+
+//   const shapes = html[0].querySelector("#lightmaskshapes.lightmaskShapes");
+//   const sides = html[0].querySelector("#lightmasksides");
+//   console.log(`lightMaskActivateListeners shapes`, shapes);
+//   console.log(`lightMaskActivateListeners sides`, sides);
+//
+//   shapes?.addEventListener("change", () => {
+//     console.log(`Event listener for shapes: ${shapes.value}`);
+//     switch (shapes.value) {
+//       case "Regular Star":
+//         sides.setAttribute("min", 5);
+//         break;
+//       default:
+//         sides.setAttribute("min", 3);
+//     }
+//   });
 }
 
 /**
@@ -109,7 +124,7 @@ export async function lightMaskOnCheckRelative(event) {
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
  */
 export function lightMaskActivateListeners(wrapped, html) {
-  log(`lightMaskActivateListeners`, html, this);
+  log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
 
   // this makes the config panel close but does not call _onAddWallIDs:
   // html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
@@ -119,7 +134,8 @@ export function lightMaskActivateListeners(wrapped, html) {
   //saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
 
   wrapped(html);
-  log(`lightMaskActivateListeners after`, html);
+  log(`lightMaskActivateListeners after is length ${html[0].length}`, html);
+
 
   // this makes the config panel close but does not call _onAddWallIDs:
   //html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
@@ -134,8 +150,26 @@ export function lightMaskActivateListeners(wrapped, html) {
 //   html.on('click', '.saveWallsButton', (event) => {
 //     log(`saveWallsButton clicked!`, event);
 //   });
-   html.on('click', '.saveWallsButton', this._onAddWallIDs.bind(this));
-   html.on('click', '.lightmaskRelativeCheckbox', this._onCheckRelative.bind(this));
+  html.on('click', '.saveWallsButton', this._onAddWallIDs.bind(this));
+  html.on('click', '.lightmaskRelativeCheckbox', this._onCheckRelative.bind(this));
+  html.on('change', '.lightmaskShapes', event => {
+    console.log("\nShape changed!\n", event);
+    //const shapes = html[0].querySelector("#lightmaskshapes.lightmaskShapes");
+    //const sides = html[0].querySelector("#lightmasksides");
+    const shapes = html[0].querySelector("#lightmaskshapes");
+    const sides = html[0].querySelector("#lightmasksides");
+    console.log(`lightMaskActivateListeners shapes`, shapes);
+    console.log(`lightMaskActivateListeners sides`, sides);
+    console.log(`Event listener for shapes: ${shapes.value}`);
+    switch (shapes.value) {
+      case "star":
+        sides.setAttribute("min", 5);
+        if(parseInt(sides.value) < 5) { sides.setAttribute("value", 5); }
+        break;
+      default:
+        sides.setAttribute("min", 3);
+    }
+  });
 }
 
 /**

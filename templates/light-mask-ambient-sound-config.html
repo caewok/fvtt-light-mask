@@ -11,7 +11,7 @@
     <div class="form-group">
       <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
       <div class="form-fields">
-        <select id="lightmask.shapes" name="flags.lightmask.shape">
+        <select id="lightmaskshapes" name="flags.lightmask.shape">
           {{ selectOptions shapes selected=data.flags.lightmask.shape localize=true }}
         </select>
       </div>
@@ -20,7 +20,7 @@
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
-        <input type="number" name="flags.lightmask.sides" step="1" min="3" value={{ data.flags.lightmask.sides }}>
+        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="3" value={{ data.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumSides.Hint" }}</p>
     </div>

@@ -57,6 +57,14 @@ export async function lightMaskRenderAmbientLightConfig(app, html, data) {
 
   html.find(".form-group").last().after(myHTML);
 
+  // Get the existing HTML element and application data used for rendering
+  const element = app.element;
+
+  // Store scroll positions
+  if ( element.length ) app._saveScrollPositions(element);
+  app._restoreScrollPositions(html);
+
+
 //   const shapes = html[0].querySelector("#lightmaskshapes.lightmaskShapes");
 //   const sides = html[0].querySelector("#lightmasksides");
 //   console.log(`lightMaskActivateListeners shapes`, shapes);

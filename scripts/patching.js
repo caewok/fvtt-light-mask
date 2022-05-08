@@ -8,7 +8,7 @@ AmbientSoundConfig
 
 // Patches
 
-import { lightMaskActivateListeners } from "./renderAmbientLightConfig.js";
+import { lightMaskActivateListeners, lightMaskDefaultOptions } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
@@ -18,6 +18,8 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
   libWrapper.register(MODULE_ID, `AmbientSoundConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
 
+  libWrapper.register(MODULE_ID, `AmbientLightConfig.defaultOptions`, lightMaskDefaultOptions, 'WRAPPER');
+  libWrapper.register(MODULE_ID, `AmbientSoundConfig.defaultOptions`, lightMaskDefaultOptions, 'WRAPPER');
 }
 
 Object.defineProperty(AmbientLight.prototype, "boundaryPolygon", {

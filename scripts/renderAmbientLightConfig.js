@@ -15,6 +15,20 @@ import { lightMaskUpdateCustomEdgeCache,
 
 
 /**
+ * Add scrollY option to preserve scroll location when changing shape categories.
+ */
+export function lightMaskDefaultOptions(wrapped) {
+  const options = wrapped();
+
+  // Create a Set for existing scrollY so we only add new items, preserve existing.
+  const scrollYSet = new Set(options.scrollY);
+  scrollYSet.add("#lightmaskshapes");
+  options.scrollY = [...scrollYSet];
+
+  return options;
+}
+
+/**
  * Inject html to add controls to the ambient light configuration:
  * 1. Drop-down to select different shapes as the radius border.
  * 2. Text box so user can add comma-separated list of wall ids to use as custom edges.

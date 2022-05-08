@@ -8,7 +8,7 @@ AmbientSoundConfig
 
 // Patches
 
-import { lightMaskActivateListeners, lightMaskOnAddWallIDs, lightMaskOnCheckRelative } from "./renderAmbientLightConfig.js";
+import { lightMaskActivateListeners } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
@@ -19,30 +19,6 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, `AmbientSoundConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
 
 }
-
-Object.defineProperty(AmbientLightConfig.prototype, "_onAddWallIDs", {
-  value: lightMaskOnAddWallIDs,
-  writable: true,
-  configurable: true
-});
-
-Object.defineProperty(AmbientSoundConfig.prototype, "_onAddWallIDs", {
-  value: lightMaskOnAddWallIDs,
-  writable: true,
-  configurable: true
-});
-
-Object.defineProperty(AmbientLightConfig.prototype, "_onCheckRelative", {
-  value: lightMaskOnCheckRelative,
-  writable: true,
-  configurable: true
-});
-
-Object.defineProperty(AmbientSoundConfig.prototype, "_onCheckRelative", {
-  value: lightMaskOnCheckRelative,
-  writable: true,
-  configurable: true
-});
 
 Object.defineProperty(AmbientLight.prototype, "boundaryPolygon", {
   value: boundaryPolygon,

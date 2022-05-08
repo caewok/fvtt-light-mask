@@ -17,6 +17,7 @@
       </div>
     </div>
 
+    {{#if data.flags.lightmask.isPolygon }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
@@ -24,6 +25,17 @@
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumSides.Hint" }}</p>
     </div>
+    {{/if}}
+
+    {{#if data.flags.lightmask.isStar }}
+    <div class="form-group">
+      <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
+      <div class="form-fields">
+        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="5" value={{ data.flags.lightmask.sides }}>
+      </div>
+      <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
+    </div>
+    {{/if}}
 
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.CachedWallID.Name" }}</label>

@@ -12,8 +12,10 @@
     "lightmask.AmbientConfiguration.Relative.Hint.Light": "Make cached walls move relative to the light when this light is moved.",
     "lightmask.AmbientConfiguration.Relative.Hint.Sound": "Make cached walls move relative to the sound when this sound is moved.",
 
-    "lightmask.AmbientConfiguration.NumSides.Name": "Sides/Points (if applicable)",
-    "lightmask.AmbientConfiguration.NumSides.Hint": "Min 3 for Regular Polygon; 5 for Regular Star; Ignored otherwise.",
+    "lightmask.AmbientConfiguration.NumSides.Name": "Sides",
+    "lightmask.AmbientConfiguration.NumSides.Hint": "Min 3 for Regular Polygon",
+    "lightmask.AmbientConfiguration.NumPoints.Name": "Points",
+    "lightmask.AmbientConfiguration.NumPoints.Hint": "Min 5 for Regular Star",
 
     "lightmask.Circle": "Circle",
     "lightmask.Triangle": "Triangle",

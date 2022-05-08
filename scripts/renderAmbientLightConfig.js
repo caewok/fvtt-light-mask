@@ -8,7 +8,7 @@ renderTemplate
 
 'use strict';
 
-import { MODULE_ID, CUSTOM_IDS_KEY, CUSTOM_EDGES_KEY, ORIGIN_KEY } from "./const.js";
+import { MODULE_ID, CUSTOM_IDS_KEY, CUSTOM_EDGES_KEY, ORIGIN_KEY, SIDES_KEY } from "./const.js";
 import { log } from "./module.js";
 import { lightMaskUpdateCustomEdgeCache,
          lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";
@@ -120,6 +120,8 @@ export async function lightMaskOnCheckRelative(event) {
   this.render();
 }
 
+
+
 /**
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
  */
@@ -152,24 +154,27 @@ export function lightMaskActivateListeners(wrapped, html) {
 //   });
   html.on('click', '.saveWallsButton', this._onAddWallIDs.bind(this));
   html.on('click', '.lightmaskRelativeCheckbox', this._onCheckRelative.bind(this));
-  html.on('change', '.lightmaskShapes', event => {
-    console.log("\nShape changed!\n", event);
-    //const shapes = html[0].querySelector("#lightmaskshapes.lightmaskShapes");
-    //const sides = html[0].querySelector("#lightmasksides");
-    const shapes = html[0].querySelector("#lightmaskshapes");
-    const sides = html[0].querySelector("#lightmasksides");
-    console.log(`lightMaskActivateListeners shapes`, shapes);
-    console.log(`lightMaskActivateListeners sides`, sides);
-    console.log(`Event listener for shapes: ${shapes.value}`);
-    switch (shapes.value) {
-      case "star":
-        sides.setAttribute("min", 5);
-        if(parseInt(sides.value) < 5) { sides.setAttribute("value", 5); }
-        break;
-      default:
-        sides.setAttribute("min", 3);
-    }
-  });
+  html.on('change', '#lightmaskshapes', updateShapeIndicator.bind(this));
+}
+
+function updateShapeIndicator(event) {
+  log("updateShapeIndicator", event, this);
+  const shape = event.target.value;
+  const newData = {};
+  newData[`flags.${MODULE_ID}.isCircle`] = shape === "circle" || shape === "none";
+  newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
+  newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
+
+  const num_sides = this.document.getFlag(MODULE_ID, SIDES_KEY);
+  if(shape === "polygon" && (!num_sides || num_sides < 3)) {
+    newData[`flags.${MODULE_ID}.${SIDES_KEY}`] = 3;
+  } else if(shape === "star" && (!num_sides || num_sides < 5)) {
+    newData[`flags.${MODULE_ID}.${SIDES_KEY}`] = 5;
+  }
+
+  const previewData = this._getSubmitData(newData);
+  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  this.render();
 }
 
 /**

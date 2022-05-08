@@ -27,7 +27,7 @@ export function boundaryPolygon(origin, radius, rotation = 0) {
 
   log(`Using boundaryPolygon ${shape} at origin ${origin.x},${origin.y} with radius ${radius} and rotation ${rotation}`);
   switch (shape) {
-    case "circle": return undefined; // Or new PIXI.Circle(origin.x, origin.y, radius);
+    case "circle": return new PIXI.Circle(origin.x, origin.y, radius);
 
     case "polygon": return RegularPolygon.build(Math.max(3, sides), origin, radius, rotation);
 

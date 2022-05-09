@@ -322,4 +322,10 @@ export function registerPIXIRectangleMethods() {
     writable: true,
     configurable: true
   });
+
+  Object.defineProperty(PIXI.Rectangle.prototype, "getBounds", {
+    value: () => this,
+    writable: true,
+    configurable: true
+  });
 }

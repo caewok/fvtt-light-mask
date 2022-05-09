@@ -153,3 +153,13 @@ function orient2dPixelLine(ray, c) {
 
   return (orientation2 < cutoff) ? 0 : orientation;
 }
+
+/**
+ * Calculate the distance squared between two points
+ * @param {Point} a
+ * @param {Point} b
+ * @return {Number}
+ */
+export function distanceSquared(a, b) {
+  return Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2);
+}

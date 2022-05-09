@@ -1,10 +1,10 @@
 /* globals
 libWrapper,
-AmbientLightConfig,
-AmbientSoundConfig
+AmbientLight,
+AmbientSound
 */
 
-`use strict`;
+"use strict";
 
 // Patches
 
@@ -14,9 +14,8 @@ import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
 
 export function registerLightMask() {
-  //libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype._getSubmitData`, lightMaskGetSubmitData, 'WRAPPER');
-  libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
-  libWrapper.register(MODULE_ID, `AmbientSoundConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
 
 }
 

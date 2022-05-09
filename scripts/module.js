@@ -5,7 +5,7 @@ benchmarkSight,
 CONFIG
 */
 
-'use strict';
+"use strict";
 
 import { MODULE_ID } from "./const.js";
 
@@ -27,16 +27,14 @@ import * as ClipperLib from "./ClockwiseSweep/clipper_unminified.js"; // eslint-
  */
 export function log(...args) {
   try {
-    const isDebugging = game.modules.get(`_dev-mode`)?.api?.getPackageDebugValue(MODULE_ID);
-    if( isDebugging ) {
-      console.log(MODULE_ID, `|`, ...args);
+    const isDebugging = game.modules.get("_dev-mode")?.api?.getPackageDebugValue(MODULE_ID);
+    if (isDebugging) {
+      console.log(MODULE_ID, "|", ...args);
     }
-  } catch (e) {
-    // empty
+  } catch(e) {
+    // Empty
   }
 }
-
-
 
 async function lightMaskBenchmarkSight(n=1000, ...args) {
   await benchmarkSight(n, ...args);
@@ -44,8 +42,8 @@ async function lightMaskBenchmarkSight(n=1000, ...args) {
 }
 
 
-Hooks.once(`init`, async function() {
-  log(`Initializing...`);
+Hooks.once("init", async function() {
+  log("Initializing...");
 
   registerLightMask();
   registerPIXIPolygonMethods();
@@ -57,28 +55,17 @@ Hooks.once(`init`, async function() {
     LightMaskClockwisePolygonSweep: LightMaskClockwisePolygonSweep,
     controlledWallIDs: controlledWallIDs,
     benchmark: lightMaskBenchmarkSight
-  }
+  };
 
   CONFIG.Canvas.losBackend = LightMaskClockwisePolygonSweep;
-
-  // CONFIG.Canvas.losBackend = game.modules.get(`lightmask`).api.LightMaskClockwiseSweepPolygon
-  // game.modules.get(`lightmask`).api.controlledWallIDs()
-
 });
 
-Hooks.once(`setup`, async function() {
-  log(`Setup...`);
-});
-
-Hooks.once(`ready`, async function() {
-  log(`Ready...`);
-})
 
 /**
  * Tell DevMode that we want a flag for debugging this module.
  * https://github.com/League-of-Foundry-Developers/foundryvtt-devMode
  */
-Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
+Hooks.once("devModeReady", ({ registerPackageDebugFlag }) => {
   registerPackageDebugFlag(MODULE_ID);
 });
 
@@ -86,15 +73,13 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
  * Redraw lights/sounds once the canvas is loaded
  * Cannot use walls to draw lights/sounds until canvas.walls.quadtree is loaded.
  */
-Hooks.on("canvasReady", async (canvas) => {
-  log(`Refreshing templates on canvasReady.`);
+Hooks.on("canvasReady", async canvas => {
+  log("Refreshing templates on canvasReady.");
   canvas.lighting.placeables.forEach(l => {
-    // t.refresh();
     l.updateSource();
   });
 
   canvas.sounds.placeables.forEach(s => {
-    // t.refresh();
     s.updateSource();
   });
 });
@@ -106,7 +91,6 @@ Hooks.on("renderAmbientLightConfig", (app, html, data) => {
   lightMaskRenderAmbientLightConfig(app, html, data);
 
 });
-
 
 Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
@@ -120,10 +104,6 @@ Hooks.on("renderAmbientSoundConfig", (app, html, data) => {
 
 });
 
-
 Hooks.on("preUpdateAmbientSound", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
-
-
-

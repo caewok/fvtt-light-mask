@@ -107,7 +107,7 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
     this.edges = new Map(); // ** NEW ** //
     this.collisions = []; // ** NEW ** Collisions formatted as [{x, y}, ...]
 
-    console.log(`LightMask initialize ${cfg.source.id} with radius ${cfg.radius}, rotation ${cfg.rotation}, and origin ${this.origin.x}, ${this.origin.y}`, cfg.source);
+    console.log(`LightMask initialize ${cfg.source?.id} with radius ${cfg.radius}, rotation ${cfg.rotation}, and origin ${this.origin.x}, ${this.origin.y}`, cfg.source);
 
     // Testing method of intersection
     cfg.findIntersectionsSingle ||= findIntersectionsSortSingle;
@@ -168,8 +168,8 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
     // Ensure any user-provided boundaryPolygon is valid
     // - must contain the origin
     // - must be closed
-    if (!this.validateBoundaryPolygon()) {
-      console.warn("ClockwiseSweep: boundaryPolygon not valid.", cfg.boundaryPolygon);
+    if (cfg.boundaryPolygon && !this.validateBoundaryPolygon()) {
+      console.warn("ClockwiseSweep: boundaryPolygon not valid.");
       cfg.boundaryPolygon = undefined;
     }
 
@@ -841,19 +841,34 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
     // - have a toPolygon method
     let boundaryPolygon = this.config.boundaryPolygon;
 
+    if(!boundaryPolygon) {
+      // Should not happen, b/c validate is only called when there is a boundaryPolygon
+      console.log("ClockwiseSweep: boundaryPolygon undefined.");
+      return false;
+    }
+
     // Need to ensure the boundary encompasses the origin; otherwise intersect can fail
     // or may create holes.
-    if(!boundaryPolygon?.contains(this.origin.x, this.origin.y)) return false;
+    if(!boundaryPolygon?.contains(this.origin.x, this.origin.y)) {
+      console.log(`ClockwiseSweep: boundaryPolygon does not contain origin ${this.origin.x},${this.origin.y}.`, boundaryPolygon);
+      return false;
+    }
 
     // Bounds required to create bbox.
-    if(!("getBounds" in boundaryPolygon)) return false;
+    if(!("getBounds" in boundaryPolygon)) {
+      console.log("ClockwiseSweep: boundaryPolygon has no 'getBounds' method.", boundaryPolygon);
+      return false;
+    }
 
     if(boundaryPolygon instanceof PIXI.Polygon) {
       // Assumed that polygon creates a closed shape
       boundaryPolygon.close();
     } else if(!("intersectPolygon" in boundaryPolygon)) {
       this.config.boundaryPolygon = boundaryPolygon?.toPolygon();
-      if(!this.config.boundaryPolygon) { return false; }
+      if(!this.config.boundaryPolygon) {
+        console.log("ClockwiseSweep: boundaryPolygon has no 'toPolygon' or 'intersect' method.", boundaryPolygon);
+        return false;
+      }
     }
 
     return true;

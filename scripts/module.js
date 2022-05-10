@@ -14,6 +14,7 @@ import { registerPIXIPolygonMethods } from "./ClockwiseSweep/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./ClockwiseSweep/PIXIRectangle.js";
 import { registerPIXICircleMethods } from "./ClockwiseSweep/PIXICircle.js";
 import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge.js";
+import { registerSettings } from "./settings.js";
 
 import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
 import { lightMaskRenderAmbientLightConfig, controlledWallIDs } from "./renderAmbientLightConfig.js";
@@ -60,6 +61,10 @@ Hooks.once("init", async function() {
   CONFIG.Canvas.losBackend = LightMaskClockwisePolygonSweep;
 });
 
+Hooks.once("setup", async function() {
+  log("Setup...");
+  registerSettings();
+});
 
 /**
  * Tell DevMode that we want a flag for debugging this module.

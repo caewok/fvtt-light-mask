@@ -5,13 +5,22 @@ benchmarkSight,
 CONFIG
 */
 
-'use strict';
+"use strict";
 
 import { MODULE_ID } from "./const.js";
+
 import { registerLightMask } from "./patching.js";
-import { LightMaskClockwiseSweepPolygon } from "./LightMaskClockwiseSweepPolygon.js";
-import { lightMaskRenderAmbientLightConfig, controlledWallIDs } from "./renderAmbientLightConfig.js";
+import { registerPIXIPolygonMethods } from "./ClockwiseSweep/PIXIPolygon.js";
+import { registerPIXIRectangleMethods } from "./ClockwiseSweep/PIXIRectangle.js";
+import { registerPIXICircleMethods } from "./ClockwiseSweep/PIXICircle.js";
+import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge.js";
+import { registerSettings } from "./settings.js";
+
+import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
+import { controlledWallIDs } from "./renderAmbientLightConfig.js";
 import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
+
+import * as ClipperLib from "./ClockwiseSweep/clipper_unminified.js"; // eslint-disable-line no-unused-vars
 
 /**
  * Log message only when debug flag is enabled from DevMode module.
@@ -19,54 +28,49 @@ import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
  */
 export function log(...args) {
   try {
-    const isDebugging = game.modules.get(`_dev-mode`)?.api?.getPackageDebugValue(MODULE_ID);
-    if( isDebugging ) {
-      console.log(MODULE_ID, `|`, ...args);
+    const isDebugging = game.modules.get("_dev-mode")?.api?.getPackageDebugValue(MODULE_ID);
+    if (isDebugging) {
+      console.log(MODULE_ID, "|", ...args);
     }
-  } catch (e) { 
-    // empty 
+  } catch(e) {
+    // Empty
   }
 }
-
-
 
 async function lightMaskBenchmarkSight(n=1000, ...args) {
   await benchmarkSight(n, ...args);
-  await LightMaskClockwiseSweepPolygon.benchmark(n, ...args);
+  await LightMaskClockwisePolygonSweep.benchmark(n, ...args);
 }
 
 
-Hooks.once(`init`, async function() {
-  log(`Initializing...`);
-  
+Hooks.once("init", async function() {
+  log("Initializing...");
+
   registerLightMask();
-  
+  registerPIXIPolygonMethods();
+  registerPIXIRectangleMethods();
+  registerPIXICircleMethods();
+  registerPolygonVertexMethods();
+
   game.modules.get(MODULE_ID).api = {
-    LightMaskClockwiseSweepPolygon: LightMaskClockwiseSweepPolygon,
+    LightMaskClockwisePolygonSweep: LightMaskClockwisePolygonSweep,
     controlledWallIDs: controlledWallIDs,
     benchmark: lightMaskBenchmarkSight
-  }
-  
-  CONFIG.Canvas.losBackend = LightMaskClockwiseSweepPolygon;
+  };
 
-  // CONFIG.Canvas.losBackend = game.modules.get(`lightmask`).api.LightMaskClockwiseSweepPolygon
-  // game.modules.get(`lightmask`).api.controlledWallIDs()
-   
+  CONFIG.Canvas.losBackend = LightMaskClockwisePolygonSweep;
 });
 
-Hooks.once(`setup`, async function() {
-  log(`Setup...`);
+Hooks.once("setup", async function() {
+  log("Setup...");
+  registerSettings();
 });
-
-Hooks.once(`ready`, async function() {
-  log(`Ready...`);
-})
 
 /**
  * Tell DevMode that we want a flag for debugging this module.
  * https://github.com/League-of-Foundry-Developers/foundryvtt-devMode
  */
-Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
+Hooks.once("devModeReady", ({ registerPackageDebugFlag }) => {
   registerPackageDebugFlag(MODULE_ID);
 });
 
@@ -74,44 +78,22 @@ Hooks.once(`devModeReady`, ({ registerPackageDebugFlag }) => {
  * Redraw lights/sounds once the canvas is loaded
  * Cannot use walls to draw lights/sounds until canvas.walls.quadtree is loaded.
  */
-Hooks.on("canvasReady", async (canvas) => {
-  log(`Refreshing templates on canvasReady.`);
+Hooks.on("canvasReady", async canvas => {
+  log("Refreshing templates on canvasReady.");
   canvas.lighting.placeables.forEach(l => {
-    // t.refresh();
     l.updateSource();
   });
-  
+
   canvas.sounds.placeables.forEach(s => {
-    // t.refresh();
-    s.updateSource(); 
+    s.updateSource();
   });
 });
-
-/**
- * Add controls to the ambient light configuration
- */
-Hooks.on("renderAmbientLightConfig", (app, html, data) => {
-  lightMaskRenderAmbientLightConfig(app, html, data);
-
-});
-
 
 Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
-});
-
-/**
- * Add controls to the ambient sound configuration
- */
-Hooks.on("renderAmbientSoundConfig", (app, html, data) => {
-  lightMaskRenderAmbientLightConfig(app, html, data);
-
 });
 
 
 Hooks.on("preUpdateAmbientSound", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
-
-
-

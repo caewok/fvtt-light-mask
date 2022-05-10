@@ -1,45 +1,76 @@
 /* globals
 libWrapper,
-AmbientLightConfig,
-AmbientSoundConfig
+AmbientLight,
+AmbientSound,
+foundry
 */
 
-`use strict`;
+"use strict";
 
 // Patches
 
-//import { lightMaskGetSubmitData } from "./getSubmitData.js";
-import { lightMaskActivateListeners, lightMaskOnAddWallIDs, lightMaskOnCheckRelative } from "./renderAmbientLightConfig.js";
+import { lightMaskActivateListeners } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
-// import { log } from "./module.js";
+import { boundaryPolygon } from "./boundaryPolygon.js";
+import { customEdges } from "./customEdges.js";
 
 export function registerLightMask() {
-  //libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype._getSubmitData`, lightMaskGetSubmitData, 'WRAPPER');
-  libWrapper.register(MODULE_ID, `AmbientLightConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
-  libWrapper.register(MODULE_ID, `AmbientSoundConfig.prototype.activateListeners`, lightMaskActivateListeners, 'WRAPPER');
-  
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", switchAmbientLightTemplate, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", switchAmbientSoundTemplate, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 }
 
-Object.defineProperty(AmbientLightConfig.prototype, "_onAddWallIDs", {
-  value: lightMaskOnAddWallIDs,
+Object.defineProperty(AmbientLight.prototype, "boundaryPolygon", {
+  value: boundaryPolygon,
   writable: true,
   configurable: true
 });
 
-Object.defineProperty(AmbientSoundConfig.prototype, "_onAddWallIDs", {
-  value: lightMaskOnAddWallIDs,
+Object.defineProperty(AmbientSound.prototype, "boundaryPolygon", {
+  value: boundaryPolygon,
   writable: true,
   configurable: true
 });
 
-Object.defineProperty(AmbientLightConfig.prototype, "_onCheckRelative", {
-  value: lightMaskOnCheckRelative,
+Object.defineProperty(AmbientLight.prototype, "customEdges", {
+  value: customEdges,
   writable: true,
   configurable: true
 });
 
-Object.defineProperty(AmbientSoundConfig.prototype, "_onCheckRelative", {
-  value: lightMaskOnCheckRelative,
+Object.defineProperty(AmbientSound.prototype, "customEdges", {
+  value: customEdges,
   writable: true,
   configurable: true
 });
+
+
+function switchAmbientLightTemplate(wrapper) {
+  const cfg = wrapper();
+  cfg.template = `modules/${MODULE_ID}/templates/ambient-light-config-combined.html`;
+  return cfg;
+}
+
+function switchAmbientSoundTemplate(wrapper) {
+  const cfg = wrapper();
+  cfg.template = `modules/${MODULE_ID}/templates/sound-config-combined.html`;
+  return cfg;
+}
+
+function ambientSourceGetData(wrapper, options) {
+  const data = wrapper(options);
+
+  return foundry.utils.mergeObject(data, {
+    shapes: {
+      circle: "lightmask.Circle",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    }
+  });
+}

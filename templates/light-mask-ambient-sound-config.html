@@ -1,41 +1,61 @@
 <fieldset>
-  <legend>{{ localize "lightmask.AmbientSoundConfiguration.LegendTitle" }}</legend>
-  
+  <legend>{{ localize "lightmask.AmbientConfiguration.LegendTitle" }}</legend>
+
     <div class="form-group">
       <label>{{ localize "LIGHT.Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
       <div class="form-fields">
         {{ rangePicker name="flags.lightmask.rotation" value=data.flags.lightmask.rotation min="0" max="360" }}
       </div>
     </div>
-  
+
     <div class="form-group">
-      <label for="lightmask.shapes">{{ localize "lightmask.AmbientSoundConfiguration.Shapes.Name" }}</label>
+      <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
       <div class="form-fields">
-        <select id="lightmask.shapes" name="flags.lightmask.shape">
+        <select id="lightmaskshapes" name="flags.lightmask.shape">
           {{ selectOptions shapes selected=data.flags.lightmask.shape localize=true }}
-        </select>  
+        </select>
       </div>
     </div>
-        
+
+    {{#if data.flags.lightmask.isPolygon }}
     <div class="form-group">
-      <label>{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Name" }}</label>
+      <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
+      <div class="form-fields">
+        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="3" value={{ data.flags.lightmask.sides }}>
+      </div>
+      <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumSides.Hint" }}</p>
+    </div>
+    {{/if}}
+
+    {{#if data.flags.lightmask.isStar }}
+    <div class="form-group">
+      <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
+      <div class="form-fields">
+        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="5" value={{ data.flags.lightmask.sides }}>
+      </div>
+      <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
+    </div>
+    {{/if}}
+
+    <div class="form-group">
+      <label>{{ localize "lightmask.AmbientConfiguration.CachedWallID.Name" }}</label>
       <div class="form-fields">
         <input name="flags.lightmask.customWallIDs" type="text" data-dtype="text" value={{ data.flags.lightmask.customWallIDs }}>
       </div>
-      <p class="hint">{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Hint" }}</p>
+      <p class="hint">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Hint.Sound" }}</p>
     </div>
-    
-    
+
+
     <div class="form-group">
-      <label>{{localize "lightmask.AmbientSoundConfiguration.Relative.Name"}}
+      <label>{{localize "lightmask.AmbientConfiguration.Relative.Name"}}
       <input type="checkbox" class="lightmaskRelativeCheckbox" name="flags.lightmask.relative" {{ checked data.flags.lightmask.relative }}/>
-      <p class="hint">{{ localize "lightmask.AmbientSoundConfiguration.Relative.Hint" }}</p>
+      <p class="hint">{{ localize "lightmask.AmbientConfiguration.Relative.Hint.Sound" }}</p>
     </div>
-    
+
     <div class="form-group">
-      <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientSoundConfiguration.CachedWallID.Button.Name" }}</button>
-      <p class="hint">{{ localize "lightmask.AmbientLightConfiguration.CachedWallID.Button.Hint" }}</p>
-    </div>  
-   
+      <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Name" }}</button>
+      <p class="hint">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Hint" }}</p>
+    </div>
+
   </legend>
 </fieldset>

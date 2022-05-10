@@ -4,6 +4,8 @@ foundry,
 ClipperLib,
 */
 
+import { ClipperLib } from "./clipper_unminified.js";
+
 "use strict";
 
 /* Additions to the PIXI.Polygon class:

@@ -20,6 +20,7 @@ import { identifyIntersectionsWithNoEndpoint, lineBlocksPoint } from "./utilitie
 import { findIntersectionsBruteRedBlack } from "./IntersectionsBrute.js";
 import { findIntersectionsSortSingle } from "./IntersectionsSort.js";
 import { LimitedAngleSweepPolygon } from "./LimitedAngle.js";
+import { ClipperLib } from "./clipper_unminified.js";
 
 // This import is needed only to check for lightmask properties and if not present,
 // fall back on default ClockwiseSweep. Could in theory run this ClockwiseSweep for all.

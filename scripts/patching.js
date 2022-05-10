@@ -1,7 +1,8 @@
 /* globals
 libWrapper,
 AmbientLight,
-AmbientSound
+AmbientSound,
+foundry
 */
 
 "use strict";
@@ -17,6 +18,11 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
 
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", switchAmbientLightTemplate, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", switchAmbientSoundTemplate, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 }
 
 Object.defineProperty(AmbientLight.prototype, "boundaryPolygon", {
@@ -44,3 +50,27 @@ Object.defineProperty(AmbientSound.prototype, "customEdges", {
 });
 
 
+function switchAmbientLightTemplate(wrapper) {
+  const cfg = wrapper();
+  cfg.template = `modules/${MODULE_ID}/templates/ambient-light-config-combined.html`;
+  return cfg;
+}
+
+function switchAmbientSoundTemplate(wrapper) {
+  const cfg = wrapper();
+  cfg.template = `modules/${MODULE_ID}/templates/sound-config-combined.html`;
+  return cfg;
+}
+
+function ambientSourceGetData(wrapper, options) {
+  const data = wrapper(options);
+
+  return foundry.utils.mergeObject(data, {
+    shapes: {
+      circle: "lightmask.Circle",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    }
+  });
+}

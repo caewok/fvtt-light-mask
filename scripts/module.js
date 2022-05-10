@@ -20,8 +20,6 @@ import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockw
 import { controlledWallIDs } from "./renderAmbientLightConfig.js";
 import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
 
-import * as ClipperLib from "./ClockwiseSweep/clipper_unminified.js"; // eslint-disable-line no-unused-vars
-
 /**
  * Log message only when debug flag is enabled from DevMode module.
  * @param {Object[]} args  Arguments passed to console.log.

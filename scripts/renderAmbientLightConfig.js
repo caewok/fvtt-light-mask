@@ -2,8 +2,6 @@
 canvas,
 foundry,
 ui,
-AmbientSoundConfig,
-renderTemplate
 */
 
 "use strict";
@@ -14,37 +12,6 @@ import {
   lightMaskUpdateCustomEdgeCache,
   lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";
 
-
-/**
- * Inject html to add controls to the ambient light configuration:
- * 1. Drop-down to select different shapes as the radius border.
- * 2. Text box so user can add comma-separated list of wall ids to use as custom edges.
- * 3. Button so user can automatically add controlled walls as the custom edges.
- *
- * templates/scene/ambient-light-config.html
- * follows approach in https://github.com/erithtotl/wall-height/blob/master/scripts/wall-height.js
- */
-export async function lightMaskRenderAmbientLightConfig(app, html, data) {
-  const is_sound = Boolean(app instanceof AmbientSoundConfig);
-
-  log(`Hooking ${is_sound ? "renderAmbientSoundConfig!" : "renderAmbientLightConfig!"}`, app, html, data);
-
-  data.shapes = {
-    circle: "lightmask.Circle",
-    polygon: "lightmask.RegularPolygon",
-    star: "lightmask.RegularStar",
-    none: "lightmask.None"
-  };
-
-  const template = is_sound
-    ? `modules/${MODULE_ID}/templates/light-mask-ambient-sound-config.html`
-    : `modules/${MODULE_ID}/templates/light-mask-ambient-light-config.html`;
-
-  const myHTML = await renderTemplate(template, data);
-  log("config rendered HTML", myHTML);
-
-  html.find(".form-group").last().after(myHTML);
-}
 
 /**
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.

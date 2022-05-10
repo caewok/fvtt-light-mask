@@ -17,7 +17,7 @@ import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge
 import { registerSettings } from "./settings.js";
 
 import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
-import { lightMaskRenderAmbientLightConfig, controlledWallIDs } from "./renderAmbientLightConfig.js";
+import { controlledWallIDs } from "./renderAmbientLightConfig.js";
 import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
 
 import * as ClipperLib from "./ClockwiseSweep/clipper_unminified.js"; // eslint-disable-line no-unused-vars
@@ -89,25 +89,10 @@ Hooks.on("canvasReady", async canvas => {
   });
 });
 
-/**
- * Add controls to the ambient light configuration
- */
-Hooks.on("renderAmbientLightConfig", (app, html, data) => {
-  lightMaskRenderAmbientLightConfig(app, html, data);
-
-});
-
 Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
 
-/**
- * Add controls to the ambient sound configuration
- */
-Hooks.on("renderAmbientSoundConfig", (app, html, data) => {
-  lightMaskRenderAmbientLightConfig(app, html, data);
-
-});
 
 Hooks.on("preUpdateAmbientSound", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);

@@ -13,6 +13,7 @@ import { lightMaskActivateListeners } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
+import { log } from "./module.js";
 
 export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
@@ -77,17 +78,15 @@ function switchAmbientSoundTemplate(wrapper) {
 }
 
 function switchAmbientTokenLightTemplate(wrapper) {
-  console.log("switchAmbientTokenLightTemplate");
   const cfg = wrapper();
-  console.log("switchAmbientTokenLightTemplate", cfg);
+  log("switchAmbientTokenLightTemplate", cfg);
   cfg.template = `modules/${MODULE_ID}/templates/token-config.html`;
   return cfg;
 }
 
 function switchAmbientDefaultTokenLightTemplate(wrapper) {
-  console.log("switchAmbientTokenLightTemplate");
   const cfg = wrapper();
-  console.log("switchAmbientTokenLightTemplate", cfg);
+  log("switchAmbientTokenLightTemplate", cfg);
   cfg.template = `modules/${MODULE_ID}/templates/default-token-config.html`;
   return cfg;
 }

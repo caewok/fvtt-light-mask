@@ -46,6 +46,13 @@ Object.defineProperty(AmbientSound.prototype, "boundaryPolygon", {
   configurable: true
 });
 
+Object.defineProperty(Token.prototype, "boundaryPolygon", {
+  value: boundaryPolygon,
+  writable: true,
+  configurable: true
+});
+
+
 Object.defineProperty(AmbientLight.prototype, "customEdges", {
   value: customEdges,
   writable: true,
@@ -57,6 +64,14 @@ Object.defineProperty(AmbientSound.prototype, "customEdges", {
   writable: true,
   configurable: true
 });
+
+Object.defineProperty(Token.prototype, "customEdges", {
+  value: boundaryPolygon,
+  writable: true,
+  configurable: true
+});
+
+
 
 function switchAmbientLightTemplate(wrapper) {
   const cfg = wrapper();

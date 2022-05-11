@@ -18,11 +18,20 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
 
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+
   libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", switchAmbientLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", switchAmbientSoundTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.defaultOptions", switchAmbientDefaultTokenLightTemplate, "WRAPPER");
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
 }
 
 Object.defineProperty(AmbientLight.prototype, "boundaryPolygon", {
@@ -61,6 +70,22 @@ function switchAmbientSoundTemplate(wrapper) {
   return cfg;
 }
 
+function switchAmbientTokenLightTemplate(wrapper) {
+  console.log("switchAmbientTokenLightTemplate");
+  const cfg = wrapper();
+  console.log("switchAmbientTokenLightTemplate", cfg);
+  cfg.template = `modules/${MODULE_ID}/templates/token-config.html`;
+  return cfg;
+}
+
+function switchAmbientDefaultTokenLightTemplate(wrapper) {
+  console.log("switchAmbientTokenLightTemplate");
+  const cfg = wrapper();
+  console.log("switchAmbientTokenLightTemplate", cfg);
+  cfg.template = `modules/${MODULE_ID}/templates/default-token-config.html`;
+  return cfg;
+}
+
 function ambientSourceGetData(wrapper, options) {
   console.log("ambientSourceGetData", options);
   const data = wrapper(options);
@@ -87,12 +112,29 @@ function ambientSourceGetData(wrapper, options) {
   });
 }
 
+
+async function tokenSourceGetData(wrapper, options) {
+  console.log("tokenSourceGetData", options);
+  const data = await wrapper(options);
+  console.log("tokenSourceGetData", data);
+
+  // When first loaded, a light may not have flags.lightmask.
+  // But afterward, set the boolean so that the UI shows sides or points if necessary.
+  let isStar = false;
+  let isPolygon = false;
+  if(data.object?.flags?.lightmask?.shape) {
+    isStar = data.object.flags.lightmask.shape === "star";
+    isPolygon = data.object.flags.lightmask.shape === "polygon";
+  }
+
   return foundry.utils.mergeObject(data, {
     shapes: {
       circle: "lightmask.Circle",
       polygon: "lightmask.RegularPolygon",
       star: "lightmask.RegularStar",
       none: "lightmask.None"
-    }
+    },
+    "object.flags.lightmask.isStar": isStar,
+    "object.flags.lightmask.isPolygon": isPolygon
   });
 }

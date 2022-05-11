@@ -96,6 +96,10 @@ Hooks.on("canvasReady", async canvas => {
   });
 });
 
+Hooks.on("preUpdateToken", (doc, data, options, id) => {
+  lightMaskPreUpdateAmbientLight(doc, data, options, id);
+});
+
 Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
@@ -104,3 +108,5 @@ Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
 Hooks.on("preUpdateAmbientSound", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
+
+

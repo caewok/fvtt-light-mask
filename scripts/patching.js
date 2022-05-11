@@ -31,9 +31,6 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.defaultOptions", switchAmbientDefaultTokenLightTemplate, "WRAPPER");
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
-
   libWrapper.register(MODULE_ID, "LightSource.prototype.initialize", (wrapper, data) => {
     console.log("LightSource initialize", data);
     return wrapper(data);
@@ -81,13 +78,6 @@ function switchAmbientTokenLightTemplate(wrapper) {
   const cfg = wrapper();
   log("switchAmbientTokenLightTemplate", cfg);
   cfg.template = `modules/${MODULE_ID}/templates/token-config.html`;
-  return cfg;
-}
-
-function switchAmbientDefaultTokenLightTemplate(wrapper) {
-  const cfg = wrapper();
-  log("switchAmbientTokenLightTemplate", cfg);
-  cfg.template = `modules/${MODULE_ID}/templates/default-token-config.html`;
   return cfg;
 }
 

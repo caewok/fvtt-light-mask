@@ -32,15 +32,20 @@ export function registerLightMask() {
 
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.defaultOptions", switchAmbientDefaultTokenLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "LightSource.prototype.initialize", (wrapper, data) => {
+    console.log("LightSource initialize", data);
+    return wrapper(data);
+  })
 }
 
-Object.defineProperty(AmbientLight.prototype, "boundaryPolygon", {
+Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
   value: boundaryPolygon,
   writable: true,
   configurable: true
 });
 
-Object.defineProperty(AmbientSound.prototype, "boundaryPolygon", {
+Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
   value: boundaryPolygon,
   writable: true,
   configurable: true
@@ -59,7 +64,7 @@ Object.defineProperty(AmbientLight.prototype, "customEdges", {
   configurable: true
 });
 
-Object.defineProperty(AmbientSound.prototype, "customEdges", {
+Object.defineProperty(SoundSource.prototype, "customEdges", {
   value: customEdges,
   writable: true,
   configurable: true
@@ -102,15 +107,13 @@ function switchAmbientDefaultTokenLightTemplate(wrapper) {
 }
 
 function ambientSourceGetData(wrapper, options) {
-  console.log("ambientSourceGetData", options);
   const data = wrapper(options);
-  console.log("ambientSourceGetData", data);
 
   // When first loaded, a light may not have flags.lightmask.
   // But afterward, set the boolean so that the UI shows sides or points if necessary.
   let isStar = false;
   let isPolygon = false;
-  if(data.data?.flags?.lightmask?.shape) {
+  if (data.data?.flags?.lightmask?.shape) {
     isStar = data.data.flags.lightmask.shape === "star";
     isPolygon = data.data.flags.lightmask.shape === "polygon";
   }

@@ -62,6 +62,15 @@ Hooks.once("init", async function() {
 Hooks.once("setup", async function() {
   log("Setup...");
   registerSettings();
+  loadTemplates([
+    `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
+    `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,
+    `modules/${MODULE_ID}/templates/ambient-light-config.html`,
+    `modules/${MODULE_ID}/templates/sound-config.html`,
+    `modules/${MODULE_ID}/templates/token-lighting.html`,
+    `modules/${MODULE_ID}/templates/default-token-config.html`,
+    `modules/${MODULE_ID}/templates/token-config.html`
+  ]);
 });
 
 /**

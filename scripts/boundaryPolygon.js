@@ -18,12 +18,13 @@ import { RegularPolygon, RegularStar } from "./GeometricShapes.js";
  */
 export function boundaryPolygon(origin, radius, rotation = 0) {
   if (!radius) return undefined;
+  const doc = this.object.document;
 
   // TO-DO: Replace with sides/points and type circle, regular polygon or star or none
   // TO-DO: Add ellipse option
-  const shape = this.document.getFlag(MODULE_ID, SHAPE_KEY) || "circle";
-  const sides = this.document.getFlag(MODULE_ID, SIDES_KEY) || 3;
-  rotation = this.document.getFlag(MODULE_ID, ROTATION_KEY) || rotation; // Is this necessary? Possibly for sounds.
+  const shape = doc.getFlag(MODULE_ID, SHAPE_KEY) || "circle";
+  const sides = doc.getFlag(MODULE_ID, SIDES_KEY) || 3;
+  rotation = doc.getFlag(MODULE_ID, ROTATION_KEY) || rotation; // Is this necessary? Possibly for sounds.
 
   log(`Using boundaryPolygon ${shape} at origin ${origin.x},${origin.y} with radius ${radius} and rotation ${rotation}`);
   switch (shape) {

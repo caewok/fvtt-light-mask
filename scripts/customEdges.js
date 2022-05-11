@@ -30,14 +30,15 @@ Thus, it is assumed that this _customEdgeData function will access this, the sou
  */
 export function customEdges(current_origin) {
   // See class LightSource and initialize method
+  const doc = this.object.document;
+  const type = this.object.sourceType; // Or this.los.type? or passed parameter?
 
-  const type = this.sourceType; // Or this.los.type? or passed parameter?
-  const edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY); // This = source.object?
+  const edges_cache = doc.getFlag(MODULE_ID, CUSTOM_EDGES_KEY); // This = source.object?
   if (!edges_cache || edges_cache.length === 0) return;
 
-  const is_relative = this.document.getFlag(MODULE_ID, RELATIVE_KEY);
+  const is_relative = doc.getFlag(MODULE_ID, RELATIVE_KEY);
   const stored_origin = is_relative
-    ? (this.document.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin)
+    ? (doc.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin)
     : current_origin;
 
   log(`_addCustomEdges origin ${stored_origin.x}, ${stored_origin.y} --> ${current_origin.x}, ${current_origin.y}`);

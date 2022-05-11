@@ -113,13 +113,14 @@ function onCheckRelative(event) {
  */
 function updateShapeIndicator(event) {
   log("updateShapeIndicator", event, this);
+
   const shape = event.target.value;
   const newData = {};
 //   newData[`flags.${MODULE_ID}.isCircle`] = shape === "circle" || shape === "none";
   newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
   newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
 
-  const num_sides = this.document.getFlag(MODULE_ID, SIDES_KEY);
+  const num_sides = this.object.getFlag(MODULE_ID, SIDES_KEY);
   if (shape === "polygon" && (!num_sides || num_sides < 3)) {
     newData[`flags.${MODULE_ID}.${SIDES_KEY}`] = 3;
   } else if (shape === "star" && (!num_sides || num_sides < 5)) {
@@ -127,7 +128,7 @@ function updateShapeIndicator(event) {
   }
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
   this.render();
 }
 

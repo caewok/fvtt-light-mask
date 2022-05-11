@@ -23,27 +23,32 @@ export function registerLightMask() {
 
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", switchAmbientSoundTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "LightSource.prototype.initialize", (wrapper, data) => {
+    console.log("LightSource initialize", data);
+    return wrapper(data);
+  })
 }
 
-Object.defineProperty(AmbientLight.prototype, "boundaryPolygon", {
+Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
   value: boundaryPolygon,
   writable: true,
   configurable: true
 });
 
-Object.defineProperty(AmbientSound.prototype, "boundaryPolygon", {
+Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
   value: boundaryPolygon,
   writable: true,
   configurable: true
 });
 
-Object.defineProperty(AmbientLight.prototype, "customEdges", {
+Object.defineProperty(LightSource.prototype, "customEdges", {
   value: customEdges,
   writable: true,
   configurable: true
 });
 
-Object.defineProperty(AmbientSound.prototype, "customEdges", {
+Object.defineProperty(SoundSource.prototype, "customEdges", {
   value: customEdges,
   writable: true,
   configurable: true

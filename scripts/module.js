@@ -68,8 +68,8 @@ Hooks.once("setup", async function() {
     `modules/${MODULE_ID}/templates/ambient-light-config.html`,
     `modules/${MODULE_ID}/templates/sound-config.html`,
     `modules/${MODULE_ID}/templates/token-lighting.html`,
-    `modules/${MODULE_ID}/templates/default-token-config.html`,
-    `modules/${MODULE_ID}/templates/token-config.html`
+    `modules/${MODULE_ID}/templates/token-config.html`,
+    `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
   ]);
 });
 

@@ -49,16 +49,15 @@ Object.defineProperty(AmbientSound.prototype, "customEdges", {
   configurable: true
 });
 
-
 function switchAmbientLightTemplate(wrapper) {
   const cfg = wrapper();
-  cfg.template = `modules/${MODULE_ID}/templates/ambient-light-config-combined.html`;
+  cfg.template = `modules/${MODULE_ID}/templates/ambient-light-config.html`;
   return cfg;
 }
 
 function switchAmbientSoundTemplate(wrapper) {
   const cfg = wrapper();
-  cfg.template = `modules/${MODULE_ID}/templates/sound-config-combined.html`;
+  cfg.template = `modules/${MODULE_ID}/templates/sound-config.html`;
   return cfg;
 }
 

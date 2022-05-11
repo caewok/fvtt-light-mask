@@ -62,7 +62,30 @@ function switchAmbientSoundTemplate(wrapper) {
 }
 
 function ambientSourceGetData(wrapper, options) {
+  console.log("ambientSourceGetData", options);
   const data = wrapper(options);
+  console.log("ambientSourceGetData", data);
+
+  // When first loaded, a light may not have flags.lightmask.
+  // But afterward, set the boolean so that the UI shows sides or points if necessary.
+  let isStar = false;
+  let isPolygon = false;
+  if(data.data?.flags?.lightmask?.shape) {
+    isStar = data.data.flags.lightmask.shape === "star";
+    isPolygon = data.data.flags.lightmask.shape === "polygon";
+  }
+
+  return foundry.utils.mergeObject(data, {
+    shapes: {
+      circle: "lightmask.Circle",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    },
+    "data.flags.lightmask.isStar": isStar,
+    "data.flags.lightmask.isPolygon": isPolygon
+  });
+}
 
   return foundry.utils.mergeObject(data, {
     shapes: {

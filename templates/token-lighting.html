@@ -130,6 +130,13 @@
           <legend>{{ localize "lightmask.AmbientConfiguration.LegendTitle" }}</legend>
 
             <div class="form-group">
+              <label>{{ localize "LIGHT.Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
+              <div class="form-fields">
+                {{ rangePicker name="flags.lightmask.rotation" value=object.flags.lightmask.rotation min="0" max="360" }}
+              </div>
+            </div>
+
+            <div class="form-group">
               <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
               <div class="form-fields">
                 <select id="lightmaskshapes" name="flags.lightmask.shape">

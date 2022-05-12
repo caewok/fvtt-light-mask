@@ -13,10 +13,14 @@ import { lightMaskActivateListeners } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
+import { log } from "./module.js";
 
 export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", switchAmbientLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
@@ -24,10 +28,8 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", switchAmbientSoundTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "LightSource.prototype.initialize", (wrapper, data) => {
-    console.log("LightSource initialize", data);
-    return wrapper(data);
-  })
+  libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
 }
 
 Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
@@ -42,7 +44,8 @@ Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
   configurable: true
 });
 
-Object.defineProperty(LightSource.prototype, "customEdges", {
+
+Object.defineProperty(AmbientLight.prototype, "customEdges", {
   value: customEdges,
   writable: true,
   configurable: true
@@ -63,6 +66,13 @@ function switchAmbientLightTemplate(wrapper) {
 function switchAmbientSoundTemplate(wrapper) {
   const cfg = wrapper();
   cfg.template = `modules/${MODULE_ID}/templates/sound-config.html`;
+  return cfg;
+}
+
+function switchAmbientTokenLightTemplate(wrapper) {
+  const cfg = wrapper();
+  log("switchAmbientTokenLightTemplate", cfg);
+  cfg.template = `modules/${MODULE_ID}/templates/token-config.html`;
   return cfg;
 }
 
@@ -87,5 +97,30 @@ function ambientSourceGetData(wrapper, options) {
     },
     "data.flags.lightmask.isStar": isStar,
     "data.flags.lightmask.isPolygon": isPolygon
+  });
+}
+
+
+async function tokenSourceGetData(wrapper, options) {
+  const data = await wrapper(options);
+
+  // When first loaded, a light may not have flags.lightmask.
+  // But afterward, set the boolean so that the UI shows sides or points if necessary.
+  let isStar = false;
+  let isPolygon = false;
+  if(data.object?.flags?.lightmask?.shape) {
+    isStar = data.object.flags.lightmask.shape === "star";
+    isPolygon = data.object.flags.lightmask.shape === "polygon";
+  }
+
+  return foundry.utils.mergeObject(data, {
+    shapes: {
+      circle: "lightmask.Circle",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    },
+    "object.flags.lightmask.isStar": isStar,
+    "object.flags.lightmask.isPolygon": isPolygon
   });
 }

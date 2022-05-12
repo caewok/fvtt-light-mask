@@ -68,8 +68,8 @@ Hooks.once("setup", async function() {
     `modules/${MODULE_ID}/templates/ambient-light-config.html`,
     `modules/${MODULE_ID}/templates/sound-config.html`,
     `modules/${MODULE_ID}/templates/token-lighting.html`,
-    `modules/${MODULE_ID}/templates/default-token-config.html`,
-    `modules/${MODULE_ID}/templates/token-config.html`
+    `modules/${MODULE_ID}/templates/token-config.html`,
+    `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
   ]);
 });
 
@@ -96,6 +96,10 @@ Hooks.on("canvasReady", async canvas => {
   });
 });
 
+Hooks.on("preUpdateToken", (doc, data, options, id) => {
+  lightMaskPreUpdateAmbientLight(doc, data, options, id);
+});
+
 Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
@@ -104,3 +108,5 @@ Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
 Hooks.on("preUpdateAmbientSound", (doc, data, options, id) => {
   lightMaskPreUpdateAmbientLight(doc, data, options, id);
 });
+
+

@@ -61,7 +61,7 @@ function onAddWallIDs(event) {
   log(`Ids to add: ${ids_to_add}`);
 
   // Change the data and refresh...
-  let edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+  let edges_cache = this.object.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
   edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
   const newData = {
@@ -70,7 +70,7 @@ function onAddWallIDs(event) {
   };
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
 
   this.render();
 }
@@ -91,8 +91,8 @@ function onCheckRelative(event) {
     // Set the wall locations based on the last origin because when the user unchecks
     // relative, we want the walls to stay at the last relative position (not their
     // original position)
-    let edges_cache = this.document.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
-    const stored_origin = this.document.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin;
+    let edges_cache = this.object.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+    const stored_origin = this.object.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin;
     const delta = { dx: current_origin.x - stored_origin.x,
                     dy: current_origin.y - stored_origin.y }; // eslint-disable-line indent
 
@@ -101,7 +101,7 @@ function onCheckRelative(event) {
   }
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
   this.render();
 }
 
@@ -113,13 +113,14 @@ function onCheckRelative(event) {
  */
 function updateShapeIndicator(event) {
   log("updateShapeIndicator", event, this);
+
   const shape = event.target.value;
   const newData = {};
-  newData[`flags.${MODULE_ID}.isCircle`] = shape === "circle" || shape === "none";
+//   newData[`flags.${MODULE_ID}.isCircle`] = shape === "circle" || shape === "none";
   newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
   newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
 
-  const num_sides = this.document.getFlag(MODULE_ID, SIDES_KEY);
+  const num_sides = this.object.getFlag(MODULE_ID, SIDES_KEY);
   if (shape === "polygon" && (!num_sides || num_sides < 3)) {
     newData[`flags.${MODULE_ID}.${SIDES_KEY}`] = 3;
   } else if (shape === "star" && (!num_sides || num_sides < 5)) {
@@ -127,7 +128,7 @@ function updateShapeIndicator(event) {
   }
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
   this.render();
 }
 

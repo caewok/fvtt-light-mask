@@ -1,3 +1,7 @@
+## 0.3.0
+Can now select shapes for token lighting.
+- Simplify how Sweep algorithm uses methods from the source object to retrieve the boundaryPolygon and any temporary edges.
+
 ## 0.2.4
 Fix [issue #8](https://github.com/caewok/fvtt-light-mask/issues/8). Points/Sides no longer hidden until shape changed.
 

@@ -13,6 +13,8 @@ This module adds a toggle to Foundry VTT light and sound configuration to "mask"
 
 The chosen shape will be centered around the light/sound, sized to the light/sound radius, and will rotate if the light/sound is rotated.
 
+Version 0.3.0 introduced the ability to mask token lights with a selected shape, just like masking other lights.
+
 # Installation
 
 Add this [Manifest URL](https://github.com/caewok/fvtt-light-mask/releases/latest/download/module.json) in Foundry to install.

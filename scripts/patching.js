@@ -30,11 +30,6 @@ export function registerLightMask() {
 
   libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
-
-  libWrapper.register(MODULE_ID, "LightSource.prototype.initialize", (wrapper, data) => {
-    console.log("LightSource initialize", data);
-    return wrapper(data);
-  })
 }
 
 Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
@@ -107,9 +102,7 @@ function ambientSourceGetData(wrapper, options) {
 
 
 async function tokenSourceGetData(wrapper, options) {
-  console.log("tokenSourceGetData", options);
   const data = await wrapper(options);
-  console.log("tokenSourceGetData", data);
 
   // When first loaded, a light may not have flags.lightmask.
   // But afterward, set the boolean so that the UI shows sides or points if necessary.

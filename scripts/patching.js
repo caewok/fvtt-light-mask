@@ -15,6 +15,8 @@ import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
 import { log } from "./module.js";
 
+let TOKEN_VISION_LIBWRAPPER_ID;
+
 export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
@@ -30,6 +32,51 @@ export function registerLightMask() {
 
   libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
+}
+
+export function registerTokenVisionOverride() {
+  if(getSetting("use-token-vision-radius")) {
+    TOKEN_VISION_LIBWRAPPER_ID = libWrapper.register(MODULE_ID, "VisionSource.prototype.initialize", lightMaskVisionSourceInit, "OVERRIDE");
+  } else {
+    libWrapper.unregister(MODULE_ID, TOKEN_VISION_LIBWRAPPER_ID ?? "VisionSource.prototype.initialize");
+  }
+}
+
+function lightMaskVisionSourceInit(data={}) {
+
+  // Initialize new input data
+  const changes = this._initializeData(data);
+
+  // Compute derived data attributes
+  this.radius = Math.max(Math.abs(this.data.dim), Math.abs(this.data.bright));
+  this.ratio = Math.clamped(Math.abs(this.data.bright) / this.radius, 0, 1);
+  this.limited = this.data.angle !== 360;
+
+  // Compute the source polygon
+  const origin = {x: this.data.x, y: this.data.y};
+  this.los = CONFIG.Canvas.losBackend.create(origin, {
+    type: "sight",
+    angle: this.data.angle,
+    rotation: this.data.rotation,
+    source: this,
+    radius: canvas.lighting.globalLight ? undefined : this.radius // *** NEW ***
+  });
+
+  // Store the FOV circle
+  this.fov = new PIXI.Circle(origin.x, origin.y, this.radius);
+
+  // Record status flags
+  this._flags.useFov = canvas.performance.textures.enabled;
+  this._flags.renderFOV = true;
+  if ( this.constructor._appearanceKeys.some(k => k in changes) ) {
+    for ( let k of Object.keys(this._resetUniforms) ) {
+      this._resetUniforms[k] = true;
+    }
+  }
+
+  // Set the correct blend mode
+  this._initializeBlending();
+  return this;
 }
 
 Object.defineProperty(LightSource.prototype, "boundaryPolygon", {

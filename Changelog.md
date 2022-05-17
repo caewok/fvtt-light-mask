@@ -1,3 +1,7 @@
+## 0.3.1
+- Do not overwrite the origin object to improve compatibility with Wall Height. Fixes [issue #9](https://github.com/caewok/fvtt-light-mask/issues/9).
+- Use Cohen-Sutherland approach to classifying zones around a rectangle to improve segment intersection identification.
+
 ## 0.3.0
 Can now select shapes for token lighting.
 - Simplify how Sweep algorithm uses methods from the source object to retrieve the boundaryPolygon and any temporary edges.

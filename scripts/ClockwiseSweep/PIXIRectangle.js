@@ -121,11 +121,11 @@ function _intersectsLeft(a, b) {
  * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
  */
 const rectZones = {
-  INSIDE = 0x0000,
-  LEFT = 0x0001,
-  RIGHT = 0x0010,
-  TOP = 0x1000,
-  BOTTOM = 0x0100
+  INSIDE: 0x0000,
+  LEFT: 0x0001,
+  RIGHT: 0x0010,
+  TOP: 0x1000,
+  BOTTOM: 0x0100
 }
 
 /**
@@ -154,7 +154,7 @@ function lineSegmentIntersects(a, b) {
   const zone_b = this._zone(b);
 
   if(!(zone_a | zone_b)) { return false; } // Bitwise OR is 0: both points inside rectangle.
-  if(zone_a & zone_b) { return true; } // Bitwise AND is not 0: both points share outside zone
+  if(zone_a & zone_b) { return false; } // Bitwise AND is not 0: both points share outside zone
   // LEFT, RIGHT, TOP, BOTTOM
 
   if(!zone_a || !zone_b) { return true; } // Regular OR: One point inside, one outside
@@ -164,7 +164,7 @@ function lineSegmentIntersects(a, b) {
   // rectangle
 
   // Could just do this and skip the above; but it is a bit faster
-  // to check some of the easy cases above first.
+  // to check the easy cases above first.
   return this._intersectsTop(a, b)
     || this._intersectsRight(a, b)
     || this._intersectsBottom(a, b)

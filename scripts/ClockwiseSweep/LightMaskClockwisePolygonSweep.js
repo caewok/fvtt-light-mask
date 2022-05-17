@@ -77,7 +77,7 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
    * @returns {PointSourcePolygon}                  The computed polygon instance
    */
   static create(origin, config = {}) {
-    if(!!getSetting("use-lightmask-sweep-always")) { return super.create(origin, config); }
+    if(!getSetting("use-lightmask-sweep-always")) { return super.create(origin, config); }
 
     const cso = config?.source?.object;
     if (!cso || !(cso.document.getFlag(MODULE_ID, SHAPE_KEY)
@@ -96,8 +96,14 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
    * @param {ClockwiseSweepPolygonConfig} config  The provided configuration object
    */
   initialize(origin, config) {
+    if(config.type === "sight" && !canvas.lighting.globalLight && getSetting("use-token-vision-radius")) {
+      config.radius = config.source.radius;
+    }
+
     super.initialize(origin, {...config}); // For benchmark & debugging, it can be problematic if the original config object is modified
     const cfg = this.config;
+
+
 
     // Edges and collisions originally in constructor, but moved here so as not to
     // interfere with default ClockwiseSweep.

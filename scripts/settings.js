@@ -6,7 +6,6 @@ game
 
 import { MODULE_ID } from "./const.js";
 import { log } from "./module.js";
-import { registerTokenVisionOverride } from "./patching.js";
 
 export function getSetting(settingName) {
   return game.settings.get(MODULE_ID, settingName);

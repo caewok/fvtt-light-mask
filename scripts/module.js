@@ -49,6 +49,8 @@ Hooks.once("init", async function() {
   registerPIXICircleMethods();
   registerPolygonVertexMethods();
 
+  Handlebars.registerHelper("max2", function(a, b) { return Math.max(a, b); });
+
   game.modules.get(MODULE_ID).api = {
     LightMaskClockwisePolygonSweep: LightMaskClockwisePolygonSweep,
     controlledWallIDs: controlledWallIDs,

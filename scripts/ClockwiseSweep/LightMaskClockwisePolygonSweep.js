@@ -8,7 +8,6 @@ NormalizedRectangle,
 CollisionResult,
 PIXI,
 CONFIG,
-ClipperLib,
 PolygonVertex
 */
 
@@ -77,11 +76,12 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
    * @returns {PointSourcePolygon}                  The computed polygon instance
    */
   static create(origin, config = {}) {
-    if(!!getSetting(SETTINGS.SWEEP_ALWAYS)) { return super.create(origin, config); }
+    if ( getSetting(SETTINGS.SWEEP_ALWAYS) ) { return super.create(origin, config); }
 
     const cso = config?.source?.object;
-    if (!cso || !(cso.document.getFlag(MODULE_ID, KEYS.SHAPE)
-                 || cso.document.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES))) {
+    if ( !cso
+      || !(cso.document.getFlag(MODULE_ID, KEYS.SHAPE)
+      || cso.document.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES)) ) {
       return ClockwiseSweepPolygon.create(origin, config);
     }
 

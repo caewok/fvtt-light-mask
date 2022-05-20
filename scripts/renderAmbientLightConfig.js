@@ -117,7 +117,6 @@ function updateShapeIndicator(event) {
 
   const shape = event.target.value;
   const newData = {};
-//   newData[`flags.${MODULE_ID}.isCircle`] = shape === "circle" || shape === "none";
   newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
   newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
 

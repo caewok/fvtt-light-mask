@@ -2,7 +2,8 @@
 Hooks,
 game,
 benchmarkSight,
-CONFIG
+CONFIG,
+loadTemplates
 */
 
 "use strict";

@@ -10,7 +10,7 @@ export const MODULE_ID = "lightmask";
 
 export const SETTINGS = {
   SWEEP_ALWAYS: "use-lightmask-sweep-always"
-}
+};
 
 export function getSetting(settingName) {
   return game.settings.get(MODULE_ID, settingName);
@@ -25,7 +25,7 @@ export function registerSettings() {
     config: true,
     default: false,
     type: Boolean
-  })
+  });
 
   log("Done registering settings.");
 }

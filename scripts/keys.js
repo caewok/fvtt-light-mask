@@ -13,4 +13,4 @@ export const KEYS = {
   ROTATION: "rotation",
   RELATIVE: "relative",
   ORIGIN: "origin"
-}
+};

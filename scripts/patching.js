@@ -1,7 +1,8 @@
 /* globals
 libWrapper,
 AmbientLight,
-AmbientSound,
+LightSource,
+SoundSource,
 foundry
 */
 
@@ -10,7 +11,7 @@ foundry
 // Patches
 
 import { lightMaskActivateListeners } from "./renderAmbientLightConfig.js";
-import { MODULE_ID } from "./const.js";
+import { MODULE_ID } from "./settings.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
 import { log } from "./module.js";
@@ -108,7 +109,7 @@ async function tokenSourceGetData(wrapper, options) {
   // But afterward, set the boolean so that the UI shows sides or points if necessary.
   let isStar = false;
   let isPolygon = false;
-  if(data.object?.flags?.lightmask?.shape) {
+  if ( data.object?.flags?.lightmask?.shape ) {
     isStar = data.object.flags.lightmask.shape === "star";
     isPolygon = data.object.flags.lightmask.shape === "polygon";
   }

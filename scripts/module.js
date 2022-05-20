@@ -2,19 +2,18 @@
 Hooks,
 game,
 benchmarkSight,
-CONFIG
+CONFIG,
+loadTemplates
 */
 
 "use strict";
-
-import { MODULE_ID } from "./const.js";
 
 import { registerLightMask } from "./patching.js";
 import { registerPIXIPolygonMethods } from "./ClockwiseSweep/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./ClockwiseSweep/PIXIRectangle.js";
 import { registerPIXICircleMethods } from "./ClockwiseSweep/PIXICircle.js";
 import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge.js";
-import { registerSettings } from "./settings.js";
+import { registerSettings, MODULE_ID } from "./settings.js";
 
 import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
 import { controlledWallIDs } from "./renderAmbientLightConfig.js";

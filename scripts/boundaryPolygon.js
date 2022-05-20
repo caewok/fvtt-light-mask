@@ -1,5 +1,6 @@
 /* globals
-PIXI
+PIXI,
+canvas
 */
 "use strict";
 
@@ -7,6 +8,7 @@ import { log } from "./module.js";
 import { RegularPolygon, RegularStar } from "./GeometricShapes.js";
 import { MODULE_ID } from "./settings.js";
 import { KEYS } from "./keys.js";
+import { Ellipse } from "./Ellipse.js";
 
 /**
  * Method added to the light/sound AmbientLight class to create a custom boundary polygon.
@@ -21,15 +23,16 @@ export function boundaryPolygon(origin, radius, rotation = 0) {
   if (!radius) return undefined;
   const doc = this.object.document;
 
-  // TO-DO: Replace with sides/points and type circle, regular polygon or star or none
-  // TO-DO: Add ellipse option
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   const sides = doc.getFlag(MODULE_ID, KEYS.SIDES) || 3;
+  const minor = (doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
   rotation = doc.getFlag(MODULE_ID, KEYS.ROTATION) || rotation; // Is this necessary? Possibly for sounds.
 
-  log(`Using boundaryPolygon ${shape} at origin ${origin.x},${origin.y} with radius ${radius} and rotation ${rotation}`);
+  log(`Using boundaryPolygon ${shape} at origin ${origin.x},${origin.y} with radius ${radius}, sides ${sides}, rotation ${rotation}, minor ${minor}`);
   switch (shape) {
     case "circle": return new PIXI.Circle(origin.x, origin.y, radius);
+
+    case "ellipse": return new Ellipse(origin.x, origin.y, radius, minor, { rotation });
 
     case "polygon": return RegularPolygon.build(Math.max(3, sides), origin, radius, rotation);
 

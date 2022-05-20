@@ -16,6 +16,8 @@
     "lightmask.AmbientConfiguration.NumSides.Hint": "Min 3 for Regular Polygon",
     "lightmask.AmbientConfiguration.NumPoints.Name": "Points",
     "lightmask.AmbientConfiguration.NumPoints.Hint": "Min 5 for Regular Star",
+    "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name": "Semi-minor axis (height)",
+    "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Hint": "When rotation = 0, distance in grid units from origin to edge in vertical direction. (In default configuration, radius is the major axis.)",
 
     "lightmask.Circle": "Circle",
     "lightmask.Triangle": "Triangle",
@@ -27,6 +29,7 @@
     "lightmask.None": "None",
     "lightmask.RegularPolygon": "Regular Polygon",
     "lightmask.RegularStar": "Regular Star",
+    "lightmask.Ellipse": "Ellipse",
 
     "lightmask.settings.sweep-always.Name": "Always Use Light Mask sweep",
     "lightmask.settings.sweep-always.Hint": "Use Light Mask instead of Foundry default algorithm for all vision/light/sound field-of-view. May improve performance in some instances but may also introduce compatibility issues with some modules."

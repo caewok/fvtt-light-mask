@@ -10,6 +10,7 @@ export const KEYS = {
     EDGES: "customEdges",
     BUTTON: "customWallIDsButton"
   },
+  ELLIPSE: { MINOR: "ellipseMinor", MAJOR: "ellipseMajor" },
   ROTATION: "rotation",
   RELATIVE: "relative",
   ORIGIN: "origin"

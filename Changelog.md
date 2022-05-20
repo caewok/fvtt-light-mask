@@ -1,3 +1,7 @@
+## 0.3.2
+- Incorporate improvements from Walled Templates v0.3.0.
+- Added localization to settings.
+
 ## 0.3.1
 - Do not overwrite the origin object to improve compatibility with Wall Height. Fixes [issue #9](https://github.com/caewok/fvtt-light-mask/issues/9).
 - Use Cohen-Sutherland approach to classifying zones around a rectangle to improve segment intersection identification.

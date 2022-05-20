@@ -119,12 +119,19 @@ function updateShapeIndicator(event) {
   const newData = {};
   newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
   newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
+  newData[`flags.${MODULE_ID}.isEllipse`] = shape === "ellipse";
 
   const num_sides = this.object.getFlag(MODULE_ID, KEYS.SIDES);
-  if (shape === "polygon" && (!num_sides || num_sides < 3)) {
+  const minor = this.object.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
+  if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
     newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
-  } else if (shape === "star" && (!num_sides || num_sides < 5)) {
+  } else if ( shape === "star" && (!num_sides || num_sides < 5) ) {
     newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 5;
+  } else if ( shape === "ellipse" ) {
+    const major = Math.max(this.object.data.config.dim, this.object.data.config.bright);
+    if(!minor || minor <= 0 || minor > major) {
+      newData[`flags.${MODULE_ID}.${KEYS.ELLIPSE.MINOR}`] = major;
+    }
   }
 
   const previewData = this._getSubmitData(newData);

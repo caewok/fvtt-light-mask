@@ -84,20 +84,24 @@ function ambientSourceGetData(wrapper, options) {
   // But afterward, set the boolean so that the UI shows sides or points if necessary.
   let isStar = false;
   let isPolygon = false;
+  let isEllipse = false;
   if (data.data?.flags?.lightmask?.shape) {
     isStar = data.data.flags.lightmask.shape === "star";
     isPolygon = data.data.flags.lightmask.shape === "polygon";
+    isEllipse = data.data.flags.lightmask.shape === "ellipse";
   }
 
   return foundry.utils.mergeObject(data, {
     shapes: {
       circle: "lightmask.Circle",
+      ellipse: "lightmask.Ellipse",
       polygon: "lightmask.RegularPolygon",
       star: "lightmask.RegularStar",
       none: "lightmask.None"
     },
     "data.flags.lightmask.isStar": isStar,
-    "data.flags.lightmask.isPolygon": isPolygon
+    "data.flags.lightmask.isPolygon": isPolygon,
+    "data.flags.lightmask.isEllipse": isEllipse
   });
 }
 
@@ -109,19 +113,23 @@ async function tokenSourceGetData(wrapper, options) {
   // But afterward, set the boolean so that the UI shows sides or points if necessary.
   let isStar = false;
   let isPolygon = false;
+  let isEllipse = false;
   if ( data.object?.flags?.lightmask?.shape ) {
     isStar = data.object.flags.lightmask.shape === "star";
     isPolygon = data.object.flags.lightmask.shape === "polygon";
+    isEllipse = data.object.flags.lightmask.shape === "ellipse";
   }
 
   return foundry.utils.mergeObject(data, {
     shapes: {
       circle: "lightmask.Circle",
+      ellipse: "lightmask.Ellipse",
       polygon: "lightmask.RegularPolygon",
       star: "lightmask.RegularStar",
       none: "lightmask.None"
     },
     "object.flags.lightmask.isStar": isStar,
-    "object.flags.lightmask.isPolygon": isPolygon
+    "object.flags.lightmask.isPolygon": isPolygon,
+    "object.flags.lightmask.isEllipse": isEllipse
   });
 }

@@ -6,8 +6,9 @@ ui,
 
 "use strict";
 
-import { MODULE_ID, CUSTOM_IDS_KEY, CUSTOM_EDGES_KEY, ORIGIN_KEY, SIDES_KEY } from "./const.js";
 import { log } from "./module.js";
+import { MODULE_ID } from "./settings.js";
+import { KEYS } from "./keys.js";
 import {
   lightMaskUpdateCustomEdgeCache,
   lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";
@@ -61,12 +62,12 @@ function onAddWallIDs(event) {
   log(`Ids to add: ${ids_to_add}`);
 
   // Change the data and refresh...
-  let edges_cache = this.object.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+  let edges_cache = this.object.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
   edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
   const newData = {
-    [`flags.${MODULE_ID}.${CUSTOM_IDS_KEY}`]: ids_to_add,
-    [`flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`]: edges_cache
+    [`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.IDS}`]: ids_to_add,
+    [`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`]: edges_cache
   };
 
   const previewData = this._getSubmitData(newData);
@@ -85,19 +86,19 @@ function onCheckRelative(event) {
   if (event.target.checked) {
     // Update with the new origin
     log(`lightMaskOnCheckRelative current origin ${current_origin.x}, ${current_origin}`);
-    newData[`flags.${MODULE_ID}.${ORIGIN_KEY}`] = current_origin;
+    newData[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = current_origin;
 
   } else {
     // Set the wall locations based on the last origin because when the user unchecks
     // relative, we want the walls to stay at the last relative position (not their
     // original position)
-    let edges_cache = this.object.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
-    const stored_origin = this.object.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin;
+    let edges_cache = this.object.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
+    const stored_origin = this.object.getFlag(MODULE_ID, KEYS.ORIGIN) || current_origin;
     const delta = { dx: current_origin.x - stored_origin.x,
                     dy: current_origin.y - stored_origin.y }; // eslint-disable-line indent
 
     edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    newData[`flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`] = edges_cache;
+    newData[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 
   const previewData = this._getSubmitData(newData);
@@ -120,11 +121,11 @@ function updateShapeIndicator(event) {
   newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
   newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
 
-  const num_sides = this.object.getFlag(MODULE_ID, SIDES_KEY);
+  const num_sides = this.object.getFlag(MODULE_ID, KEYS.SIDES);
   if (shape === "polygon" && (!num_sides || num_sides < 3)) {
-    newData[`flags.${MODULE_ID}.${SIDES_KEY}`] = 3;
+    newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
   } else if (shape === "star" && (!num_sides || num_sides < 5)) {
-    newData[`flags.${MODULE_ID}.${SIDES_KEY}`] = 5;
+    newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 5;
   }
 
   const previewData = this._getSubmitData(newData);

@@ -10,7 +10,7 @@ foundry
 // Patches
 
 import { lightMaskActivateListeners } from "./renderAmbientLightConfig.js";
-import { MODULE_ID } from "./const.js";
+import { MODULE_ID } from "./settings.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
 import { log } from "./module.js";

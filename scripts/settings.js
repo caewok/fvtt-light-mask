@@ -9,7 +9,7 @@ import { log } from "./module.js";
 export const MODULE_ID = "lightmask";
 
 export const SETTINGS = {
-  SWEEP_ALWAYS = "use-lightmask-sweep-always"
+  SWEEP_ALWAYS: "use-lightmask-sweep-always"
 }
 
 export function getSetting(settingName) {

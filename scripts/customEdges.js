@@ -7,8 +7,8 @@ import { findIntersectionsSortSingle } from "./ClockwiseSweep/IntersectionsSort.
 import { identifyIntersectionsWithNoEndpoint } from "./ClockwiseSweep/utilities.js";
 import { SimplePolygonEdge } from "./ClockwiseSweep/SimplePolygonEdge.js";
 import { log } from "./module.js";
-import { RELATIVE_KEY, ORIGIN_KEY, CUSTOM_EDGES_KEY } from "./const.js";
 import { MODULE_ID } from "./settings.js";
+import { KEYS } from "./keys.js";
 
 /*
 Likely easiest if ClockwiseSweep checks the source object for a method to get a
@@ -34,12 +34,12 @@ export function customEdges(current_origin) {
   const doc = this.object.document;
   const type = this.object.sourceType; // Or this.los.type? or passed parameter?
 
-  const edges_cache = doc.getFlag(MODULE_ID, CUSTOM_EDGES_KEY); // This = source.object?
+  const edges_cache = doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES); // This = source.object?
   if (!edges_cache || edges_cache.length === 0) return;
 
-  const is_relative = doc.getFlag(MODULE_ID, RELATIVE_KEY);
+  const is_relative = doc.getFlag(MODULE_ID, KEYS.RELATIVE);
   const stored_origin = is_relative
-    ? (doc.getFlag(MODULE_ID, ORIGIN_KEY) || current_origin)
+    ? (doc.getFlag(MODULE_ID, KEYS.ORIGIN) || current_origin)
     : current_origin;
 
   log(`_addCustomEdges origin ${stored_origin.x}, ${stored_origin.y} --> ${current_origin.x}, ${current_origin.y}`);

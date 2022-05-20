@@ -3,10 +3,10 @@ PIXI
 */
 "use strict";
 
-import { SHAPE_KEY, ROTATION_KEY, SIDES_KEY } from "./const.js";
 import { log } from "./module.js";
 import { RegularPolygon, RegularStar } from "./GeometricShapes.js";
 import { MODULE_ID } from "./settings.js";
+import { KEYS } from "./keys.js";
 
 /**
  * Method added to the light/sound AmbientLight class to create a custom boundary polygon.
@@ -23,9 +23,9 @@ export function boundaryPolygon(origin, radius, rotation = 0) {
 
   // TO-DO: Replace with sides/points and type circle, regular polygon or star or none
   // TO-DO: Add ellipse option
-  const shape = doc.getFlag(MODULE_ID, SHAPE_KEY) || "circle";
-  const sides = doc.getFlag(MODULE_ID, SIDES_KEY) || 3;
-  rotation = doc.getFlag(MODULE_ID, ROTATION_KEY) || rotation; // Is this necessary? Possibly for sounds.
+  const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
+  const sides = doc.getFlag(MODULE_ID, KEYS.SIDES) || 3;
+  rotation = doc.getFlag(MODULE_ID, KEYS.ROTATION) || rotation; // Is this necessary? Possibly for sounds.
 
   log(`Using boundaryPolygon ${shape} at origin ${origin.x},${origin.y} with radius ${radius} and rotation ${rotation}`);
   switch (shape) {

@@ -4,13 +4,9 @@ canvas
 
 "use strict";
 
-import {
-  CUSTOM_IDS_KEY,
-  CUSTOM_EDGES_KEY,
-  RELATIVE_KEY,
-  ORIGIN_KEY } from "./const.js";
 import { log } from "./module.js";
 import { MODULE_ID } from "./settings.js";
+import { KEYS } from "./keys.js";
 
 // Hook preUpdateAmbientLight
 
@@ -25,43 +21,43 @@ import { MODULE_ID } from "./settings.js";
 export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   log(`Hooking preUpdateAmbientLight ${id}!`, doc, new_data, options);
 
-  const ids_to_add = new_data?.flags?.[MODULE_ID]?.[CUSTOM_IDS_KEY];
+  const ids_to_add = new_data?.flags?.[MODULE_ID]?.[KEYS.CUSTOM_WALLS.IDS];
   if (ids_to_add) {
     // Retrieve the existing cache, if any
-    let edges_cache = doc.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+    let edges_cache = doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
     log(`edges_cache length ${edges_cache.length} before additions`, edges_cache);
     edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
     // Add the edges cache
-    new_data[`flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`] = edges_cache;
+    new_data[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 
   // If relative is being set to true: store origin
   // If x or y is being updated, update the origin if relative is already true
-  const relative_key = new_data?.flags?.[MODULE_ID]?.[RELATIVE_KEY];
+  const relative_key = new_data?.flags?.[MODULE_ID]?.[KEYS.RELATIVE];
   if (relative_key) {
     // Prefer the new origin position, if any
     const new_origin = { x: new_data?.x || doc.data.x,
                          y: new_data?.y || doc.data.y }; // eslint-disable-line indent
     log(`preUpdateAmbientLight updating origin to ${new_origin.x}, ${new_origin.y}`);
 
-    new_data[`flags.${MODULE_ID}.${ORIGIN_KEY}`] = new_origin;
+    new_data[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = new_origin;
   } else if (relative_key === false) {
     // Set the wall locations based on the last origin because when the user unchecks
     // relative, we want the walls to stay at the last relative position (not their
     // original position)
     // Theoretically possible, but unlikely, that edges cache was modified above
-    let edges_cache = new_data?.flags?.[MODULE_ID]?.[CUSTOM_EDGES_KEY]
-      || doc.getFlag(MODULE_ID, CUSTOM_EDGES_KEY) || [];
+    let edges_cache = new_data?.flags?.[MODULE_ID]?.[KEYS.CUSTOM_WALLS.EDGES]
+      || doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
     const new_origin = { x: new_data?.x || doc.data.x,
                          y: new_data?.y || doc.data.y }; // eslint-disable-line indent
 
-    const stored_origin = doc.getFlag(MODULE_ID, ORIGIN_KEY) || new_origin;
+    const stored_origin = doc.getFlag(MODULE_ID, KEYS.ORIGIN) || new_origin;
     const delta = { dx: new_origin.x - stored_origin.x,
                     dy: new_origin.y - stored_origin.y }; // eslint-disable-line indent
 
     edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    new_data[`flags.${MODULE_ID}.${CUSTOM_EDGES_KEY}`] = edges_cache;
+    new_data[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 }
 

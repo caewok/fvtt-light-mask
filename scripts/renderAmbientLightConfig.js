@@ -128,7 +128,18 @@ function updateShapeIndicator(event) {
   } else if ( shape === "star" && (!num_sides || num_sides < 5) ) {
     newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 5;
   } else if ( shape === "ellipse" ) {
-    const major = Math.max(this.object.data.config.dim, this.object.data.config.bright);
+
+    let major = 0;
+    if(this instanceof AmbientSoundConfig) {
+      major = this.object.data.radius;
+    } else if(this instanceof AmbientLightConfig) {
+      major = Math.max(this.object.data.config.dim, this.object.data.config.bright);
+    } else if(this instanceof TokenConfig) {
+      major = Math.max(this.object.data.light.dim, this.object.data.light.bright);
+    } else {
+      console.warn("updateShapeIndicator|Config object not recognized.", this)
+    }
+
     if(!minor || minor <= 0 || minor > major) {
       newData[`flags.${MODULE_ID}.${KEYS.ELLIPSE.MINOR}`] = major;
     }

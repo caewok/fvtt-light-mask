@@ -36,11 +36,11 @@
     </div>
     {{/if}}
 
-    {{#if data.flags.lightmask.isEllipse }}
+    {{#if object.flags.lightmask.isEllipse }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
       <div class="form-fields">
-        <input type="number" placeholder="{{gridUnits}}" id="lightmaskEllipseMinor" name="flags.lightmask.ellipseMinor" step="any" value={{ data.flags.lightmask.ellipseMinor }}>
+        <input type="number" placeholder="{{gridUnits}}" id="lightmaskEllipseMinor" name="flags.lightmask.ellipseMinor" step="any" value={{ object.flags.lightmask.ellipseMinor }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Hint" }}</p>
     </div>

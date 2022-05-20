@@ -6,6 +6,7 @@
 
 This module adds a toggle to Foundry VTT light and sound configuration to "mask" lights and sounds with a selected shape. Options:
 - Default: Circle
+- Ellipse
 - Any regular polygon with 3+ sides
 - Any regular star with 5+ sides
 - No boundary
@@ -36,6 +37,9 @@ Open the configuration for an Ambient Light in the scene and look for the Light 
 The dropdown menu allows you to change the light/sound border from the default circle to any regular polygon (3+ sides) or star (5+ points). Rotating the light/sound rotates the shape accordingly, and the light/sound can be limited further by angle per Foundry defaults.
 
 Only the outside border shape is changed. If the light has a smaller bright than dim radius, the bright radius remains a circle.
+
+### Ellipse
+<img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_ellipse.jpg" width="400" alt="Ellipse-Shaped Light">
 
 ### Triangle
 <img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_triangle.jpg" width="400" alt="Triangle-Shaped Light">

@@ -1,3 +1,6 @@
+## 0.3.3
+Add option to use ellipses.
+
 ## 0.3.2
 - Incorporate improvements from Walled Templates v0.3.0.
 - Added localization to settings.

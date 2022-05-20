@@ -2,7 +2,6 @@
 
 "use strict";
 
-export const MODULE_ID = "lightmask";
 export const SHAPE_KEY = "shape";
 export const SIDES_KEY = "sides";
 export const CUSTOM_IDS_KEY = "customWallIDs";

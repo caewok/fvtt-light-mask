@@ -3,9 +3,10 @@ PIXI
 */
 "use strict";
 
-import { SHAPE_KEY, ROTATION_KEY, MODULE_ID, SIDES_KEY } from "./const.js";
+import { SHAPE_KEY, ROTATION_KEY, SIDES_KEY } from "./const.js";
 import { log } from "./module.js";
 import { RegularPolygon, RegularStar } from "./GeometricShapes.js";
+import { MODULE_ID } from "./settings.js";
 
 /**
  * Method added to the light/sound AmbientLight class to create a custom boundary polygon.

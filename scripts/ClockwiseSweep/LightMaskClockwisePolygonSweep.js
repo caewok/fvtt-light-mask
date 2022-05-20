@@ -24,8 +24,8 @@ import { ClipperLib } from "./clipper_unminified.js";
 
 // This import is needed only to check for lightmask properties and if not present,
 // fall back on default ClockwiseSweep. Could in theory run this ClockwiseSweep for all.
-import { MODULE_ID, SHAPE_KEY, CUSTOM_EDGES_KEY } from "../const.js";
-import { getSetting } from "../settings.js";
+import { SHAPE_KEY, CUSTOM_EDGES_KEY } from "../const.js";
+import { getSetting, MODULE_ID, SETTINGS } from "../settings.js";
 
 /*
 Basic concept:
@@ -77,7 +77,7 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
    * @returns {PointSourcePolygon}                  The computed polygon instance
    */
   static create(origin, config = {}) {
-    if(!!getSetting("use-lightmask-sweep-always")) { return super.create(origin, config); }
+    if(!!getSetting(SETTINGS.SWEEP_ALWAYS)) { return super.create(origin, config); }
 
     const cso = config?.source?.object;
     if (!cso || !(cso.document.getFlag(MODULE_ID, SHAPE_KEY)

@@ -5,12 +5,12 @@ canvas
 "use strict";
 
 import {
-  MODULE_ID,
   CUSTOM_IDS_KEY,
   CUSTOM_EDGES_KEY,
   RELATIVE_KEY,
   ORIGIN_KEY } from "./const.js";
 import { log } from "./module.js";
+import { MODULE_ID } from "./settings.js";
 
 // Hook preUpdateAmbientLight
 

@@ -6,8 +6,9 @@ ui,
 
 "use strict";
 
-import { MODULE_ID, CUSTOM_IDS_KEY, CUSTOM_EDGES_KEY, ORIGIN_KEY, SIDES_KEY } from "./const.js";
+import { CUSTOM_IDS_KEY, CUSTOM_EDGES_KEY, ORIGIN_KEY, SIDES_KEY } from "./const.js";
 import { log } from "./module.js";
+import { MODULE_ID } from "./settings.js";
 import {
   lightMaskUpdateCustomEdgeCache,
   lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";

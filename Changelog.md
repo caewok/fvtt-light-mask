@@ -1,3 +1,6 @@
+## 0.3.4
+Fix to re-enable catching walls for light sources. (Accidentally borked in 0.3 series.)
+
 ## 0.3.3
 Add option to use ellipses.
 

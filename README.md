@@ -39,6 +39,9 @@ The dropdown menu allows you to change the light/sound border from the default c
 
 Only the outside border shape is changed. If the light has a smaller bright than dim radius, the bright radius remains a circle.
 
+## Perfect Vision module
+If you use the [Perfect Vision](https://github.com/dev7355608/perfect-vision) module, it will adjust the shape of the bright radius to match the geometric shape.
+
 ### Ellipse
 <img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_ellipse.jpg" width="400" alt="Ellipse-Shaped Light">
 

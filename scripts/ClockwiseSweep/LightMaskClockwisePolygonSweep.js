@@ -300,7 +300,9 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
       // Temporary edges here include edges from a bounding polygon, such as limited angle
 
       // drop edges outside the bbox
-      this.config.tempEdges = this.config.tempEdges.filter(e => this.config.bbox.encountersSegment(e));
+      if ( this.config.bbox ) {
+        this.config.tempEdges = this.config.tempEdges.filter(e => this.config.bbox.encountersSegment(e));
+      }
 
       // Temporary edges checked for intersections with each other already, so just
       // need to compare to existing walls.
@@ -896,7 +898,8 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
             hasCustomBoundary } = this.config;
     /* eslint-enable indent */
 
-    if (!hasCustomBoundary) return undefined;
+    // Use undefined so we can skip quadtree (as opposed to using canvas.dimensions.rect)
+    if ( !hasCustomBoundary ) return undefined;
 
     // Start with the canvas bbox
     let bbox = canvas.dimensions.rect;

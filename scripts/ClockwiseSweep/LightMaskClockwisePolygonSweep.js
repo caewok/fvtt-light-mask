@@ -896,10 +896,9 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
             hasCustomBoundary } = this.config;
     /* eslint-enable indent */
 
-    if (!hasCustomBoundary) return undefined;
-
     // Start with the canvas bbox
     let bbox = canvas.dimensions.rect;
+    if ( !hasCustomBoundary ) return bbox;
 
     boundaryPolygon && (bbox = bbox.intersection(boundaryPolygon.getBounds())); // eslint-disable-line no-unused-expressions
     limitedAngle && (bbox = bbox.intersection(limitedAngle.getBounds())); // eslint-disable-line no-unused-expressions

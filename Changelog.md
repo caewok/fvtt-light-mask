@@ -1,3 +1,6 @@
+## 0.3.5
+Fix to catching multiple walls with unlimited vision (fix bounding box issues).
+
 ## 0.3.4
 Fix to re-enable catching walls for light sources. (Accidentally borked in 0.3 series.)
 

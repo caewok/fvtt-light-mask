@@ -46,7 +46,7 @@ Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
 });
 
 
-Object.defineProperty(AmbientLight.prototype, "customEdges", {
+Object.defineProperty(LightSource.prototype, "customEdges", {
   value: customEdges,
   writable: true,
   configurable: true

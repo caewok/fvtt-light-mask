@@ -30,6 +30,7 @@ None.
 # Usage
 
 Open the configuration for an Ambient Light in the scene and look for the Light Mask portion in the Advanced Options tab. For Ambient Sounds, the configuration is in the bottom of the main configuration screen. (Sounds do not currently have tabbed configurations.)
+
 <img src="https://raw.githubusercontent.com/caewok/fvtt-light-mask/feature/screenshots/screenshots/light_custom_ids.jpg" width="400" alt="Light Configuration Advanced Settings">
 
 ## Change geometric shape of the light/sound border

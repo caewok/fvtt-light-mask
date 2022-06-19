@@ -137,93 +137,88 @@ function padToPoint(p) {
   this.pad(horiz, vert);
 }
 
-/**
- * Helper methods to track whether a segment intersects an edge.
- */
-function _intersectsTop(a, b) {
-  return foundry.utils.lineSegmentIntersects(a, b,
-    { x: this.x, y: this.y },
-    { x: this.right, y: this.y });
-}
 
-function _intersectsRight(a, b) {
-  return foundry.utils.lineSegmentIntersects(a, b,
-    { x: this.right, y: this.y },
-    { x: this.right, y: this.bottom });
-}
-
-function _intersectsBottom(a, b) {
-  return foundry.utils.lineSegmentIntersects(a, b,
-    { x: this.right, y: this.bottom },
-    { x: this.x, y: this.bottom });
-}
-
-function _intersectsLeft(a, b) {
-  return foundry.utils.lineSegmentIntersects(a, b,
-    { x: this.x, y: this.bottom },
-    { x: this.x, y: this.y });
-}
+/* -------------------------------------------- */
 
 /**
- * Use the Cohen-Sutherland algorithm approach to split a rectangle into zones:
+ * Bit code labels splitting a rectangle into zones, based on the Cohen-Sutherland algorithm.
+ * See https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
  *          left    central   right
  * top      1001    1000      1010
  * central  0001    0000      0010
  * bottom   0101    0100      0110
- * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
+ * @enum {number}
  */
-const rectZones = {
+const CS_ZONES = {
   INSIDE: 0x0000,
   LEFT: 0x0001,
   RIGHT: 0x0010,
   TOP: 0x1000,
-  BOTTOM: 0x0100
+  BOTTOM: 0x0100,
+  TOPLEFT: 0x1001,
+  TOPRIGHT: 0x1010,
+  BOTTOMRIGHT: 0x0110,
+  BOTTOMLEFT: 0x0101
 };
 
 /**
- * Get the rectZone for a given x,y point located around or in a rectangle.
+ * Calculate the rectangle Zone for a given point located around or in the rectangle.
+ * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
  *
- * @param {Point} p
- * @return {Integer}
+ * @param {Point} p     Point to test for location relative to the rectangle
+ * @returns {integer}
  */
-function _zone(p) {
-  let code = rectZones.INSIDE;
-  if ( p.x < this.x ) {
-    code |= rectZones.LEFT;
-  } else if ( p.x > this.right ) {
-    code |= rectZones.RIGHT;
-  }
+function _getZone = function(p) {
+  const CSZ = PIXI.Rectangle.CS_ZONES;
+  let code = CSZ.INSIDE;
 
-  if ( p.y < this.y ) {
-    code |= rectZones.TOP;
-  } else if ( p.y > this.bottom ) {
-    code |= rectZones.BOTTOM;
-  }
+  if ( p.x < this.x ) code |= CSZ.LEFT;
+  else if ( p.x > this.right ) code |= CSZ.RIGHT;
+
+  if ( p.y < this.y ) code |= CSZ.TOP;
+  else if ( p.y > this.bottom ) code |= CSZ.BOTTOM;
+
   return code;
-}
+};
 
-function lineSegmentIntersects(a, b) {
-  const zone_a = this._zone(a);
-  const zone_b = this._zone(b);
+/**
+ * Test whether a line segment AB intersects this rectangle.
+ * @param {Point} a                       The first endpoint of segment AB
+ * @param {Point} b                       The second endpoint of segment AB
+ * @param {object} [options]              Options affecting the intersect test.
+ * @param {boolean} [options.inside]      If true, a line contained within the rectangle will
+ *                                        return true.
+ * @returns {boolean} True if intersects.
+ */
+function lineSegmentIntersects = function(a, b, { inside = false } = {}) {
+  const zoneA = this._getZone(a);
+  const zoneB = this._getZone(b);
 
-  if ( !(zone_a | zone_b) ) { return false; } // Bitwise OR is 0: both points inside rectangle.
-  if ( zone_a & zone_b ) { return false; } // Bitwise AND is not 0: both points share outside zone
-  // LEFT, RIGHT, TOP, BOTTOM
+  if ( !(zoneA | zoneB) ) return inside; // Bitwise OR is 0: both points inside rectangle.
+  if ( zoneA & zoneB ) return false; // Bitwise AND is not 0: both points share outside zone
+  if ( !(zoneA && zoneB) ) return true; // Reguler AND: one point inside, one outside
 
-  if ( !zone_a || !zone_b ) { return true; } // Regular OR: One point inside, one outside
+  // Line likely intersects, but some possibility that the line starts at, say, center left
+  // and moves to center top which means it may or may not cross the rectangle
+  const CSZ = PIXI.Rectangle.CS_ZONES;
+  const lsi = foundry.utils.lineSegmentIntersects;
 
-  // Line likely intersects, but some possibility that the line starts at, say,
-  // center left and moves to center top which means it may or may not cross the
-  // rectangle
+  // If the zone is a corner, like top left, test one side and then if not true, test
+  // the other. If the zone is on a side, like left, just test that side.
+  const leftEdge = this.leftEdge;
+  if ( (zoneA & CSZ.LEFT) && lsi(leftEdge.A, leftEdge.B, a, b) ) return true;
 
-  // Could just do this and skip the above; but it is a bit faster
-  // to check the easy cases above first.
-  return this._intersectsTop(a, b)
-    || this._intersectsRight(a, b)
-    || this._intersectsBottom(a, b)
-    || this._intersectsLeft(a, b);
-}
+  const rightEdge = this.rightEdge;
+  if ( (zoneA & CSZ.RIGHT) && lsi(rightEdge.A, rightEdge.B, a, b) ) return true;
 
+  const topEdge = this.topEdge;
+  if ( (zoneA & CSZ.TOP) && lsi(topEdge.A, topEdge.B, a, b) ) return true;
+
+  const bottomEdge = this.bottomEdge;
+  if ( (zoneA & CSZ.BOTTOM ) && lsi(bottomEdge.A, bottomEdge.B, a, b) ) return true;
+
+  return false;
+};
 
 /**
  * From PIXI.js mathextras
@@ -320,32 +315,51 @@ export function registerPIXIRectangleMethods() {
     configurable: true
   });
 
-  Object.defineProperty(PIXI.Rectangle.prototype, "_intersectsTop", {
-    value: _intersectsTop,
+  Object.defineProperty(PIXI.Rectangle, "CS_ZONES", {
+    value: CS_ZONES,
     writable: true,
     configurable: true
   });
 
-  Object.defineProperty(PIXI.Rectangle.prototype, "_intersectsBottom", {
-    value: _intersectsBottom,
-    writable: true,
-    configurable: true
-  });
+  /**
+   * Get the left edge of this rectangle.
+   * The returned edge endpoints are oriented clockwise around the rectangle.
+   * @type {{A: Point, B: Point}}
+   */
+  Object.defineProperty(PIXI.Rectangle.prototype, "leftEdge", { get: function() {
+    return { A: { x: this.left, y: this.bottom }, B: { x: this.left, y: this.top }};
+  }});
 
-  Object.defineProperty(PIXI.Rectangle.prototype, "_intersectsLeft", {
-    value: _intersectsLeft,
-    writable: true,
-    configurable: true
-  });
+  /**
+   * Get the right edge of this rectangle.
+   * The returned edge endpoints are oriented clockwise around the rectangle.
+   * @type {{A: Point, B: Point}}
+   */
+  Object.defineProperty(PIXI.Rectangle.prototype, "rightEdge", { get: function() {
+    return { A: { x: this.right, y: this.top }, B: { x: this.right, y: this.bottom }};
+  }});
 
-  Object.defineProperty(PIXI.Rectangle.prototype, "_intersectsRight", {
-    value: _intersectsRight,
-    writable: true,
-    configurable: true
-  });
+  /**
+   * Get the top edge of this rectangle.
+   * The returned edge endpoints are oriented clockwise around the rectangle.
+   * @type {{A: Point, B: Point}}
+   */
+  Object.defineProperty(PIXI.Rectangle.prototype, "topEdge", { get: function() {
+    return { A: { x: this.left, y: this.top }, B: { x: this.right, y: this.top }};
+  }});
 
-  Object.defineProperty(PIXI.Rectangle.prototype, "_zone", {
-    value: _zone,
+  /**
+   * Get the bottom edge of this rectangle.
+   * The returned edge endpoints are oriented clockwise around the rectangle.
+   * @type {{A: Point, B: Point}}
+   */
+  Object.defineProperty(PIXI.Rectangle.prototype, "bottomEdge", { get: function() {
+    return { A: { x: this.right, y: this.bottom }, B: { x: this.left, y: this.bottom }};
+  }});
+
+
+  Object.defineProperty(PIXI.Rectangle.prototype, "_getZone", {
+    value: _getZone,
     writable: true,
     configurable: true
   });

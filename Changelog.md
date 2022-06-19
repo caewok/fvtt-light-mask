@@ -1,3 +1,6 @@
+## 0.3.6
+Fix when caching walls relative to a token, to prevent the walls from "shifting". Fixes [issue #10](https://github.com/caewok/fvtt-light-mask/issues/10)
+
 ## 0.3.5
 Fix to catching multiple walls with unlimited vision (fix bounding box issues).
 

@@ -1,5 +1,6 @@
 /* globals
-canvas
+canvas,
+TokenDocument
 */
 
 "use strict";
@@ -37,8 +38,18 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   const relative_key = new_data?.flags?.[MODULE_ID]?.[KEYS.RELATIVE];
   if (relative_key) {
     // Prefer the new origin position, if any
-    const new_origin = { x: new_data?.x || doc.data.x,
-                         y: new_data?.y || doc.data.y }; // eslint-disable-line indent
+    const new_origin = {
+      x: new_data?.x || doc.data.x,
+      y: new_data?.y || doc.data.y };
+
+    // If this is a token, the origin needs to be the center, whereas x,y is top left
+    if ( doc instanceof TokenDocument ) {
+      const offsetX = doc.object.center.x - doc.object.x;
+      const offsetY = doc.object.center.y - doc.object.y;
+      new_origin.x += offsetX;
+      new_origin.y += offsetY;
+    }
+
     log(`preUpdateAmbientLight updating origin to ${new_origin.x}, ${new_origin.y}`);
 
     new_data[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = new_origin;
@@ -49,12 +60,22 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
     // Theoretically possible, but unlikely, that edges cache was modified above
     let edges_cache = new_data?.flags?.[MODULE_ID]?.[KEYS.CUSTOM_WALLS.EDGES]
       || doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
-    const new_origin = { x: new_data?.x || doc.data.x,
-                         y: new_data?.y || doc.data.y }; // eslint-disable-line indent
+    const new_origin = {
+      x: new_data?.x || doc.data.x,
+      y: new_data?.y || doc.data.y };
+
+    // If this is a token, the origin needs to be the center, whereas x,y is top left
+    if ( doc instanceof TokenDocument ) {
+      const offsetX = doc.object.center.x - doc.object.x;
+      const offsetY = doc.object.center.y - doc.object.y;
+      new_origin.x += offsetX;
+      new_origin.y += offsetY;
+    }
 
     const stored_origin = doc.getFlag(MODULE_ID, KEYS.ORIGIN) || new_origin;
-    const delta = { dx: new_origin.x - stored_origin.x,
-                    dy: new_origin.y - stored_origin.y }; // eslint-disable-line indent
+    const delta = {
+      dx: new_origin.x - stored_origin.x,
+      dy: new_origin.y - stored_origin.y };
 
     edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
     new_data[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;

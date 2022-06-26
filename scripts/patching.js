@@ -23,14 +23,20 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", switchAmbientLightTemplate, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._onChangeInput", ambientLightConfigOnChangeInput, "WRAPPER");
+//   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", switchAmbientSoundTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
+}
+
+function ambientLightConfigOnChangeInput(wrapper, event) {
+  log("ambientLightConfigOnChangeInput", event, this);
+
+  return wrapper(event);
 }
 
 Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
@@ -58,12 +64,6 @@ Object.defineProperty(SoundSource.prototype, "customEdges", {
   configurable: true
 });
 
-function switchAmbientLightTemplate(wrapper) {
-  const cfg = wrapper();
-  cfg.template = `modules/${MODULE_ID}/templates/ambient-light-config.html`;
-  return cfg;
-}
-
 function switchAmbientSoundTemplate(wrapper) {
   const cfg = wrapper();
   cfg.template = `modules/${MODULE_ID}/templates/sound-config.html`;
@@ -78,6 +78,7 @@ function switchAmbientTokenLightTemplate(wrapper) {
 }
 
 function ambientSourceGetData(wrapper, options) {
+  log('ambientSourceGetData')
   const data = wrapper(options);
 
   // When first loaded, a light may not have flags.lightmask.
@@ -92,13 +93,6 @@ function ambientSourceGetData(wrapper, options) {
   }
 
   return foundry.utils.mergeObject(data, {
-    shapes: {
-      circle: "lightmask.Circle",
-      ellipse: "lightmask.Ellipse",
-      polygon: "lightmask.RegularPolygon",
-      star: "lightmask.RegularStar",
-      none: "lightmask.None"
-    },
     "data.flags.lightmask.isStar": isStar,
     "data.flags.lightmask.isPolygon": isPolygon,
     "data.flags.lightmask.isEllipse": isEllipse

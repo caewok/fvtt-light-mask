@@ -15,6 +15,50 @@ import {
 
 
 /**
+ * Inject new template information into the configuration render
+ * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
+ */
+export async function injectAmbientLightConfiguration(app, html, data) {
+  let isStar = false;
+  let isPolygon = false;
+  let isEllipse = false;
+  if (data.data?.flags?.lightmask?.shape) {
+    isStar = data.data.flags.lightmask.shape === "star";
+    isPolygon = data.data.flags.lightmask.shape === "polygon";
+    isEllipse = data.data.flags.lightmask.shape === "ellipse";
+  }
+
+  const form = html.find("div[data-tab='advanced']:last");
+  const snippet = await renderTemplate(
+    `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
+    {
+      shapes: {
+        circle: "lightmask.Circle",
+        ellipse: "lightmask.Ellipse",
+        polygon: "lightmask.RegularPolygon",
+        star: "lightmask.RegularStar",
+        none: "lightmask.None"
+      },
+      "data.flags.lightmask.isStar": isStar,
+      "data.flags.lightmask.isPolygon": isPolygon,
+      "data.flags.lightmask.isEllipse": isEllipse
+    }
+  );
+  form.append(snippet);
+}
+
+
+export async function ambientLightConfigOnChangeInput(wrapper, event) {
+  log("ambientLightConfigOnChangeInput", event, this);
+
+  if ( event.target.id === "lightmaskshapes" ) updateShapeIndicator.bind(this)(event);
+
+  return wrapper(event);
+}
+
+
+
+/**
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
  */
 export function lightMaskActivateListeners(wrapped, html) {
@@ -27,8 +71,8 @@ export function lightMaskActivateListeners(wrapped, html) {
   // const saveWallsButton = html.find("button[id='saveWallsButton']");
   // saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
 
-  wrapped(html);
-  log(`lightMaskActivateListeners after is length ${html[0].length}`, html);
+//   wrapped(html);
+//   log(`lightMaskActivateListeners after is length ${html[0].length}`, html);
 
 
   // This makes the config panel close but does not call _onAddWallIDs:
@@ -45,7 +89,9 @@ export function lightMaskActivateListeners(wrapped, html) {
   // });
   html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
   html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
-  html.on("change", "#lightmaskshapes", updateShapeIndicator.bind(this));
+//   html.on("change", "#lightmaskshapes", updateShapeIndicator.bind(this));
+
+  return wrapped(html);
 }
 
 
@@ -145,9 +191,11 @@ function updateShapeIndicator(event) {
     }
   }
 
+  log(`updateShapeIndicator constructed data for ${shape}`, newData);
+
   const previewData = this._getSubmitData(newData);
   foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
-  this.render();
+//   this.render();
 }
 
 /**

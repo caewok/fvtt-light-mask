@@ -63,6 +63,52 @@ export async function injectAmbientLightConfiguration(app, html, data) {
   app.setPosition(app.position);
 }
 
+/**
+ * Inject new template information into the configuration render
+ * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
+ */
+export async function injectAmbientSoundConfiguration(app, html, data) {
+  log("injectAmbientSoundConfiguration", app, html, data);
+  log(`html scrollLeft: ${html.scrollTop()}; ${html[0].scrollTop}; app ${$(app.form).parent().scrollTop()}`);
+
+  const scrollTop = app.object._sheet.form.parentElement.scrollTop;
+  log(`injectAmbientSoundConfiguration scrollTop before injection: ${scrollTop}`)
+
+  // Avoid name collisions by using "lightmask"
+  const renderData = {};
+  renderData.lightmask = {
+    shapes: {
+      circle: "lightmask.Circle",
+      ellipse: "lightmask.Ellipse",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    },
+    isStar: false,
+    isPolygon: false,
+    isEllipse: false
+
+  };
+
+  if ( data.data?.flags?.lightmask?.shape ) {
+    const shape = data.data.flags.lightmask.shape;
+    renderData.lightmask.isStar = shape === "star";
+    renderData.lightmask.isPolygon = shape === "polygon";
+    renderData.lightmask.isEllipse = shape === "ellipse";
+  }
+
+  foundry.utils.mergeObject(data, renderData, {inplace: true});
+
+  const form = html.find(".form-group:last");
+  const snippet = await renderTemplate(
+    `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`, data);
+
+  log("injectAmbientSoundConfiguration snippet", snippet);
+
+  form.append(snippet);
+  app.setPosition(app.position);
+}
+
 
 export async function ambientLightConfigOnChangeInput(wrapper, event) {
   log("ambientLightConfigOnChangeInput", event, this);

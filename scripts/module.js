@@ -16,7 +16,7 @@ import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge
 import { registerSettings, MODULE_ID } from "./settings.js";
 
 import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
-import { controlledWallIDs, injectAmbientLightConfiguration } from "./renderAmbientLightConfig.js";
+import { controlledWallIDs, injectAmbientLightConfiguration, injectAmbientSoundConfiguration } from "./renderAmbientLightConfig.js";
 import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
 
 /**
@@ -67,7 +67,7 @@ Hooks.once("setup", async function() {
     `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
     `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,
 //     `modules/${MODULE_ID}/templates/ambient-light-config.html`,
-    `modules/${MODULE_ID}/templates/sound-config.html`,
+//     `modules/${MODULE_ID}/templates/sound-config.html`,
     `modules/${MODULE_ID}/templates/token-lighting.html`,
     `modules/${MODULE_ID}/templates/token-config.html`,
     `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
@@ -98,6 +98,7 @@ Hooks.on("canvasReady", async canvas => {
 });
 
 Hooks.on("renderAmbientLightConfig", injectAmbientLightConfiguration);
+Hooks.on("renderAmbientSoundConfig", injectAmbientSoundConfiguration);
 
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
 

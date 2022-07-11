@@ -113,12 +113,28 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._getSubmitData", getSubmitData, "WRAPPER");
 //   libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", defaultOptions, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", switchAmbientSoundTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsSound, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
+
+//   Object.defineProperty(AmbientSoundConfig.prototype, "_onChangeInput", {
+//     value: onChangeInputSound,
+//     writable: true,
+//     configurable: true
+//   });
+
 }
+
+// async function onChangeInputSound(event) {
+//   log("onChangeInputSound", event, this);
+// //   await super._onChangeInput(event); // super fails
+//   await FormApplication.prototype._onChangeInput.call(this, event);
+//   const previewData = this._getSubmitData();
+//   foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+//   this._refresh();
+// }
 
 // function defaultOptions(wrapper) {
 //   const options = wrapper();
@@ -133,6 +149,13 @@ export function registerLightMask() {
 //     scrollY: [".window-content"]
 //   });
 // }
+
+function defaultOptionsSound(wrapper) {
+  const options = wrapper();
+  return foundry.utils.mergeObject(options, {
+    height: "auto"
+  })
+}
 
 function updateObject(wrapper, event, formData) {
   log("updateObject", event, formData);
@@ -179,11 +202,6 @@ Object.defineProperty(SoundSource.prototype, "customEdges", {
   configurable: true
 });
 
-function switchAmbientSoundTemplate(wrapper) {
-  const cfg = wrapper();
-  cfg.template = `modules/${MODULE_ID}/templates/sound-config.html`;
-  return cfg;
-}
 
 function switchAmbientTokenLightTemplate(wrapper) {
   const cfg = wrapper();

@@ -130,29 +130,29 @@ export function registerLightMask() {
 async function formApplicationChangeInput(wrapper, event) {
   log("formApplicationChangeInput", event, this);
 
-  const out = wrapper(event);
+  if ( event.type !== "change" ) return wrapper(event);
 
   let refresh = false;
-  if ( event.type === "change"
-    && (event.target.id === "lightmaskshapes"
-    || event.target.id === "lightmasksides"
-    || event.target.id === "lightmaskpoints"
-    || event.target.id === "lightmaskEllipseMinor") ) {
+  let render = false;
 
-    log("Calling updateShapeIndicator");
-    await updateShapeIndicator.call(this, event);
-    refresh = true;
-//     this._refresh();
-  } else if ( event.type === "change" && event.target.name === "flags.lightmask.rotation" ) {
+  if ( event.target.name === "flags.lightmask.rotation" ) {
     log("LightMask rotation")
     await updateRotation.call(this, event);
     refresh = true;
-//     this._render();
-//     this._render();
-//     this._refresh();
+  } else {
+    // lightmaskshapes, lightmasksides, lightmaskpoints, lightmaskEllipseMinor
+    // If changing shapes, we need to update the sub-parameter selections.
+    refresh = true;
+    render = event.target.id === "lightmaskshapes";
+    await updateShapeIndicator.call(this, event);
   }
 
+  // Refresh the sound or token light shape
+  // AmbientLight gets refreshed automatically
   refresh && (this instanceof AmbientSoundConfig || this instanceof TokenConfig) && this._refresh();
+  render && this._render(); // Update the rendered config html options for the new shape
+
+  const out = await wrapper(event);
 
   return out;
 }

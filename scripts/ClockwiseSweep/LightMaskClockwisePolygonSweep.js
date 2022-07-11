@@ -112,7 +112,7 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
     this.edges = new Map(); // ** NEW ** //
     this.collisions = []; // ** NEW ** Collisions formatted as [{x, y}, ...]
 
-    log(`LightMask initialize ${cfg.source?.id} with radius ${cfg.radius}, rotation ${cfg.rotation}, and origin ${this.origin.x}, ${this.origin.y}`, cfg.source);
+//     log(`LightMask initialize ${cfg.source?.id} with radius ${cfg.radius}, rotation ${cfg.rotation}, and origin ${this.origin.x}, ${this.origin.y}`, cfg.source);
 
     // Testing method of intersection
     cfg.findIntersectionsSingle ||= findIntersectionsSortSingle;

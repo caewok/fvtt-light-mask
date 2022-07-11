@@ -107,7 +107,6 @@ export function registerLightMask() {
 
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._onChangeInput", ambientLightConfigOnChangeInput, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
-//   libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", defaultOptions, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsSound, "WRAPPER");
@@ -130,9 +129,18 @@ export function registerLightMask() {
 async function onChangeInputSound(event) {
   log("onChangeInputSound", event, this);
 //   await super._onChangeInput(event); // super fails
+
+
+
   await FormApplication.prototype._onChangeInput.call(this, event);
   const previewData = this._getSubmitData();
   foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+
+  if ( event.target.id === "lightmaskshapes" ) {
+    log("Calling updateShapeIndicator");
+    await updateShapeIndicator.call(this, event);
+  }
+
   this._refresh();
 }
 

@@ -2,6 +2,9 @@
 canvas,
 foundry,
 ui,
+renderTemplate,
+AmbientSoundConfig,
+AmbientLightConfig
 */
 
 "use strict";
@@ -19,39 +22,57 @@ import {
  * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
  */
 export async function injectAmbientLightConfiguration(app, html, data) {
-  let isStar = false;
-  let isPolygon = false;
-  let isEllipse = false;
-  if (data.data?.flags?.lightmask?.shape) {
-    isStar = data.data.flags.lightmask.shape === "star";
-    isPolygon = data.data.flags.lightmask.shape === "polygon";
-    isEllipse = data.data.flags.lightmask.shape === "ellipse";
+  log("injectAmbientLightConfiguration", app, html, data);
+  log(`html scrollLeft: ${html.scrollTop()}; ${html[0].scrollTop}; app ${$(app.form).parent().scrollTop()}`);
+
+  const scrollTop = app.object._sheet.form.parentElement.scrollTop;
+  log(`injectAmbientLightConfiguration scrollTop before injection: ${scrollTop}`)
+
+  // Avoid name collisions by using "lightmask"
+  const renderData = {};
+  renderData.lightmask = {
+    shapes: {
+      circle: "lightmask.Circle",
+      ellipse: "lightmask.Ellipse",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    },
+    isStar: false,
+    isPolygon: false,
+    isEllipse: false
+
+  };
+
+  if ( data.data?.flags?.lightmask?.shape ) {
+    const shape = data.data.flags.lightmask.shape;
+    renderData.lightmask.isStar = shape === "star";
+    renderData.lightmask.isPolygon = shape === "polygon";
+    renderData.lightmask.isEllipse = shape === "ellipse";
   }
+
+  foundry.utils.mergeObject(data, renderData, {inplace: true});
 
   const form = html.find("div[data-tab='advanced']:last");
   const snippet = await renderTemplate(
-    `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
-    {
-      shapes: {
-        circle: "lightmask.Circle",
-        ellipse: "lightmask.Ellipse",
-        polygon: "lightmask.RegularPolygon",
-        star: "lightmask.RegularStar",
-        none: "lightmask.None"
-      },
-      "data.flags.lightmask.isStar": isStar,
-      "data.flags.lightmask.isPolygon": isPolygon,
-      "data.flags.lightmask.isEllipse": isEllipse
-    }
-  );
+    `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`, data);
+
+  log("injectAmbientLightConfiguration snippet", snippet);
+
   form.append(snippet);
+  app.setPosition(app.position);
 }
 
 
 export async function ambientLightConfigOnChangeInput(wrapper, event) {
   log("ambientLightConfigOnChangeInput", event, this);
 
-  if ( event.target.id === "lightmaskshapes" ) updateShapeIndicator.bind(this)(event);
+  log(`Event target is ${event.target.id} with type ${event.target.type}`, event.target);
+
+  if ( event.target.id === "lightmaskshapes" ) {
+    log("Calling updateShapeIndicator");
+    await updateShapeIndicator.call(this, event);
+  }
 
   return wrapper(event);
 }
@@ -158,17 +179,17 @@ function onCheckRelative(event) {
  * Polygon: Sides, minimum 3.
  * Star: Points, minimum 5.
  */
-function updateShapeIndicator(event) {
+async function updateShapeIndicator(event) {
   log("updateShapeIndicator", event, this);
+
+  const doc = this.document;
+  const docData = this.document.data;
 
   const shape = event.target.value;
   const newData = {};
-  newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
-  newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
-  newData[`flags.${MODULE_ID}.isEllipse`] = shape === "ellipse";
 
-  const num_sides = this.object.getFlag(MODULE_ID, KEYS.SIDES);
-  const minor = this.object.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
+  const num_sides = doc.getFlag(MODULE_ID, KEYS.SIDES);
+  const minor = doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
   if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
     newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
   } else if ( shape === "star" && (!num_sides || num_sides < 5) ) {
@@ -176,17 +197,17 @@ function updateShapeIndicator(event) {
   } else if ( shape === "ellipse" ) {
 
     let major = 0;
-    if(this instanceof AmbientSoundConfig) {
-      major = this.object.data.radius;
-    } else if(this instanceof AmbientLightConfig) {
-      major = Math.max(this.object.data.config.dim, this.object.data.config.bright);
-    } else if(this instanceof TokenConfig) {
-      major = Math.max(this.object.data.light.dim, this.object.data.light.bright);
+    if ( this instanceof AmbientSoundConfig ) {
+      major = docData.radius;
+    } else if ( this instanceof AmbientLightConfig ) {
+      major = Math.max(docData.config.dim, docData.config.bright);
+    } else if ( this instanceof TokenConfig ) {
+      major = Math.max(docData.light.dim, docData.light.bright);
     } else {
-      console.warn("updateShapeIndicator|Config object not recognized.", this)
+      console.warn("updateShapeIndicator|Config object not recognized.", this);
     }
 
-    if(!minor || minor <= 0 || minor > major) {
+    if ( !minor || minor <= 0 || minor > major ) {
       newData[`flags.${MODULE_ID}.${KEYS.ELLIPSE.MINOR}`] = major;
     }
   }
@@ -194,9 +215,58 @@ function updateShapeIndicator(event) {
   log(`updateShapeIndicator constructed data for ${shape}`, newData);
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
-//   this.render();
+  log(`updateShapeIndicator preview data for ${shape}`, previewData);
+  foundry.utils.mergeObject(docData, previewData, {inplace: true});
+
+  // [l] = canvas.lighting.placeables
+  // l.sheet.form.parentElement.scrollTop
+
+//   this._refresh();
+//   this._saveScrollPositions(this.element);
+//   const html = await this.render(); // {scrollY: true} not working
+//   this._restoreScrollPositions(html);
+
+ //  const scrollTop = this.object._sheet.form.parentElement.scrollTop;
+//   log(`updateShapeIndicator scrollTop before render: ${scrollTop}`, this)
+
+   this.render();
+
+
+//   const html = $(this.form).parent();
+//   html[0].scrollTo(0, scrollTop);
+
+  // const scrollToElement = document.querySelector("#lightmaskshapes");
+//   const tab = scrollToElement.parentNode.parentNode.parentNode.parentElement;
+//   tab.scrollTop = scrollToElement.offsetTop;
+
+
 }
+
+// From https://discord.com/channels/170995199584108546/811676497965613117/842458752405340200
+// call before super._render
+function saveScrollStates() {
+  if ( this.form === null ) return;
+
+  const html = $(this.form).parent();
+  let lists = $(html.find(".save-scroll"));
+
+  this.scrollStates = [];
+  for ( let list of lists ) this.scrollStates.push($(list).scrollTop());
+}
+
+
+
+// From https://discord.com/channels/170995199584108546/811676497965613117/842458752405340200
+// call after super._render
+function setScrollStates() {
+  if (this.scrollStates) {
+    const html = $(this.form).parent();
+
+    let lists = $(html.find(".save-scroll"));
+    for ( let i = 0; i < lists.length; i++ ) $(lists[i]).scrollTop(this.scrollStates[i]);
+  }
+}
+
 
 /**
  * Retrieve a comma-separated list of wall ids currently controlled on the canvas.

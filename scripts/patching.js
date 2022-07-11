@@ -107,10 +107,6 @@ export function registerLightMask() {
 
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._onChangeInput", ambientLightConfigOnChangeInput, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._updateObject", updateObject, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._refresh", refresh, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._render", render, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._getSubmitData", getSubmitData, "WRAPPER");
 //   libWrapper.register(MODULE_ID, "AmbientLightConfig.defaultOptions", defaultOptions, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
@@ -169,25 +165,7 @@ function defaultOptionsSound(wrapper) {
   })
 }
 
-function updateObject(wrapper, event, formData) {
-  log("updateObject", event, formData);
-  return wrapper(event, formData)
-}
 
-function refresh(wrapper) {
-  log("refresh");
-  wrapper();
-}
-
-function render(wrapper, force, options) {
-  log("render", force, options);
-  return wrapper(force, options);
-}
-
-function getSubmitData(wrapper, updateData) {
-  log("getSubmitData", updateData);
-  return wrapper(updateData);
-}
 
 Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
   value: boundaryPolygon,

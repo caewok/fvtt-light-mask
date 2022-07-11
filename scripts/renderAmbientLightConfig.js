@@ -80,7 +80,6 @@ export async function injectAmbientSoundConfiguration(app, html, data) {
     isStar: false,
     isPolygon: false,
     isEllipse: false
-
   };
 
   if ( data.data?.flags?.lightmask?.shape ) {

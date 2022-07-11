@@ -92,7 +92,7 @@ AmbientLightConfig.prototype._onChangeInput
 
 // Patches
 
-import { lightMaskActivateListeners, ambientLightConfigOnChangeInput } from "./renderAmbientLightConfig.js";
+import { lightMaskActivateListeners, ambientLightConfigOnChangeInput, updateShapeIndicator, updateRotation } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./settings.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
@@ -105,44 +105,58 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._onChangeInput", ambientLightConfigOnChangeInput, "WRAPPER");
+//   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._onChangeInput", ambientLightConfigOnChangeInput, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsSound, "WRAPPER");
 
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
-
-  Object.defineProperty(AmbientSoundConfig.prototype, "_onChangeInput", {
-    value: onChangeInputSound,
-    writable: true,
-    configurable: true
-  });
+  libWrapper.register(MODULE_ID, "FormApplication.prototype._onChangeInput", formApplicationChangeInput, "WRAPPER");
 
   Object.defineProperty(AmbientSoundConfig.prototype, "_refresh", {
     value: refreshSound,
     writable: true,
     configurable: true
   });
+
+  Object.defineProperty(TokenConfig.prototype, "_refresh", {
+    value: refreshToken,
+    writable: true,
+    configurable: true
+  });
 }
 
-async function onChangeInputSound(event) {
-  log("onChangeInputSound", event, this);
-//   await super._onChangeInput(event); // super fails
+async function formApplicationChangeInput(wrapper, event) {
+  log("formApplicationChangeInput", event, this);
 
+  const out = wrapper(event);
 
+  let refresh = false;
+  if ( event.type === "change"
+    && (event.target.id === "lightmaskshapes"
+    || event.target.id === "lightmasksides"
+    || event.target.id === "lightmaskpoints"
+    || event.target.id === "lightmaskEllipseMinor") ) {
 
-  await FormApplication.prototype._onChangeInput.call(this, event);
-  const previewData = this._getSubmitData();
-  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
-
-  if ( event.target.id === "lightmaskshapes" ) {
     log("Calling updateShapeIndicator");
     await updateShapeIndicator.call(this, event);
+    refresh = true;
+//     this._refresh();
+  } else if ( event.type === "change" && event.target.name === "flags.lightmask.rotation" ) {
+    log("LightMask rotation")
+    await updateRotation.call(this, event);
+    refresh = true;
+//     this._render();
+//     this._render();
+//     this._refresh();
   }
 
-  this._refresh();
+  refresh && (this instanceof AmbientSoundConfig || this instanceof TokenConfig) && this._refresh();
+
+  return out;
 }
+
 
 
 function refreshSound() {
@@ -150,6 +164,13 @@ function refreshSound() {
   if ( !this.document.object ) return;
   this.document.object.updateSource();
   this.document.object.refresh();
+}
+
+function refreshToken() {
+  log("refreshToken", this);
+  if ( !this.token.object ) return;
+  this.token.object.updateSource();
+  this.token.object.refresh();
 }
 
 // function defaultOptions(wrapper) {

@@ -1,9 +1,10 @@
 <fieldset>
   <legend>{{ localize "lightmask.AmbientConfiguration.LegendTitle" }}</legend>
+
     <div class="form-group">
       <label>{{ localize "LIGHT.Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
       <div class="form-fields">
-        {{ rangePicker name="flags.lightmask.rotation" value=object.flags.lightmask.rotation min="0" max="360" step="1" }}
+        {{ rangePicker id="lightmaskrotation" name="flags.lightmask.rotation" value=object.flags.lightmask.rotation min="0" max="360" step="1" }}
       </div>
     </div>
 
@@ -30,7 +31,7 @@
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
       <div class="form-fields">
-        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="5" value={{ object.flags.lightmask.sides }}>
+        <input type="number" id="lightmaskpoints" name="flags.lightmask.sides" step="1" min="5" value={{ object.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
     </div>

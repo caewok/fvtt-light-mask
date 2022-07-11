@@ -124,8 +124,8 @@ export async function injectTokenLightConfiguration(app, html, data) {
 
   };
 
-  if ( data.data?.flags?.lightmask?.shape ) {
-    const shape = data.data.flags.lightmask.shape;
+  if ( data.object?.flags?.lightmask?.shape ) {
+    const shape = data.object.flags.lightmask.shape;
     renderData.lightmask.isStar = shape === "star";
     renderData.lightmask.isPolygon = shape === "polygon";
     renderData.lightmask.isEllipse = shape === "ellipse";
@@ -148,8 +148,6 @@ export async function injectTokenLightConfiguration(app, html, data) {
   app.setPosition(app.position);
 }
 
-
-
 export async function ambientLightConfigOnChangeInput(wrapper, event) {
   log("ambientLightConfigOnChangeInput", event, this);
 
@@ -163,40 +161,14 @@ export async function ambientLightConfigOnChangeInput(wrapper, event) {
   return wrapper(event);
 }
 
-
-
 /**
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
  */
 export function lightMaskActivateListeners(wrapped, html) {
   log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
 
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
-
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // const saveWallsButton = html.find("button[id='saveWallsButton']");
-  // saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
-
-//   wrapped(html);
-//   log(`lightMaskActivateListeners after is length ${html[0].length}`, html);
-
-
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
-
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // const saveWallsButton = html.find("button[id='saveWallsButton']");
-  // saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
-  // saveWallsButton.on("click", event => { log(`saveWallsButton clicked!`, event) })
-
-  // Works!
-  // html.on('click', '.saveWallsButton', (event) => {
-  //   log(`saveWallsButton clicked!`, event);
-  // });
   html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
   html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
-//   html.on("change", "#lightmaskshapes", updateShapeIndicator.bind(this));
 
   return wrapped(html);
 }
@@ -260,16 +232,46 @@ function onCheckRelative(event) {
 }
 
 /**
+ * If the shape rotation has changed, update flags so the UI can be updated accordingly.
+ * Only relevant for AmbientSoundConfig and TokenConfig. AmbientLightConfig already
+ * changes rotation.
+ */
+export async function updateRotation(event) {
+  log("updateRotation", event, this);
+
+  let doc = this.document;
+  let docData = this.document?.data;
+  if ( this instanceof TokenConfig ) {
+    doc = this.token;
+    docData = this.token.data;
+  }
+
+  const rotation = parseInt(event.target.value);
+  const newData = {};
+  newData[`flags.${MODULE_ID}.${KEYS.ROTATION}`] = rotation;
+
+  log(`updateRotation constructed data for ${rotation}`, newData);
+
+  const previewData = this._getSubmitData(newData);
+  log(`updateRotation preview data for ${rotation}`, previewData);
+  foundry.utils.mergeObject(docData, previewData, {inplace: true});
+}
+
+/**
  * If the shape selection has changed, update flags so the UI can be updated with
  * parameters specific to that shape.
  * Polygon: Sides, minimum 3.
  * Star: Points, minimum 5.
  */
-async function updateShapeIndicator(event) {
+export async function updateShapeIndicator(event) {
   log("updateShapeIndicator", event, this);
 
-  const doc = this.document;
-  const docData = this.document.data;
+  let doc = this.document;
+  let docData = this.document?.data;
+  if ( this instanceof TokenConfig ) {
+    doc = this.token;
+    docData = this.token.data;
+  }
 
   const shape = event.target.value;
   const newData = {};
@@ -303,29 +305,6 @@ async function updateShapeIndicator(event) {
   const previewData = this._getSubmitData(newData);
   log(`updateShapeIndicator preview data for ${shape}`, previewData);
   foundry.utils.mergeObject(docData, previewData, {inplace: true});
-
-  // [l] = canvas.lighting.placeables
-  // l.sheet.form.parentElement.scrollTop
-
-//   this._refresh();
-//   this._saveScrollPositions(this.element);
-//   const html = await this.render(); // {scrollY: true} not working
-//   this._restoreScrollPositions(html);
-
- //  const scrollTop = this.object._sheet.form.parentElement.scrollTop;
-//   log(`updateShapeIndicator scrollTop before render: ${scrollTop}`, this)
-
-   this.render();
-
-
-//   const html = $(this.form).parent();
-//   html[0].scrollTo(0, scrollTop);
-
-  // const scrollToElement = document.querySelector("#lightmaskshapes");
-//   const tab = scrollToElement.parentNode.parentNode.parentNode.parentElement;
-//   tab.scrollTop = scrollToElement.offsetTop;
-
-
 }
 
 // From https://discord.com/channels/170995199584108546/811676497965613117/842458752405340200

@@ -23,10 +23,6 @@ import {
  */
 export async function injectAmbientLightConfiguration(app, html, data) {
   log("injectAmbientLightConfiguration", app, html, data);
-  log(`html scrollLeft: ${html.scrollTop()}; ${html[0].scrollTop}; app ${$(app.form).parent().scrollTop()}`);
-
-  const scrollTop = app.object._sheet.form.parentElement.scrollTop;
-  log(`injectAmbientLightConfiguration scrollTop before injection: ${scrollTop}`)
 
   // Avoid name collisions by using "lightmask"
   const renderData = {};
@@ -69,10 +65,7 @@ export async function injectAmbientLightConfiguration(app, html, data) {
  */
 export async function injectAmbientSoundConfiguration(app, html, data) {
   log("injectAmbientSoundConfiguration", app, html, data);
-  log(`html scrollLeft: ${html.scrollTop()}; ${html[0].scrollTop}; app ${$(app.form).parent().scrollTop()}`);
 
-  const scrollTop = app.object._sheet.form.parentElement.scrollTop;
-  log(`injectAmbientSoundConfiguration scrollTop before injection: ${scrollTop}`)
 
   // Avoid name collisions by using "lightmask"
   const renderData = {};
@@ -108,6 +101,54 @@ export async function injectAmbientSoundConfiguration(app, html, data) {
   form.append(snippet);
   app.setPosition(app.position);
 }
+
+/**
+ * Inject new template information into the configuration render
+ * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
+ */
+export async function injectTokenLightConfiguration(app, html, data) {
+  log("injectTokenLightConfiguration", app, html, data);
+
+  // Avoid name collisions by using "lightmask"
+  const renderData = {};
+  renderData.lightmask = {
+    shapes: {
+      circle: "lightmask.Circle",
+      ellipse: "lightmask.Ellipse",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    },
+    isStar: false,
+    isPolygon: false,
+    isEllipse: false
+
+  };
+
+  if ( data.data?.flags?.lightmask?.shape ) {
+    const shape = data.data.flags.lightmask.shape;
+    renderData.lightmask.isStar = shape === "star";
+    renderData.lightmask.isPolygon = shape === "polygon";
+    renderData.lightmask.isEllipse = shape === "ellipse";
+  }
+
+  foundry.utils.mergeObject(data, renderData, {inplace: true});
+
+//   let form = html.find("div[data-group='light']");
+//   form = form.find("div[data-tab='advanced']:last");
+
+  const form = html.find("div[data-group='light']:last");
+//   const form = html.find("div[data-group='light'], div[data-group='advanced']")[2];
+  log("injectTokenLightConfiguration", form);
+  const snippet = await renderTemplate(
+    `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`, data);
+
+  log("injectTokenLightConfiguration snippet", snippet);
+
+  form.append(snippet);
+  app.setPosition(app.position);
+}
+
 
 
 export async function ambientLightConfigOnChangeInput(wrapper, event) {

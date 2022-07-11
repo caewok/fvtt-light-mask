@@ -3,7 +3,7 @@
     <div class="form-group">
       <label>{{ localize "LIGHT.Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
       <div class="form-fields">
-        {{ rangePicker name="flags.lightmask.rotation" value=object.flags.lightmask.rotation min="0" max="360" }}
+        {{ rangePicker name="flags.lightmask.rotation" value=object.flags.lightmask.rotation min="0" max="360" step="1" }}
       </div>
     </div>
 
@@ -11,12 +11,12 @@
       <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
       <div class="form-fields">
         <select id="lightmaskshapes" name="flags.lightmask.shape">
-          {{ selectOptions shapes selected=object.flags.lightmask.shape localize=true }}
+          {{ selectOptions lightmask.shapes selected=object.flags.lightmask.shape localize=true }}
         </select>
       </div>
     </div>
 
-    {{#if object.flags.lightmask.isPolygon }}
+    {{#if lightmask.isPolygon }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
@@ -26,7 +26,7 @@
     </div>
     {{/if}}
 
-    {{#if object.flags.lightmask.isStar }}
+    {{#if lightmask.isStar }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
       <div class="form-fields">
@@ -36,7 +36,7 @@
     </div>
     {{/if}}
 
-    {{#if object.flags.lightmask.isEllipse }}
+    {{#if lightmask.isEllipse }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
       <div class="form-fields">

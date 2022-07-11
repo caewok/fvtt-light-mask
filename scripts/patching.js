@@ -116,25 +116,37 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsSound, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "TokenConfig.defaultOptions", switchAmbientTokenLightTemplate, "WRAPPER");
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
 
-//   Object.defineProperty(AmbientSoundConfig.prototype, "_onChangeInput", {
-//     value: onChangeInputSound,
-//     writable: true,
-//     configurable: true
-//   });
+  Object.defineProperty(AmbientSoundConfig.prototype, "_onChangeInput", {
+    value: onChangeInputSound,
+    writable: true,
+    configurable: true
+  });
 
+  Object.defineProperty(AmbientSoundConfig.prototype, "_refresh", {
+    value: refreshSound,
+    writable: true,
+    configurable: true
+  });
 }
 
-// async function onChangeInputSound(event) {
-//   log("onChangeInputSound", event, this);
-// //   await super._onChangeInput(event); // super fails
-//   await FormApplication.prototype._onChangeInput.call(this, event);
-//   const previewData = this._getSubmitData();
-//   foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
-//   this._refresh();
-// }
+async function onChangeInputSound(event) {
+  log("onChangeInputSound", event, this);
+//   await super._onChangeInput(event); // super fails
+  await FormApplication.prototype._onChangeInput.call(this, event);
+  const previewData = this._getSubmitData();
+  foundry.utils.mergeObject(this.document.data, previewData, {inplace: true});
+  this._refresh();
+}
+
+
+function refreshSound() {
+  log("refreshSound", this);
+  if ( !this.document.object ) return;
+  this.document.object.updateSource();
+  this.document.object.refresh();
+}
 
 // function defaultOptions(wrapper) {
 //   const options = wrapper();

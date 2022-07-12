@@ -23,8 +23,8 @@ import { ClipperLib } from "./clipper_unminified.js";
 
 // This import is needed only to check for lightmask properties and if not present,
 // fall back on default ClockwiseSweep. Could in theory run this ClockwiseSweep for all.
-import { getSetting, MODULE_ID, SETTINGS } from "../settings.js";
-import { KEYS } from "../keys.js";
+import { getSetting, SETTINGS } from "../settings.js";
+import { KEYS, MODULE_ID } from "../const.js";
 
 /*
 Basic concept:

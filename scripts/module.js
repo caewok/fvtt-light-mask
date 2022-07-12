@@ -3,17 +3,19 @@ Hooks,
 game,
 benchmarkSight,
 CONFIG,
-loadTemplates
+loadTemplates,
+Handlebars
 */
 
 "use strict";
 
+import { MODULE_ID, TEMPLATES } from "./const.js";
 import { registerLightMask } from "./patching.js";
 import { registerPIXIPolygonMethods } from "./ClockwiseSweep/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./ClockwiseSweep/PIXIRectangle.js";
 import { registerPIXICircleMethods } from "./ClockwiseSweep/PIXICircle.js";
 import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge.js";
-import { registerSettings, MODULE_ID } from "./settings.js";
+import { registerSettings } from "./settings.js";
 
 import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
 import {
@@ -68,11 +70,7 @@ Hooks.once("init", async function() {
 Hooks.once("setup", async function() {
   log("Setup...");
   registerSettings();
-  loadTemplates([
-    `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
-    `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,
-    `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
-  ]);
+  loadTemplates(Object.values(TEMPLATES));
 });
 
 /**

@@ -4,14 +4,14 @@ foundry,
 ui,
 renderTemplate,
 AmbientSoundConfig,
-AmbientLightConfig
+AmbientLightConfig,
+TokenConfig
 */
 
 "use strict";
 
 import { log } from "./module.js";
-import { MODULE_ID } from "./settings.js";
-import { KEYS } from "./keys.js";
+import { KEYS, MODULE_ID, TEMPLATES, HTML_INJECTION } from "./const.js";
 import {
   lightMaskUpdateCustomEdgeCache,
   lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";
@@ -22,41 +22,7 @@ import {
  * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
  */
 export async function injectAmbientLightConfiguration(app, html, data) {
-  log("injectAmbientLightConfiguration", app, html, data);
-
-  // Avoid name collisions by using "lightmask"
-  const renderData = {};
-  renderData.lightmask = {
-    shapes: {
-      circle: "lightmask.Circle",
-      ellipse: "lightmask.Ellipse",
-      polygon: "lightmask.RegularPolygon",
-      star: "lightmask.RegularStar",
-      none: "lightmask.None"
-    },
-    isStar: false,
-    isPolygon: false,
-    isEllipse: false
-
-  };
-
-  if ( data.data?.flags?.lightmask?.shape ) {
-    const shape = data.data.flags.lightmask.shape;
-    renderData.lightmask.isStar = shape === "star";
-    renderData.lightmask.isPolygon = shape === "polygon";
-    renderData.lightmask.isEllipse = shape === "ellipse";
-  }
-
-  foundry.utils.mergeObject(data, renderData, {inplace: true});
-
-  const form = html.find("div[data-tab='advanced']:last");
-  const snippet = await renderTemplate(
-    `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`, data);
-
-  log("injectAmbientLightConfiguration snippet", snippet);
-
-  form.append(snippet);
-  app.setPosition(app.position);
+  await injectConfiguration(app, html, data, "LIGHT");
 }
 
 /**
@@ -64,41 +30,7 @@ export async function injectAmbientLightConfiguration(app, html, data) {
  * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
  */
 export async function injectAmbientSoundConfiguration(app, html, data) {
-  log("injectAmbientSoundConfiguration", app, html, data);
-
-
-  // Avoid name collisions by using "lightmask"
-  const renderData = {};
-  renderData.lightmask = {
-    shapes: {
-      circle: "lightmask.Circle",
-      ellipse: "lightmask.Ellipse",
-      polygon: "lightmask.RegularPolygon",
-      star: "lightmask.RegularStar",
-      none: "lightmask.None"
-    },
-    isStar: false,
-    isPolygon: false,
-    isEllipse: false
-  };
-
-  if ( data.data?.flags?.lightmask?.shape ) {
-    const shape = data.data.flags.lightmask.shape;
-    renderData.lightmask.isStar = shape === "star";
-    renderData.lightmask.isPolygon = shape === "polygon";
-    renderData.lightmask.isEllipse = shape === "ellipse";
-  }
-
-  foundry.utils.mergeObject(data, renderData, {inplace: true});
-
-  const form = html.find(".form-group:last");
-  const snippet = await renderTemplate(
-    `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`, data);
-
-  log("injectAmbientSoundConfiguration snippet", snippet);
-
-  form.append(snippet);
-  app.setPosition(app.position);
+  await injectConfiguration(app, html, data, "SOUND");
 }
 
 /**
@@ -106,7 +38,14 @@ export async function injectAmbientSoundConfiguration(app, html, data) {
  * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
  */
 export async function injectTokenLightConfiguration(app, html, data) {
-  log("injectTokenLightConfiguration", app, html, data);
+  await injectConfiguration(app, html, data, "TOKEN");
+}
+
+/**
+ * @param {string} type   See const.js for type.
+ */
+async function injectConfiguration(app, html, data, type) {
+  log(`injectConfiguration for ${type}`, app, html, data);
 
   // Avoid name collisions by using "lightmask"
   const renderData = {};
@@ -121,12 +60,10 @@ export async function injectTokenLightConfiguration(app, html, data) {
     isStar: false,
     isPolygon: false,
     isEllipse: false
-
   };
 
-  let shape = app.isPrototype
-    ? app.token?.data?.flags?.lightmask?.shape : data.object?.flags?.lightmask?.shape;
-
+  const d = type === "TOKEN" ? "object" : "data";
+  const shape = data[d]?.flags?.lightmask?.shape;
   if ( shape ) {
     log(`injectTokenLightConfiguration ${shape}`);
     renderData.lightmask.isStar = shape === "star";
@@ -136,22 +73,15 @@ export async function injectTokenLightConfiguration(app, html, data) {
 
   foundry.utils.mergeObject(data, renderData, {inplace: true});
 
-//   let form = html.find("div[data-group='light']");
-//   form = form.find("div[data-tab='advanced']:last");
+  const form = html.find(HTML_INJECTION[type]);
+  log("injectConfiguration", form);
+  const snippet = await renderTemplate(TEMPLATES[type], data);
 
-  const form = html.find("div[data-group='light']:last");
-  log("injectTokenLightConfiguration", form);
-  const snippet = await renderTemplate(
-    `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`, data);
-
-  log("injectTokenLightConfiguration data", data);
-  log("injectTokenLightConfiguration snippet", snippet);
+  log("injectConfiguration snippet", data, snippet);
 
   form.append(snippet);
   app.setPosition(app.position);
 }
-
-
 
 /**
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
@@ -164,7 +94,6 @@ export function lightMaskActivateListeners(wrapped, html) {
 
   return wrapped(html);
 }
-
 
 /**
  * Add a method to the AmbientLightConfiguration to handle when user
@@ -231,12 +160,8 @@ function onCheckRelative(event) {
 export async function updateRotation(event) {
   log("updateRotation", event, this);
 
-  let doc = this.document;
   let docData = this.document?.data;
-  if ( this instanceof TokenConfig ) {
-    doc = this.token;
-    docData = this.token.data;
-  }
+  if ( this instanceof TokenConfig ) docData = this.token.data;
 
   const rotation = parseInt(event.target.value);
   const newData = {};
@@ -261,9 +186,9 @@ export async function updateShapeIndicator(event) {
   let doc = this.document;
   let docData = this.document?.data;
   if ( this instanceof TokenConfig ) {
-    log("Token data update")
+    log("Token data update");
     doc = this.token;
-    docData = this.token.data;
+    docData = this.isPrototype ? this.actor.data.token : this.token.data;
   }
 
   const shape = event.target.value;
@@ -302,32 +227,6 @@ export async function updateShapeIndicator(event) {
   log(`updateShapeIndicator preview data for ${shape}`, previewData);
   foundry.utils.mergeObject(docData, previewData, {inplace: true});
 }
-
-// From https://discord.com/channels/170995199584108546/811676497965613117/842458752405340200
-// call before super._render
-function saveScrollStates() {
-  if ( this.form === null ) return;
-
-  const html = $(this.form).parent();
-  let lists = $(html.find(".save-scroll"));
-
-  this.scrollStates = [];
-  for ( let list of lists ) this.scrollStates.push($(list).scrollTop());
-}
-
-
-
-// From https://discord.com/channels/170995199584108546/811676497965613117/842458752405340200
-// call after super._render
-function setScrollStates() {
-  if (this.scrollStates) {
-    const html = $(this.form).parent();
-
-    let lists = $(html.find(".save-scroll"));
-    for ( let i = 0; i < lists.length; i++ ) $(lists[i]).scrollTop(this.scrollStates[i]);
-  }
-}
-
 
 /**
  * Retrieve a comma-separated list of wall ids currently controlled on the canvas.

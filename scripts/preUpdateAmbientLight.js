@@ -6,8 +6,7 @@ TokenDocument
 "use strict";
 
 import { log } from "./module.js";
-import { MODULE_ID } from "./settings.js";
-import { KEYS } from "./keys.js";
+import { MODULE_ID, KEYS } from "./const.js";
 
 // Hook preUpdateAmbientLight
 

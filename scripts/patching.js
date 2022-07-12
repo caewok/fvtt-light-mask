@@ -93,7 +93,7 @@ AmbientLightConfig.prototype._onChangeInput
 // Patches
 
 import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./renderAmbientLightConfig.js";
-import { MODULE_ID } from "./settings.js";
+import { MODULE_ID } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
 import { log } from "./module.js";

@@ -7,8 +7,7 @@ import { findIntersectionsSortSingle } from "./ClockwiseSweep/IntersectionsSort.
 import { identifyIntersectionsWithNoEndpoint } from "./ClockwiseSweep/utilities.js";
 import { SimplePolygonEdge } from "./ClockwiseSweep/SimplePolygonEdge.js";
 import { log } from "./module.js";
-import { MODULE_ID } from "./settings.js";
-import { KEYS } from "./keys.js";
+import { KEYS, MODULE_ID } from "./const.js";
 
 /*
 Likely easiest if ClockwiseSweep checks the source object for a method to get a

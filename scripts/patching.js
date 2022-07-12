@@ -92,27 +92,26 @@ AmbientLightConfig.prototype._onChangeInput
 
 // Patches
 
-import { lightMaskActivateListeners, ambientLightConfigOnChangeInput, updateShapeIndicator, updateRotation } from "./renderAmbientLightConfig.js";
+import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./settings.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";
 import { log } from "./module.js";
 
 export function registerLightMask() {
+
+  // ------ Switching Shapes and selecting shape parameters ----- //
+  libWrapper.register(MODULE_ID, "FormApplication.prototype._onChangeInput", formApplicationChangeInput, "WRAPPER");
+
+  // ------ AmbientLightConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-
-//   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype._onChangeInput", ambientLightConfigOnChangeInput, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
 
+  // ------ AmbientSoundConfig ----- //
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsSound, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
-  libWrapper.register(MODULE_ID, "FormApplication.prototype._onChangeInput", formApplicationChangeInput, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsSound, "WRAPPER");
 
   Object.defineProperty(AmbientSoundConfig.prototype, "_refresh", {
     value: refreshSound,
@@ -120,11 +119,20 @@ export function registerLightMask() {
     configurable: true
   });
 
+  // ------ TokenConfig ----- //
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
+
   Object.defineProperty(TokenConfig.prototype, "_refresh", {
     value: refreshToken,
     writable: true,
     configurable: true
   });
+
+
+  // ------ DefaultTokenConfig ----- //
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
+
 }
 
 async function formApplicationChangeInput(wrapper, event) {
@@ -149,14 +157,16 @@ async function formApplicationChangeInput(wrapper, event) {
 
   // Refresh the sound or token light shape
   // AmbientLight gets refreshed automatically
-  refresh && (this instanceof AmbientSoundConfig || this instanceof TokenConfig) && this._refresh();
+  // Default Token Config and Prototype Token are not on the map, so cannot be refreshed.
+  refresh &&= !this.token || !(this.isPrototype);
+  refresh &&= !(this instanceof DefaultTokenConfig);
+  refresh &&= (this instanceof AmbientSoundConfig || this instanceof TokenConfig);
+  refresh && this._refresh();
   render && this._render(); // Update the rendered config html options for the new shape
 
-  const out = await wrapper(event);
-
-  return out;
+  log(`formApplicationChangeInput render ${render}; refresh ${refresh}`);
+  return await wrapper(event);
 }
-
 
 
 function refreshSound() {
@@ -173,28 +183,12 @@ function refreshToken() {
   this.token.object.refresh();
 }
 
-// function defaultOptions(wrapper) {
-//   const options = wrapper();
-// //   options.scrollY = [".tab"]; // nada
-// //   options.scrollY = [".tabs > .tab"]; // nope
-// //   options.scrollY = ["#lightmaskshapes"]; // dream-on
-// // scrollY: [".tab .lightmask"] // fail
-// // scrollY: [".tab.advanced"] // nothing
-// //     scrollY: [".ambient-light-config"] // no
-//
-//   return mergeObject(options, {
-//     scrollY: [".window-content"]
-//   });
-// }
-
 function defaultOptionsSound(wrapper) {
   const options = wrapper();
   return foundry.utils.mergeObject(options, {
     height: "auto"
   })
 }
-
-
 
 Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
   value: boundaryPolygon,
@@ -221,14 +215,6 @@ Object.defineProperty(SoundSource.prototype, "customEdges", {
   configurable: true
 });
 
-
-function switchAmbientTokenLightTemplate(wrapper) {
-  const cfg = wrapper();
-  log("switchAmbientTokenLightTemplate", cfg);
-  cfg.template = `modules/${MODULE_ID}/templates/token-config.html`;
-  return cfg;
-}
-
 function ambientSourceGetData(wrapper, options) {
   log('ambientSourceGetData')
   const data = wrapper(options);
@@ -237,7 +223,6 @@ function ambientSourceGetData(wrapper, options) {
   if ( data.data?.flags?.lightmask?.shape ) return data;
   return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
 }
-
 
 async function tokenSourceGetData(wrapper, options) {
   const data = await wrapper(options);

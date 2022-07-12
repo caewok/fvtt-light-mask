@@ -21,6 +21,7 @@ import {
   injectAmbientLightConfiguration,
   injectAmbientSoundConfiguration,
   injectTokenLightConfiguration } from "./renderAmbientLightConfig.js";
+
 import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
 
 /**
@@ -70,10 +71,6 @@ Hooks.once("setup", async function() {
   loadTemplates([
     `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
     `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,
-//     `modules/${MODULE_ID}/templates/ambient-light-config.html`,
-//     `modules/${MODULE_ID}/templates/sound-config.html`,
-//     `modules/${MODULE_ID}/templates/token-lighting.html`,
-//     `modules/${MODULE_ID}/templates/token-config.html`,
     `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
   ]);
 });
@@ -106,7 +103,5 @@ Hooks.on("renderAmbientSoundConfig", injectAmbientSoundConfiguration);
 Hooks.on("renderTokenConfig", injectTokenLightConfiguration);
 
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
-
 Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
-
 Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);

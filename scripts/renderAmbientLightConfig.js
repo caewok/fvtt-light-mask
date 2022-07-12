@@ -124,8 +124,11 @@ export async function injectTokenLightConfiguration(app, html, data) {
 
   };
 
-  if ( data.object?.flags?.lightmask?.shape ) {
-    const shape = data.object.flags.lightmask.shape;
+  let shape = app.isPrototype
+    ? app.token?.data?.flags?.lightmask?.shape : data.object?.flags?.lightmask?.shape;
+
+  if ( shape ) {
+    log(`injectTokenLightConfiguration ${shape}`);
     renderData.lightmask.isStar = shape === "star";
     renderData.lightmask.isPolygon = shape === "polygon";
     renderData.lightmask.isEllipse = shape === "ellipse";
@@ -137,29 +140,18 @@ export async function injectTokenLightConfiguration(app, html, data) {
 //   form = form.find("div[data-tab='advanced']:last");
 
   const form = html.find("div[data-group='light']:last");
-//   const form = html.find("div[data-group='light'], div[data-group='advanced']")[2];
   log("injectTokenLightConfiguration", form);
   const snippet = await renderTemplate(
     `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`, data);
 
+  log("injectTokenLightConfiguration data", data);
   log("injectTokenLightConfiguration snippet", snippet);
 
   form.append(snippet);
   app.setPosition(app.position);
 }
 
-export async function ambientLightConfigOnChangeInput(wrapper, event) {
-  log("ambientLightConfigOnChangeInput", event, this);
 
-  log(`Event target is ${event.target.id} with type ${event.target.type}`, event.target);
-
-  if ( event.target.id === "lightmaskshapes" ) {
-    log("Calling updateShapeIndicator");
-    await updateShapeIndicator.call(this, event);
-  }
-
-  return wrapper(event);
-}
 
 /**
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
@@ -269,6 +261,7 @@ export async function updateShapeIndicator(event) {
   let doc = this.document;
   let docData = this.document?.data;
   if ( this instanceof TokenConfig ) {
+    log("Token data update")
     doc = this.token;
     docData = this.token.data;
   }
@@ -278,6 +271,9 @@ export async function updateShapeIndicator(event) {
 
   const num_sides = doc.getFlag(MODULE_ID, KEYS.SIDES);
   const minor = doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
+  log(`${shape}; ${num_sides} sides/points; ${minor} ellipse minor`);
+
+
   if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
     newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
   } else if ( shape === "star" && (!num_sides || num_sides < 5) ) {

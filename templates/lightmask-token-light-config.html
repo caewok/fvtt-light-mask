@@ -1,9 +1,10 @@
 <fieldset>
   <legend>{{ localize "lightmask.AmbientConfiguration.LegendTitle" }}</legend>
+
     <div class="form-group">
       <label>{{ localize "LIGHT.Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
       <div class="form-fields">
-        {{ rangePicker name="flags.lightmask.rotation" value=object.flags.lightmask.rotation min="0" max="360" }}
+        {{ rangePicker id="lightmaskrotation" name="flags.lightmask.rotation" value=object.flags.lightmask.rotation min="0" max="360" step="1" }}
       </div>
     </div>
 
@@ -11,12 +12,12 @@
       <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
       <div class="form-fields">
         <select id="lightmaskshapes" name="flags.lightmask.shape">
-          {{ selectOptions shapes selected=object.flags.lightmask.shape localize=true }}
+          {{ selectOptions lightmask.shapes selected=object.flags.lightmask.shape localize=true }}
         </select>
       </div>
     </div>
 
-    {{#if object.flags.lightmask.isPolygon }}
+    {{#if lightmask.isPolygon }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
@@ -26,17 +27,17 @@
     </div>
     {{/if}}
 
-    {{#if object.flags.lightmask.isStar }}
+    {{#if lightmask.isStar }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
       <div class="form-fields">
-        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="5" value={{ object.flags.lightmask.sides }}>
+        <input type="number" id="lightmaskpoints" name="flags.lightmask.sides" step="1" min="5" value={{ object.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
     </div>
     {{/if}}
 
-    {{#if object.flags.lightmask.isEllipse }}
+    {{#if lightmask.isEllipse }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
       <div class="form-fields">
@@ -46,6 +47,7 @@
     </div>
     {{/if}}
 
+    {{#if lightmask.displayCached }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.CachedWallID.Name" }}</label>
       <div class="form-fields">
@@ -60,11 +62,11 @@
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.Relative.Hint.Light" }}</p>
     </div>
 
-
     <div class="form-group">
       <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Name" }}</button>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Hint" }}</p>
     </div>
+    {{/if}}
 
   </legend>
 </fieldset>

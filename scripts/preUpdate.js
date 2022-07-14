@@ -6,11 +6,7 @@ TokenDocument
 "use strict";
 
 import { log } from "./module.js";
-import { MODULE_ID } from "./settings.js";
-import { KEYS } from "./keys.js";
-
-// Hook preUpdateAmbientLight
-
+import { MODULE_ID, KEYS } from "./const.js";
 
 /**
  * Hook for preUpdateAmbientLight
@@ -26,7 +22,6 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   if (ids_to_add) {
     // Retrieve the existing cache, if any
     let edges_cache = doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
-    log(`edges_cache length ${edges_cache.length} before additions`, edges_cache);
     edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
     // Add the edges cache
@@ -49,8 +44,6 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
       new_origin.x += offsetX;
       new_origin.y += offsetY;
     }
-
-    log(`preUpdateAmbientLight updating origin to ${new_origin.x}, ${new_origin.y}`);
 
     new_data[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = new_origin;
   } else if (relative_key === false) {
@@ -82,6 +75,12 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   }
 }
 
+/**
+ * Cache walls for a given source.
+ * @param {Object[]} edges_cache    Cache of select wall data. Coordinates, types, id.
+ * @param {String} custom_ids       Wall IDs separated by a comma, no space.
+ * @return {Object[]} The updated edges cache.
+ */
 export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
   if (!custom_ids || custom_ids === "") {
     // No custom ids, clear existing mapping
@@ -123,6 +122,12 @@ export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
   return edges_cache;
 }
 
+/**
+ * Shift all edges in the cacche by a provided vector, delta.
+ * @param {Object[]} edges_cache    Cache of select wall data. Coordinates, types, id.
+ * @param {Object} delta            Object with dx, dy properties representing a vector
+ * @return {Object[]} edges_cache
+ */
 export function lightMaskShiftCustomEdgeCache(edges_cache, delta) {
   log(`lightMaskShiftCustomEdgeCache delta is ${delta.dx}, ${delta.dy}`, edges_cache);
   edges_cache.forEach(e => {

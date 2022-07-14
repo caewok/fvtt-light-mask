@@ -5,8 +5,7 @@ game
 "use strict";
 
 import { log } from "./module.js";
-
-export const MODULE_ID = "lightmask";
+import { MODULE_ID } from "./const.js";
 
 export const SETTINGS = {
   SWEEP_ALWAYS: "use-lightmask-sweep-always"

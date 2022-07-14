@@ -5,12 +5,12 @@
       <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
       <div class="form-fields">
         <select id="lightmaskshapes" name="flags.lightmask.shape">
-          {{ selectOptions shapes selected=data.flags.lightmask.shape localize=true }}
+          {{ selectOptions lightmask.shapes selected=data.flags.lightmask.shape localize=true }}
         </select>
       </div>
     </div>
 
-    {{#if data.flags.lightmask.isPolygon }}
+    {{#if lightmask.isPolygon }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
@@ -20,17 +20,17 @@
     </div>
     {{/if}}
 
-    {{#if data.flags.lightmask.isStar }}
+    {{#if lightmask.isStar }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
       <div class="form-fields">
-        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="5" value={{ data.flags.lightmask.sides }}>
+        <input type="number" id="lightmaskpoints" name="flags.lightmask.sides" step="1" min="5" value={{ data.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
     </div>
     {{/if}}
 
-    {{#if data.flags.lightmask.isEllipse }}
+    {{#if lightmask.isEllipse }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
       <div class="form-fields">

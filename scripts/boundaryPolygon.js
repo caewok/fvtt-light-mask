@@ -6,8 +6,7 @@ canvas
 
 import { log } from "./module.js";
 import { RegularPolygon, RegularStar } from "./GeometricShapes.js";
-import { MODULE_ID } from "./settings.js";
-import { KEYS } from "./keys.js";
+import { MODULE_ID, KEYS } from "./const.js";
 import { Ellipse } from "./Ellipse.js";
 
 /**
@@ -28,7 +27,6 @@ export function boundaryPolygon(origin, radius, rotation = 0) {
   const minor = (doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
   rotation = doc.getFlag(MODULE_ID, KEYS.ROTATION) || rotation; // Is this necessary? Possibly for sounds.
 
-  log(`Using boundaryPolygon ${shape} at origin ${origin.x},${origin.y} with radius ${radius}, sides ${sides}, rotation ${rotation}, minor ${minor}`);
   switch (shape) {
     case "circle": return new PIXI.Circle(origin.x, origin.y, radius);
 

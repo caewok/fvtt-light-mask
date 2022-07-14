@@ -22,9 +22,9 @@ import {
   controlledWallIDs,
   injectAmbientLightConfiguration,
   injectAmbientSoundConfiguration,
-  injectTokenLightConfiguration } from "./renderAmbientLightConfig.js";
+  injectTokenLightConfiguration } from "./render.js";
 
-import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
+import { lightMaskPreUpdateAmbientLight } from "./preUpdate.js";
 
 /**
  * Log message only when debug flag is enabled from DevMode module.

@@ -1,96 +1,13 @@
 /* globals
 libWrapper,
-AmbientLight,
 LightSource,
 SoundSource,
+AmbientSoundConfig,
+DefaultTokenConfig,
+TokenConfig,
 foundry
 */
 "use strict";
-
-/* Light Configuration Flow
-1. New Light Created
-Hook: initializeLightSourceShaders
-Hook: lightingRefresh (repeated until light is placed)
-Hook: sightRefresh (repeated until light is placed)
-
-Once placed:
-Hook: preCreateAmbientLight
-Hook: initializeLightSourceShaders
-Hook: createAmbientLight
-Hook: lightingRefresh
-Hook: sightRefresh
-Hook: sightRefresh
-
-Hovering over light icon:
-Hook: hoverAmbientLight
-AmbientLightConfig.prototype._render
-AmbientLightConfig.prototype.getData
-
-Double-click to open config
-Retrieved and compiled template templates/scene/ambient-light-config.html
-Hook: getAmbientLightConfigHeaderButtons
-Hook: getDocumentSheetHeaderButtons
-Hook: getFormApplicationHeaderButtons
-Hook: getApplicationHeaderButtons
-Retrieved and compiled template templates/app-window.html
-AmbientLightConfig.prototype.activateListeners
-injectAmbientLightConfiguration
-Hook: renderAmbientLightConfig
-Hook: renderDocumentSheet
-Hook: renderFormApplication
-Hook: renderApplication
-Hook: hoverAmbientLight
-
-Switch color
-AmbientLightConfig.prototype._onChangeInput (Event target is  with type color)
-AmbientLightConfig.prototype._getSubmitData
-AmbientLightConfig.prototype._refresh
-ClockwiseSweepPolygon
-Hook: initializeLightSourceShaders
-Hook: lightingRefresh
-Hook: sightRefresh
-
-Hit submit
-AmbientLightConfig.prototype._getSubmitData
-AmbientLightConfig.prototype._refresh
-ClockwiseSweepPolygon
-Hook: initializeLightSourceShaders
-Hook: lightingRefresh
-Hook: sightRefresh
-AmbientLightConfig.prototype._getSubmitData
-AmbientLightConfig.prototype._updateObject
-Hook: preUpdateAmbientLight
-AmbientLightConfig.prototype._render
-ClockwiseSweepPolygon
-Hook: updateAmbientLight
-Hook: closeAmbientLightConfig
-Hook: closeDocumentSheet
-Hook: closeFormApplication
-Hook: closeApplication
-Hook: lightingRefresh
-Hook: sightRefresh
-
-
-*/
-
-/*
-Changing color method flow
-AmbientLightConfig.prototype._onChangeInput
-  FormApplication.prototype._onChangeInput
-    FormApplication.prototype._onChangeColorPicker
-      form[input.dataset.edit].value = input.value;
-  AmbientLightConfig.prototype._getSubmitData
-  foundry.utils.mergeObject
-  AmbientLightConfig.prototype._refresh
-    AmbientLight.prototype.updateSource
-    AmbientLight.prototype.refresh
-
-
-*/
-
-
-
-// Patches
 
 import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./renderAmbientLightConfig.js";
 import { MODULE_ID } from "./const.js";
@@ -101,20 +18,19 @@ import { log } from "./module.js";
 export function registerLightMask() {
 
   // ------ Switching Shapes and selecting shape parameters ----- //
-  libWrapper.register(MODULE_ID, "FormApplication.prototype._onChangeInput", formApplicationChangeInput, "WRAPPER");
+  libWrapper.register(MODULE_ID, "FormApplication.prototype._onChangeInput", onChangeInputFormApplication, "WRAPPER");
 
   // ------ AmbientLightConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", getDataAmbientSource, "WRAPPER");
 
   // ------ AmbientSoundConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", ambientSourceGetData, "WRAPPER");
-
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsSound, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", getDataAmbientSource, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsAmbientSoundConfig, "WRAPPER");
 
   Object.defineProperty(AmbientSoundConfig.prototype, "_refresh", {
-    value: refreshSound,
+    value: refreshAmbientSoundConfig,
     writable: true,
     configurable: true
   });
@@ -124,56 +40,69 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
 
   Object.defineProperty(TokenConfig.prototype, "_refresh", {
-    value: refreshToken,
+    value: refreshTokenConfig,
     writable: true,
     configurable: true
   });
 
-
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-
-
-  libWrapper.register(MODULE_ID, "Application.prototype._render", asyncTracker, "WRAPPER", {bind: ["Application.prototype._render"]});
-  libWrapper.register(MODULE_ID, "FormApplication.prototype._render", asyncTracker, "WRAPPER", {bind: ["FormApplication.prototype._render"]});
-
-  libWrapper.register(MODULE_ID, "FormApplication.prototype.getData", tracker, "WRAPPER", {bind: ["FormApplication.prototype.getData"]});
-//   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tracker, "WRAPPER", {bind: ["TokenConfig.prototype.getData"]});
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", getDataDefaultTokenConfig, "WRAPPER");
 
-  libWrapper.register(MODULE_ID, "FormApplication.prototype._getSubmitData", tracker, "WRAPPER", {bind: ["FormApplication.prototype._getSubmitData"]});
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype._getSubmitData", tracker, "WRAPPER", {bind: ["TokenConfig.prototype._getSubmitData"]});
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype._getSubmitData", tracker, "WRAPPER", {bind: ["DefaultTokenConfig.prototype._getSubmitData"]});
 
-  libWrapper.register(MODULE_ID, "FormApplication.prototype._onSubmit", asyncTracker, "WRAPPER", {bind: ["FormApplication.prototype._onSubmit"]});
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype._onSubmit", asyncTracker, "WRAPPER", {bind: ["TokenConfig.prototype._onSubmit"]});
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype._onSubmit", asyncTracker, "WRAPPER", {bind: ["DefaultTokenConfig.prototype._onSubmit"]});
+  // ----- Light Source ----- //
+  Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
+    value: boundaryPolygon,
+    writable: true,
+    configurable: true
+  });
 
-  libWrapper.register(MODULE_ID, "FormApplication.prototype._updateObject", asyncTracker, "WRAPPER", {bind: ["FormApplication.prototype._updateObject"]});
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype._updateObject", asyncTracker, "WRAPPER", {bind: ["TokenConfig.prototype._updateObject"]});
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype._updateObject", asyncTracker, "WRAPPER", {bind: ["DefaultTokenConfig.prototype._updateObject"]});
+  Object.defineProperty(LightSource.prototype, "customEdges", {
+    value: customEdges,
+    writable: true,
+    configurable: true
+  });
+
+  // ----- Sound Source ----- //
+  Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
+    value: boundaryPolygon,
+    writable: true,
+    configurable: true
+  });
+
+  Object.defineProperty(SoundSource.prototype, "customEdges", {
+    value: customEdges,
+    writable: true,
+    configurable: true
+  });
 }
 
-// Force DefaultTokenConfig to pull from local
+/**
+ * Wrapper for DefaultTokenConfig.prototype.getData
+ * Force to pull data from local, not source.
+ * This fixes an issue where Application.prototype._render was not getting the updated
+ * shape selection when using getData, which it needs to pass to the render hook.
+ * @param {Function} wrapper
+ * @param {Object} options      See DefaultTokenConfig.prototype.getData
+ * @return {Object|Promise}
+ */
 async function getDataDefaultTokenConfig(wrapper, options) {
-  log(`getDataDefaultTokenConfig`);
+  log("getDataDefaultTokenConfig");
   const out = await wrapper(options);
   out.object = this.data.toObject(false);
   return out;
 }
 
-async function asyncTracker(wrapper, name, ...args) {
-  log(`${name}`);
-  return wrapper(...args);
-}
-
-function tracker(wrapper, name, ...args) {
-  log(`${name}`);
-  return wrapper(...args);
-}
-
-
-async function formApplicationChangeInput(wrapper, event) {
+/**
+ * Wrapper for FormApplication.prototype._onChangeInput
+ * Refresh if rotating shape or changing shape parameters.
+ * Render the configuration application window if updating shape, so the
+ * correct shape parameters are displayed.
+ * @param {Function} wrapper
+ * @param {Object} event      The initial change event
+ * @return {undefined|Promise}
+ */
+async function onChangeInputFormApplication(wrapper, event) {
   log("formApplicationChangeInput", event, this);
 
   if ( event.type !== "change" ) return wrapper(event);
@@ -182,11 +111,11 @@ async function formApplicationChangeInput(wrapper, event) {
   let render = false;
 
   if ( event.target.name === "flags.lightmask.rotation" ) {
-    log("LightMask rotation")
+    log("LightMask rotation");
     await updateRotation.call(this, event);
     refresh = true;
   } else {
-    // lightmaskshapes, lightmasksides, lightmaskpoints, lightmaskEllipseMinor
+    // Covers: lightmaskshapes, lightmasksides, lightmaskpoints, lightmaskEllipseMinor
     // If changing shapes, we need to update the sub-parameter selections.
     refresh = true;
     render = event.target.id === "lightmaskshapes";
@@ -199,62 +128,60 @@ async function formApplicationChangeInput(wrapper, event) {
   refresh &&= !this.token || !(this.isPrototype);
   refresh &&= !(this instanceof DefaultTokenConfig);
   refresh &&= (this instanceof AmbientSoundConfig || this instanceof TokenConfig);
-  refresh && this._refresh();
-  render && this._render(); // Update the rendered config html options for the new shape
+  refresh && this._refresh(); // eslint-disable-line no-unused-expressions
+
+  // Update the rendered config html options for the new shape
+  render && this._render(); // eslint-disable-line no-unused-expressions
 
   log(`formApplicationChangeInput render ${render}; refresh ${refresh}`);
   return await wrapper(event);
 }
 
 
-function refreshSound() {
+/**
+ * Add refresh functionality for sound configuration.
+ * Based on refresh for AmbientLightConfig
+ */
+function refreshAmbientSoundConfig() {
   log("refreshSound", this);
   if ( !this.document.object ) return;
   this.document.object.updateSource();
   this.document.object.refresh();
 }
 
-function refreshToken() {
+/**
+ * Add refresh functionality for token configuration.
+ * Based on refresh for AmbientLightConfig
+ */
+function refreshTokenConfig() {
   log("refreshToken", this);
   if ( !this.token.object ) return;
   this.token.object.updateSource();
   this.token.object.refresh();
 }
 
-function defaultOptionsSound(wrapper) {
+/**
+ * Wrapper for AmbientSoundConfig.defaultOptions
+ * Make the sound config window resize height automatically, to accommodate
+ * different shape parameters.
+ * @param {Function} wrapper
+ * @return {Object} See AmbientSoundConfig.defaultOptions.
+ */
+function defaultOptionsAmbientSoundConfig(wrapper) {
   const options = wrapper();
   return foundry.utils.mergeObject(options, {
     height: "auto"
-  })
+  });
 }
 
-Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
-  value: boundaryPolygon,
-  writable: true,
-  configurable: true
-});
-
-Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
-  value: boundaryPolygon,
-  writable: true,
-  configurable: true
-});
-
-
-Object.defineProperty(LightSource.prototype, "customEdges", {
-  value: customEdges,
-  writable: true,
-  configurable: true
-});
-
-Object.defineProperty(SoundSource.prototype, "customEdges", {
-  value: customEdges,
-  writable: true,
-  configurable: true
-});
-
-function ambientSourceGetData(wrapper, options) {
-  log('ambientSourceGetData', this)
+/**
+ * Set the starting shape flag if none set for a given source
+ * @param {Function} wrapper
+ * @param {Object} options      See underlying method
+ * @return {Object}
+ */
+function getDataAmbientSource(wrapper, options) {
+  log("ambientSourceGetData", this);
   const data = wrapper(options);
 
   // When first loaded, a light may not have flags.lightmask.
@@ -262,6 +189,12 @@ function ambientSourceGetData(wrapper, options) {
   return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
 }
 
+/**
+ * Set the starting shape flag and other settings for a given token source
+ * @param {Function} wrapper
+ * @param {Object} options      See underlying method
+ * @return {Object}
+ */
 async function tokenSourceGetData(wrapper, options) {
   log("tokenSourceGetData", options, this);
   const data = await wrapper(options);

@@ -47,11 +47,6 @@ export async function injectTokenLightConfiguration(app, html, data) {
 async function injectConfiguration(app, html, data, type) {
   log(`injectConfiguration for ${type}`, app, html, data);
 
-  log(`Token: ${app.token?.data?.flags?.lightmask?.shape}
-  \nObject: ${app.object?.data?.flags?.lightmask?.shape}
-  \nApp Data: ${app?.data?.flags?.lightmask?.shape}
-  \nData: ${data.object?.flags?.lightmask?.shape}`);
-
   // Do not display wall caching selectors for the token prototype or
   // default token config, because those only function at a per-scene level
   const displayCached = !app.isPrototype && !(app instanceof DefaultTokenConfig);
@@ -84,10 +79,7 @@ async function injectConfiguration(app, html, data, type) {
   foundry.utils.mergeObject(data, renderData, {inplace: true});
 
   const form = html.find(HTML_INJECTION[type]);
-  log("injectConfiguration", form);
   const snippet = await renderTemplate(TEMPLATES[type], data);
-
-  log("injectConfiguration snippet", data, snippet);
 
   form.append(snippet);
   app.setPosition(app.position);
@@ -146,7 +138,6 @@ function onCheckRelative(event) {
   const newData = {};
   if (event.target.checked) {
     // Update with the new origin
-    log(`lightMaskOnCheckRelative current origin ${current_origin.x}, ${current_origin}`);
     newData[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = current_origin;
 
   } else {
@@ -182,10 +173,7 @@ export async function updateRotation(event) {
   const newData = {};
   newData[`flags.${MODULE_ID}.${KEYS.ROTATION}`] = rotation;
 
-  log(`updateRotation constructed data for ${rotation}`, newData);
-
   const previewData = this._getSubmitData(newData);
-  log(`updateRotation preview data for ${rotation}`, previewData);
   foundry.utils.mergeObject(docData, previewData, {inplace: true});
 }
 
@@ -197,11 +185,6 @@ export async function updateRotation(event) {
  */
 export async function updateShapeIndicator(event) {
   log("updateShapeIndicator", event, this);
-
-    log(`Token: ${this?.token?.data?.flags?.lightmask?.shape}
-  \nObject: ${this?.object?.data?.flags?.lightmask?.shape}
-  \nData: ${this?.data?.flags?.lightmask?.shape}`);
-
 
   let doc = this.document;
   let docData = this.document?.data;
@@ -222,8 +205,6 @@ export async function updateShapeIndicator(event) {
 
   const num_sides = doc.getFlag(MODULE_ID, KEYS.SIDES);
   const minor = doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
-  log(`${shape}; ${num_sides} sides/points; ${minor} ellipse minor`);
-
 
   if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
     newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
@@ -247,29 +228,9 @@ export async function updateShapeIndicator(event) {
     }
   }
 
-//   if ( this instanceof DefaultTokenConfig ) {
-//     newData[`flags.${MODULE_ID}.shape`] = shape;
-//   }
-  // foundry.utils.flattenObject
   const previewData = this._getSubmitData(newData);
-  log(`updateShapeIndicator preview data for ${previewData?.flags?.lightmask?.shape || previewData["flags.lightmask.shape"]}`, previewData);
   foundry.utils.mergeObject(docData, previewData, {inplace: true});
-  log(`updateShapeIndictor final data for shape ${docData?.flags?.lightmask?.shape}`, docData, this);
-
-//   if ( this instanceof DefaultTokenConfig ) {
-//     foundry.utils.mergeObject(this.data, previewData, {inplace: true});
-//     log(`updateShapeIndictor final data for shape ${this.data?.flags?.lightmask?.shape}`, this.data, this);
-//   }
-
-//   if ( this instanceof DefaultTokenConfig ) {
-//     previewData.flags.lightmask.shape = shape;
-//     foundry.utils.mergeObject(this.data, previewData, {inplace: true});
-//   }
-
-  log(`Token: ${this?.token?.data?.flags?.lightmask?.shape}
-  \nObject: ${this?.object?.data?.flags?.lightmask?.shape}
-  \nData: ${this?.data?.flags?.lightmask?.shape}`);
-  }
+}
 
 /**
  * Retrieve a comma-separated list of wall ids currently controlled on the canvas.

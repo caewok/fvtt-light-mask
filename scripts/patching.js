@@ -22,11 +22,11 @@ export function registerLightMask() {
 
   // ------ AmbientLightConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", getDataAmbientSource, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", getDataAmbientConfig, "WRAPPER");
 
   // ------ AmbientSoundConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", getDataAmbientSource, "WRAPPER");
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", getDataAmbientConfig, "WRAPPER");
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsAmbientSoundConfig, "WRAPPER");
 
   Object.defineProperty(AmbientSoundConfig.prototype, "_refresh", {
@@ -37,7 +37,7 @@ export function registerLightMask() {
 
   // ------ TokenConfig ----- //
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tokenSourceGetData, "WRAPPER");
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, "WRAPPER");
 
   Object.defineProperty(TokenConfig.prototype, "_refresh", {
     value: refreshTokenConfig,
@@ -175,13 +175,14 @@ function defaultOptionsAmbientSoundConfig(wrapper) {
 }
 
 /**
- * Set the starting shape flag if none set for a given source
+ * Set the starting shape flag if none set for a given source.
+ * Light and Sound sources are not async.
  * @param {Function} wrapper
  * @param {Object} options      See underlying method
  * @return {Object}
  */
-function getDataAmbientSource(wrapper, options) {
-  log("ambientSourceGetData", this);
+function getDataAmbientConfig(wrapper, options) {
+  log("getDataAmbientConfig", this);
   const data = wrapper(options);
 
   // When first loaded, a light may not have flags.lightmask.
@@ -190,39 +191,26 @@ function getDataAmbientSource(wrapper, options) {
 }
 
 /**
- * Set the starting shape flag and other settings for a given token source
+ * Set the starting shape flag and other settings for a given token source.
+ * Token sources use an async getData method.
  * @param {Function} wrapper
  * @param {Object} options      See underlying method
  * @return {Object}
  */
-async function tokenSourceGetData(wrapper, options) {
-  log("tokenSourceGetData", options, this);
+async function getDataTokenConfig(wrapper, options) {
+  log("getDataTokenConfig", options, this);
   const data = await wrapper(options);
 
-  // When first loaded, a light may not have flags.lightmask.
-  // But afterward, set the boolean so that the UI shows sides or points if necessary.
-  let isStar = false;
-  let isPolygon = false;
-  let isEllipse = false;
-
   // Location of the flag depends on type of source
-  const loc = this instanceof DefaultTokenConfig ? data.flags?.lightmask?.shape : data.object?.flags?.lightmask?.shape;
-  if ( loc ) {
-    isStar = loc === "star";
-    isPolygon = loc === "polygon";
-    isEllipse = loc === "ellipse";
-  }
 
-  return foundry.utils.mergeObject(data, {
-    shapes: {
-      circle: "lightmask.Circle",
-      ellipse: "lightmask.Ellipse",
-      polygon: "lightmask.RegularPolygon",
-      star: "lightmask.RegularStar",
-      none: "lightmask.None"
-    },
-    "object.flags.lightmask.isStar": isStar,
-    "object.flags.lightmask.isPolygon": isPolygon,
-    "object.flags.lightmask.isEllipse": isEllipse
-  });
+  const shape = this instanceof DefaultTokenConfig
+    ? data.flags?.lightmask?.shape
+    : data.object?.flags?.lightmask?.shape;
+  if ( shape ) return data;
+
+  if ( this instanceof DefaultTokenConfig ) {
+    return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
+  } else {
+    return foundry.utils.mergeObject(data, { "data.object.flags.lightmask.shape": "circle" });
+  }
 }

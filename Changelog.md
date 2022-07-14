@@ -1,7 +1,9 @@
 ## 0.4.0
 Switch to better approach for injecting Light Mask settings into the light/sound configuration applications. This should greatly improve compatibility with other modules that might modify the light/sound configuration.
 
-Setting the prototype token and world default token settings for Light Mask should now work properly. Now prevents the user from attempting to set the wall cache parameters for a prototype token or default token because those must be set at a per-scene level for a given token.
+Setting the prototype token and world default token settings for Light Mask should now work properly. Removes the wall cache parameters when configuring a prototype token or default token because those must be set at a per-scene level for a given token.
+
+Sound and Token configurations now refresh instantaneously when changing the parameters of a sound or light shape, respectively.
 
 ## 0.3.6
 Fix when caching walls relative to a token, to prevent the walls from "shifting". Fixes [issue #10](https://github.com/caewok/fvtt-light-mask/issues/10)

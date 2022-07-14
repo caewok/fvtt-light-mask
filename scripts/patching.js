@@ -9,7 +9,7 @@ foundry
 */
 "use strict";
 
-import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./renderAmbientLightConfig.js";
+import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./render.js";
 import { MODULE_ID } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { customEdges } from "./customEdges.js";

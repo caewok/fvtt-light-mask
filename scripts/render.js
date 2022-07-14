@@ -14,7 +14,7 @@ import { log } from "./module.js";
 import { KEYS, MODULE_ID, TEMPLATES, HTML_INJECTION } from "./const.js";
 import {
   lightMaskUpdateCustomEdgeCache,
-  lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";
+  lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
 
 
 /**

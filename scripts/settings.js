@@ -7,7 +7,6 @@ game
 import { log } from "./module.js";
 import { MODULE_ID } from "./const.js";
 
-
 export const SETTINGS = {
   SWEEP_ALWAYS: "use-lightmask-sweep-always"
 };

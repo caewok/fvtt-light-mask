@@ -8,9 +8,6 @@ TokenDocument
 import { log } from "./module.js";
 import { MODULE_ID, KEYS } from "./const.js";
 
-// Hook preUpdateAmbientLight
-
-
 /**
  * Hook for preUpdateAmbientLight
  * @param {AmbientLightDocument} doc
@@ -81,6 +78,12 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   }
 }
 
+/**
+ * Cache walls for a given source.
+ * @param {Object[]} edges_cache    Cache of select wall data. Coordinates, types, id.
+ * @param {String} custom_ids       Wall IDs separated by a comma, no space.
+ * @return {Object[]} The updated edges cache.
+ */
 export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
   if (!custom_ids || custom_ids === "") {
     // No custom ids, clear existing mapping
@@ -122,6 +125,12 @@ export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
   return edges_cache;
 }
 
+/**
+ * Shift all edges in the cacche by a provided vector, delta.
+ * @param {Object[]} edges_cache    Cache of select wall data. Coordinates, types, id.
+ * @param {Object} delta            Object with dx, dy properties representing a vector
+ * @return {Object[]} edges_cache
+ */
 export function lightMaskShiftCustomEdgeCache(edges_cache, delta) {
   log(`lightMaskShiftCustomEdgeCache delta is ${delta.dx}, ${delta.dy}`, edges_cache);
   edges_cache.forEach(e => {

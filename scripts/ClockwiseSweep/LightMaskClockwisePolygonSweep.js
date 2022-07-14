@@ -23,8 +23,8 @@ import { ClipperLib } from "./clipper_unminified.js";
 
 // This import is needed only to check for lightmask properties and if not present,
 // fall back on default ClockwiseSweep. Could in theory run this ClockwiseSweep for all.
-import { getSetting, MODULE_ID, SETTINGS } from "../settings.js";
-import { KEYS } from "../keys.js";
+import { getSetting, SETTINGS } from "../settings.js";
+import { KEYS, MODULE_ID } from "../const.js";
 
 /*
 Basic concept:
@@ -112,7 +112,7 @@ export class LightMaskClockwisePolygonSweep extends ClockwiseSweepPolygon {
     this.edges = new Map(); // ** NEW ** //
     this.collisions = []; // ** NEW ** Collisions formatted as [{x, y}, ...]
 
-    log(`LightMask initialize ${cfg.source?.id} with radius ${cfg.radius}, rotation ${cfg.rotation}, and origin ${this.origin.x}, ${this.origin.y}`, cfg.source);
+//     log(`LightMask initialize ${cfg.source?.id} with radius ${cfg.radius}, rotation ${cfg.rotation}, and origin ${this.origin.x}, ${this.origin.y}`, cfg.source);
 
     // Testing method of intersection
     cfg.findIntersectionsSingle ||= findIntersectionsSortSingle;

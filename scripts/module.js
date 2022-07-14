@@ -3,20 +3,27 @@ Hooks,
 game,
 benchmarkSight,
 CONFIG,
-loadTemplates
+loadTemplates,
+Handlebars
 */
 
 "use strict";
 
+import { MODULE_ID, TEMPLATES } from "./const.js";
 import { registerLightMask } from "./patching.js";
 import { registerPIXIPolygonMethods } from "./ClockwiseSweep/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./ClockwiseSweep/PIXIRectangle.js";
 import { registerPIXICircleMethods } from "./ClockwiseSweep/PIXICircle.js";
 import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge.js";
-import { registerSettings, MODULE_ID } from "./settings.js";
+import { registerSettings } from "./settings.js";
 
 import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
-import { controlledWallIDs } from "./renderAmbientLightConfig.js";
+import {
+  controlledWallIDs,
+  injectAmbientLightConfiguration,
+  injectAmbientSoundConfiguration,
+  injectTokenLightConfiguration } from "./renderAmbientLightConfig.js";
+
 import { lightMaskPreUpdateAmbientLight } from "./preUpdateAmbientLight.js";
 
 /**
@@ -63,15 +70,7 @@ Hooks.once("init", async function() {
 Hooks.once("setup", async function() {
   log("Setup...");
   registerSettings();
-  loadTemplates([
-    `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
-    `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,
-    `modules/${MODULE_ID}/templates/ambient-light-config.html`,
-    `modules/${MODULE_ID}/templates/sound-config.html`,
-    `modules/${MODULE_ID}/templates/token-lighting.html`,
-    `modules/${MODULE_ID}/templates/token-config.html`,
-    `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
-  ]);
+  loadTemplates(Object.values(TEMPLATES));
 });
 
 /**
@@ -97,17 +96,10 @@ Hooks.on("canvasReady", async canvas => {
   });
 });
 
-Hooks.on("preUpdateToken", (doc, data, options, id) => {
-  lightMaskPreUpdateAmbientLight(doc, data, options, id);
-});
+Hooks.on("renderAmbientLightConfig", injectAmbientLightConfiguration);
+Hooks.on("renderAmbientSoundConfig", injectAmbientSoundConfiguration);
+Hooks.on("renderTokenConfig", injectTokenLightConfiguration);
 
-Hooks.on("preUpdateAmbientLight", (doc, data, options, id) => {
-  lightMaskPreUpdateAmbientLight(doc, data, options, id);
-});
-
-
-Hooks.on("preUpdateAmbientSound", (doc, data, options, id) => {
-  lightMaskPreUpdateAmbientLight(doc, data, options, id);
-});
-
-
+Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
+Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
+Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);

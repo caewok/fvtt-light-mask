@@ -6,8 +6,7 @@ canvas
 
 import { log } from "./module.js";
 import { RegularPolygon, RegularStar } from "./GeometricShapes.js";
-import { MODULE_ID } from "./settings.js";
-import { KEYS } from "./keys.js";
+import { MODULE_ID, KEYS } from "./const.js";
 import { Ellipse } from "./Ellipse.js";
 
 /**

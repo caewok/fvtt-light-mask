@@ -2,17 +2,91 @@
 canvas,
 foundry,
 ui,
+renderTemplate,
+AmbientSoundConfig,
+AmbientLightConfig,
+TokenConfig
 */
 
 "use strict";
 
 import { log } from "./module.js";
-import { MODULE_ID } from "./settings.js";
-import { KEYS } from "./keys.js";
+import { KEYS, MODULE_ID, TEMPLATES, HTML_INJECTION } from "./const.js";
 import {
   lightMaskUpdateCustomEdgeCache,
   lightMaskShiftCustomEdgeCache } from "./preUpdateAmbientLight.js";
 
+
+/**
+ * Inject new template information into the configuration render
+ * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
+ */
+export async function injectAmbientLightConfiguration(app, html, data) {
+  await injectConfiguration(app, html, data, "LIGHT");
+}
+
+/**
+ * Inject new template information into the configuration render
+ * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
+ */
+export async function injectAmbientSoundConfiguration(app, html, data) {
+  await injectConfiguration(app, html, data, "SOUND");
+}
+
+/**
+ * Inject new template information into the configuration render
+ * See https://github.com/Varriount/fvtt-autorotate/blob/30da44c51a42e70196433ae481e3c1ebeeb80310/module/src/rotation.js#L211
+ */
+export async function injectTokenLightConfiguration(app, html, data) {
+  await injectConfiguration(app, html, data, "TOKEN");
+}
+
+/**
+ * @param {string} type   See const.js for type.
+ */
+async function injectConfiguration(app, html, data, type) {
+  log(`injectConfiguration for ${type}`, app, html, data);
+
+  log(`Token: ${app.token?.data?.flags?.lightmask?.shape}
+  \nObject: ${app.object?.data?.flags?.lightmask?.shape}
+  \nApp Data: ${app?.data?.flags?.lightmask?.shape}
+  \nData: ${data.object?.flags?.lightmask?.shape}`);
+
+  // Avoid name collisions by using "lightmask"
+  const renderData = {};
+  renderData.lightmask = {
+    shapes: {
+      circle: "lightmask.Circle",
+      ellipse: "lightmask.Ellipse",
+      polygon: "lightmask.RegularPolygon",
+      star: "lightmask.RegularStar",
+      none: "lightmask.None"
+    },
+    isStar: false,
+    isPolygon: false,
+    isEllipse: false
+  };
+
+  const d = type === "TOKEN" ? "object" : "data";
+  const shape = data[d]?.flags?.lightmask?.shape;
+  if ( shape ) {
+    log(`injectTokenLightConfiguration ${shape}`);
+    renderData.lightmask.isStar = shape === "star";
+    renderData.lightmask.isPolygon = shape === "polygon";
+    renderData.lightmask.isEllipse = shape === "ellipse";
+  }
+
+  foundry.utils.mergeObject(data, renderData, {inplace: true});
+
+  const form = html.find(HTML_INJECTION[type]);
+  log("injectConfiguration", form);
+  const snippet = await renderTemplate(TEMPLATES[type], data);
+
+  log("injectConfiguration snippet", data, snippet);
+
+  form.append(snippet);
+  app.setPosition(app.position);
+}
 
 /**
  * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
@@ -20,34 +94,11 @@ import {
 export function lightMaskActivateListeners(wrapped, html) {
   log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
 
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
-
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // const saveWallsButton = html.find("button[id='saveWallsButton']");
-  // saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
-
-  wrapped(html);
-  log(`lightMaskActivateListeners after is length ${html[0].length}`, html);
-
-
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // html.find('button[id="saveWallsButton"]').click(this._onAddWallIDs.bind(this));
-
-  // This makes the config panel close but does not call _onAddWallIDs:
-  // const saveWallsButton = html.find("button[id='saveWallsButton']");
-  // saveWallsButton.on("click", event => this._onAddWallIDs(event, html));
-  // saveWallsButton.on("click", event => { log(`saveWallsButton clicked!`, event) })
-
-  // Works!
-  // html.on('click', '.saveWallsButton', (event) => {
-  //   log(`saveWallsButton clicked!`, event);
-  // });
   html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
   html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
-  html.on("change", "#lightmaskshapes", updateShapeIndicator.bind(this));
-}
 
+  return wrapped(html);
+}
 
 /**
  * Add a method to the AmbientLightConfiguration to handle when user
@@ -107,22 +158,63 @@ function onCheckRelative(event) {
 }
 
 /**
+ * If the shape rotation has changed, update flags so the UI can be updated accordingly.
+ * Only relevant for AmbientSoundConfig and TokenConfig. AmbientLightConfig already
+ * changes rotation.
+ */
+export async function updateRotation(event) {
+  log("updateRotation", event, this);
+
+  let docData = this.document?.data;
+  if ( this instanceof TokenConfig ) docData = this.token.data;
+
+  const rotation = parseInt(event.target.value);
+  const newData = {};
+  newData[`flags.${MODULE_ID}.${KEYS.ROTATION}`] = rotation;
+
+  log(`updateRotation constructed data for ${rotation}`, newData);
+
+  const previewData = this._getSubmitData(newData);
+  log(`updateRotation preview data for ${rotation}`, previewData);
+  foundry.utils.mergeObject(docData, previewData, {inplace: true});
+}
+
+/**
  * If the shape selection has changed, update flags so the UI can be updated with
  * parameters specific to that shape.
  * Polygon: Sides, minimum 3.
  * Star: Points, minimum 5.
  */
-function updateShapeIndicator(event) {
+export async function updateShapeIndicator(event) {
   log("updateShapeIndicator", event, this);
+
+    log(`Token: ${this?.token?.data?.flags?.lightmask?.shape}
+  \nObject: ${this?.object?.data?.flags?.lightmask?.shape}
+  \nData: ${this?.data?.flags?.lightmask?.shape}`);
+
+
+  let doc = this.document;
+  let docData = this.document?.data;
+
+  if ( this instanceof DefaultTokenConfig ) {
+    log("Default token data update");
+    doc = this.token;
+    docData = this.data;
+
+  } else if ( this instanceof TokenConfig ) {
+    log("Token data update");
+    doc = this.token;
+    docData = this.isPrototype ? this.actor.data.token : this.token.data;
+  }
 
   const shape = event.target.value;
   const newData = {};
-  newData[`flags.${MODULE_ID}.isPolygon`] = shape === "polygon";
-  newData[`flags.${MODULE_ID}.isStar`] = shape === "star";
-  newData[`flags.${MODULE_ID}.isEllipse`] = shape === "ellipse";
 
-  const num_sides = this.object.getFlag(MODULE_ID, KEYS.SIDES);
-  const minor = this.object.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
+  const num_sides = doc.getFlag(MODULE_ID, KEYS.SIDES);
+  const minor = doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
+  log(`${shape}; ${num_sides} sides/points; ${minor} ellipse minor`);
+
+
   if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
     newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
   } else if ( shape === "star" && (!num_sides || num_sides < 5) ) {
@@ -130,25 +222,44 @@ function updateShapeIndicator(event) {
   } else if ( shape === "ellipse" ) {
 
     let major = 0;
-    if(this instanceof AmbientSoundConfig) {
-      major = this.object.data.radius;
-    } else if(this instanceof AmbientLightConfig) {
-      major = Math.max(this.object.data.config.dim, this.object.data.config.bright);
-    } else if(this instanceof TokenConfig) {
-      major = Math.max(this.object.data.light.dim, this.object.data.light.bright);
+    if ( this instanceof AmbientSoundConfig ) {
+      major = docData.radius;
+    } else if ( this instanceof AmbientLightConfig ) {
+      major = Math.max(docData.config.dim, docData.config.bright);
+    } else if ( this instanceof TokenConfig ) {
+      major = Math.max(docData.light.dim, docData.light.bright);
     } else {
-      console.warn("updateShapeIndicator|Config object not recognized.", this)
+      console.warn("updateShapeIndicator|Config object not recognized.", this);
     }
 
-    if(!minor || minor <= 0 || minor > major) {
+    if ( !minor || minor <= 0 || minor > major ) {
       newData[`flags.${MODULE_ID}.${KEYS.ELLIPSE.MINOR}`] = major;
     }
   }
 
+//   if ( this instanceof DefaultTokenConfig ) {
+//     newData[`flags.${MODULE_ID}.shape`] = shape;
+//   }
+  // foundry.utils.flattenObject
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
-  this.render();
-}
+  log(`updateShapeIndicator preview data for ${previewData?.flags?.lightmask?.shape || previewData["flags.lightmask.shape"]}`, previewData);
+  foundry.utils.mergeObject(docData, previewData, {inplace: true});
+  log(`updateShapeIndictor final data for shape ${docData?.flags?.lightmask?.shape}`, docData, this);
+
+//   if ( this instanceof DefaultTokenConfig ) {
+//     foundry.utils.mergeObject(this.data, previewData, {inplace: true});
+//     log(`updateShapeIndictor final data for shape ${this.data?.flags?.lightmask?.shape}`, this.data, this);
+//   }
+
+//   if ( this instanceof DefaultTokenConfig ) {
+//     previewData.flags.lightmask.shape = shape;
+//     foundry.utils.mergeObject(this.data, previewData, {inplace: true});
+//   }
+
+  log(`Token: ${this?.token?.data?.flags?.lightmask?.shape}
+  \nObject: ${this?.object?.data?.flags?.lightmask?.shape}
+  \nData: ${this?.data?.flags?.lightmask?.shape}`);
+  }
 
 /**
  * Retrieve a comma-separated list of wall ids currently controlled on the canvas.

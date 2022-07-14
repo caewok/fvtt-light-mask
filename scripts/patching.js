@@ -133,7 +133,45 @@ export function registerLightMask() {
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, "WRAPPER");
 
+
+  libWrapper.register(MODULE_ID, "Application.prototype._render", asyncTracker, "WRAPPER", {bind: ["Application.prototype._render"]});
+  libWrapper.register(MODULE_ID, "FormApplication.prototype._render", asyncTracker, "WRAPPER", {bind: ["FormApplication.prototype._render"]});
+
+  libWrapper.register(MODULE_ID, "FormApplication.prototype.getData", tracker, "WRAPPER", {bind: ["FormApplication.prototype.getData"]});
+//   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", tracker, "WRAPPER", {bind: ["TokenConfig.prototype.getData"]});
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", getDataDefaultTokenConfig, "WRAPPER");
+
+  libWrapper.register(MODULE_ID, "FormApplication.prototype._getSubmitData", tracker, "WRAPPER", {bind: ["FormApplication.prototype._getSubmitData"]});
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype._getSubmitData", tracker, "WRAPPER", {bind: ["TokenConfig.prototype._getSubmitData"]});
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype._getSubmitData", tracker, "WRAPPER", {bind: ["DefaultTokenConfig.prototype._getSubmitData"]});
+
+  libWrapper.register(MODULE_ID, "FormApplication.prototype._onSubmit", asyncTracker, "WRAPPER", {bind: ["FormApplication.prototype._onSubmit"]});
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype._onSubmit", asyncTracker, "WRAPPER", {bind: ["TokenConfig.prototype._onSubmit"]});
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype._onSubmit", asyncTracker, "WRAPPER", {bind: ["DefaultTokenConfig.prototype._onSubmit"]});
+
+  libWrapper.register(MODULE_ID, "FormApplication.prototype._updateObject", asyncTracker, "WRAPPER", {bind: ["FormApplication.prototype._updateObject"]});
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype._updateObject", asyncTracker, "WRAPPER", {bind: ["TokenConfig.prototype._updateObject"]});
+  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype._updateObject", asyncTracker, "WRAPPER", {bind: ["DefaultTokenConfig.prototype._updateObject"]});
 }
+
+// Force DefaultTokenConfig to pull from local
+async function getDataDefaultTokenConfig(wrapper, options) {
+  log(`getDataDefaultTokenConfig`);
+  const out = await wrapper(options);
+  out.object = this.data.toObject(false);
+  return out;
+}
+
+async function asyncTracker(wrapper, name, ...args) {
+  log(`${name}`);
+  return wrapper(...args);
+}
+
+function tracker(wrapper, name, ...args) {
+  log(`${name}`);
+  return wrapper(...args);
+}
+
 
 async function formApplicationChangeInput(wrapper, event) {
   log("formApplicationChangeInput", event, this);
@@ -216,7 +254,7 @@ Object.defineProperty(SoundSource.prototype, "customEdges", {
 });
 
 function ambientSourceGetData(wrapper, options) {
-  log('ambientSourceGetData')
+  log('ambientSourceGetData', this)
   const data = wrapper(options);
 
   // When first loaded, a light may not have flags.lightmask.
@@ -225,6 +263,7 @@ function ambientSourceGetData(wrapper, options) {
 }
 
 async function tokenSourceGetData(wrapper, options) {
+  log("tokenSourceGetData", options, this);
   const data = await wrapper(options);
 
   // When first loaded, a light may not have flags.lightmask.
@@ -232,10 +271,13 @@ async function tokenSourceGetData(wrapper, options) {
   let isStar = false;
   let isPolygon = false;
   let isEllipse = false;
-  if ( data.object?.flags?.lightmask?.shape ) {
-    isStar = data.object.flags.lightmask.shape === "star";
-    isPolygon = data.object.flags.lightmask.shape === "polygon";
-    isEllipse = data.object.flags.lightmask.shape === "ellipse";
+
+  // Location of the flag depends on type of source
+  const loc = this instanceof DefaultTokenConfig ? data.flags?.lightmask?.shape : data.object?.flags?.lightmask?.shape;
+  if ( loc ) {
+    isStar = loc === "star";
+    isPolygon = loc === "polygon";
+    isEllipse = loc === "ellipse";
   }
 
   return foundry.utils.mergeObject(data, {

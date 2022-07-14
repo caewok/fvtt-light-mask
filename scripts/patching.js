@@ -28,6 +28,7 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", getDataAmbientConfig, libWrapper.WRAPPER);
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsAmbientSoundConfig, libWrapper.WRAPPER);
+  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.close", closeAmbientSoundConfig, libWrapper.WRAPPER);
 
   Object.defineProperty(AmbientSoundConfig.prototype, "_refresh", {
     value: refreshAmbientSoundConfig,
@@ -140,15 +141,37 @@ async function onChangeInputFormApplication(wrapper, event) {
  */
 function refreshAmbientSoundConfig() {
   log("refreshSound", this);
-  if ( !this.document.object ) return;
 
-  this.document.object.updateSource();
+  let s = this.document.object;
+  if ( !s ) return;
 
-  // Cannot easily refresh a newly created Sound without ghosting
-  if ( this.document.object.id ) this.document.object.refresh();
-  log("refreshSound finished", this);
+  if ( !s.id  ) {
+    // Cannot easily refresh a newly created Sound without ghosting
+    // Try updating the preview object instead
+    if ( canvas.sounds.preview.children.length !== 1 ) return;
+    s = canvas.sounds.preview.children[0];
+  }
+
+  s.updateSource();
+  s.refresh();
+
+  log("refreshSound finished", this, s);
 }
 
+/**
+ * Wrap AmbientSoundConfig.prototype.close
+ * Need to remove null placeables so they don't screw up later sound refresh.
+ * (Cannot figure out how these are getting added. Something in updateSource or refresh.)
+ * @param {Object} options
+ */
+async function closeAmbientSoundConfig(wrapper, options) {
+  if ( !this.object.id ) {
+    canvas.sounds.objects.children.forEach(c => {
+      if ( !c.id ) canvas.sounds.objects.removeChild(c);
+    });
+  }
+  return wrapper(options);
+}
 
 
 /**

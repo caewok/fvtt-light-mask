@@ -154,8 +154,6 @@ function refreshAmbientSoundConfig() {
 
   s.updateSource();
   s.refresh();
-
-  log("refreshSound finished", this, s);
 }
 
 /**

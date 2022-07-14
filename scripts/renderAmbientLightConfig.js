@@ -52,6 +52,10 @@ async function injectConfiguration(app, html, data, type) {
   \nApp Data: ${app?.data?.flags?.lightmask?.shape}
   \nData: ${data.object?.flags?.lightmask?.shape}`);
 
+  // Do not display wall caching selectors for the token prototype or
+  // default token config, because those only function at a per-scene level
+  const displayCached = !app.isPrototype && !(app instanceof DefaultTokenConfig);
+
   // Avoid name collisions by using "lightmask"
   const renderData = {};
   renderData.lightmask = {
@@ -64,7 +68,8 @@ async function injectConfiguration(app, html, data, type) {
     },
     isStar: false,
     isPolygon: false,
-    isEllipse: false
+    isEllipse: false,
+    displayCached
   };
 
   const d = type === "TOKEN" ? "object" : "data";

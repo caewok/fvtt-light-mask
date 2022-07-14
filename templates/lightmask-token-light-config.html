@@ -47,6 +47,7 @@
     </div>
     {{/if}}
 
+    {{#if lightmask.displayCached }}
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.CachedWallID.Name" }}</label>
       <div class="form-fields">
@@ -61,11 +62,11 @@
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.Relative.Hint.Light" }}</p>
     </div>
 
-
     <div class="form-group">
       <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Name" }}</button>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Hint" }}</p>
     </div>
+    {{/if}}
 
   </legend>
 </fieldset>

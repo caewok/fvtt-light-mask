@@ -46,7 +46,6 @@ async function lightMaskBenchmarkSight(n=1000, ...args) {
   await LightMaskClockwisePolygonSweep.benchmark(n, ...args);
 }
 
-
 Hooks.once("init", async function() {
   log("Initializing...");
 
@@ -96,10 +95,12 @@ Hooks.on("canvasReady", async canvas => {
   });
 });
 
+/* Render the parameters for a given selected shape */
 Hooks.on("renderAmbientLightConfig", injectAmbientLightConfiguration);
 Hooks.on("renderAmbientSoundConfig", injectAmbientSoundConfiguration);
 Hooks.on("renderTokenConfig", injectTokenLightConfiguration);
 
+/* Update the data for a given source */
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);

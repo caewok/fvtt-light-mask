@@ -127,7 +127,12 @@ function onAddWallIDs(event) {
   this.render();
 }
 
-
+/**
+ * Listener to handle when a user check/unchecks the "Relative" checkbox.
+ * If "Relative" is checked, the edges cache must be updated by a directional vector
+ * based on the shift in origin.
+ * @param {PointerEvent} event    The originating click event
+ */
 function onCheckRelative(event) {
   log("lightMaskOnCheckRelative", event, this);
 

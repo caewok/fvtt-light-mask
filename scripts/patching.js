@@ -87,7 +87,6 @@ export function registerLightMask() {
  * @return {Object|Promise}
  */
 async function getDataDefaultTokenConfig(wrapper, options) {
-  log("getDataDefaultTokenConfig");
   const out = await wrapper(options);
   out.object = this.data.toObject(false);
   return out;
@@ -111,7 +110,6 @@ async function onChangeInputFormApplication(wrapper, event) {
   let render = false;
 
   if ( event.target.name === "flags.lightmask.rotation" ) {
-    log("LightMask rotation");
     await updateRotation.call(this, event);
     refresh = true;
   } else {
@@ -132,8 +130,6 @@ async function onChangeInputFormApplication(wrapper, event) {
 
   // Update the rendered config html options for the new shape
   render && this._render(); // eslint-disable-line no-unused-expressions
-
-  log(`formApplicationChangeInput render ${render}; refresh ${refresh}`);
   return await wrapper(event);
 }
 

@@ -22,7 +22,6 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   if (ids_to_add) {
     // Retrieve the existing cache, if any
     let edges_cache = doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
-    log(`edges_cache length ${edges_cache.length} before additions`, edges_cache);
     edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
     // Add the edges cache
@@ -45,8 +44,6 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
       new_origin.x += offsetX;
       new_origin.y += offsetY;
     }
-
-    log(`preUpdateAmbientLight updating origin to ${new_origin.x}, ${new_origin.y}`);
 
     new_data[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = new_origin;
   } else if (relative_key === false) {

@@ -141,9 +141,15 @@ async function onChangeInputFormApplication(wrapper, event) {
 function refreshAmbientSoundConfig() {
   log("refreshSound", this);
   if ( !this.document.object ) return;
+
   this.document.object.updateSource();
-  this.document.object.refresh();
+
+  // Cannot easily refresh a newly created Sound without ghosting
+  if ( this.document.object.id ) this.document.object.refresh();
+  log("refreshSound finished", this);
 }
+
+
 
 /**
  * Add refresh functionality for token configuration.

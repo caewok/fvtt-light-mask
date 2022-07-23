@@ -104,8 +104,8 @@ async function getDataDefaultTokenConfig(wrapper, options) {
  */
 async function onChangeInputFormApplication(wrapper, event) {
   log("formApplicationChangeInput", event, this);
-
-  if ( event.type !== "change" ) return wrapper(event);
+//   if ( event.type !== "change" ) return wrapper(event);
+  if ( event.type !== "change"  || event.currentTarget.className !== "lightmask") return wrapper(event);
 
   let refresh = false;
   let render = false;

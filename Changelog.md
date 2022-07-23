@@ -1,3 +1,6 @@
+## 0.4.1
+Fix for [issue #11](https://github.com/caewok/fvtt-light-mask/issues/11). Avoid console errors when selecting modules in the Module Config screen.
+
 ## 0.4.0
 Switch to better approach for injecting Light Mask settings into the light/sound configuration applications. This should greatly improve compatibility with other modules that might modify the light/sound configuration.
 

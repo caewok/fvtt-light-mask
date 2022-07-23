@@ -4,7 +4,7 @@
     <div class="form-group">
       <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
       <div class="form-fields">
-        <select id="lightmaskshapes" name="flags.lightmask.shape">
+        <select id="lightmaskshapes" name="flags.lightmask.shape" class="lightmask">
           {{ selectOptions lightmask.shapes selected=data.flags.lightmask.shape localize=true }}
         </select>
       </div>
@@ -14,7 +14,7 @@
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
-        <input type="number" id="lightmasksides" name="flags.lightmask.sides" step="1" min="3" value={{ data.flags.lightmask.sides }}>
+        <input type="number" id="lightmasksides" name="flags.lightmask.sides" class="lightmask" step="1" min="3" value={{ data.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumSides.Hint" }}</p>
     </div>
@@ -24,7 +24,7 @@
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
       <div class="form-fields">
-        <input type="number" id="lightmaskpoints" name="flags.lightmask.sides" step="1" min="5" value={{ data.flags.lightmask.sides }}>
+        <input type="number" id="lightmaskpoints" name="flags.lightmask.sides" class="lightmask" step="1" min="5" value={{ data.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
     </div>
@@ -34,7 +34,7 @@
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
       <div class="form-fields">
-        <input type="number" placeholder="{{gridUnits}}" id="lightmaskEllipseMinor" name="flags.lightmask.ellipseMinor" step="any" value={{ data.flags.lightmask.ellipseMinor }}>
+        <input type="number" placeholder="{{gridUnits}}" id="lightmaskEllipseMinor" class="lightmask" name="flags.lightmask.ellipseMinor" step="any" value={{ data.flags.lightmask.ellipseMinor }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Hint" }}</p>
     </div>
@@ -43,7 +43,7 @@
     <div class="form-group">
       <label>{{ localize "lightmask.AmbientConfiguration.CachedWallID.Name" }}</label>
       <div class="form-fields">
-        <input name="flags.lightmask.customWallIDs" type="text" data-dtype="text" value={{ data.flags.lightmask.customWallIDs }}>
+        <input name="flags.lightmask.customWallIDs" class="lightmask" type="text" data-dtype="text" value={{ data.flags.lightmask.customWallIDs }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Hint.Light" }}</p>
     </div>

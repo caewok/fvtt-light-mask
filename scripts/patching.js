@@ -85,16 +85,16 @@ function createLOSLightSource(wrapper) {
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   if ( shape === "circle" ) return wrapper();
 
-  const radius = (shape === "none") ? canvas.scene.dimensions.maxR : this.radius;
   const origin = {x: this.data.x, y: this.data.y};
   const cfg = {
     type: this.data.walls ? "light" : "universal",
     angle: this.data.angle,
     density: PIXI.Circle.approximateVertexDensity(this.radius),
     rotation: this.data.rotation,
-    radius,
     source: this
   };
+
+  if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
 
   const boundaryShape = this.boundaryPolygon();
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
@@ -117,14 +117,14 @@ function initializeSoundSource(wrapper, data={}) {
 
   this._initializeData(data);
 
-  const radius = (shape === "none") ? canvas.scene.dimensions.maxR : this.radius;
   const origin = {x: this.data.x, y: this.data.y};
   const cfg = {
     type: this.data.walls ? "sound" : "universal",
     density: PIXI.Circle.approximateVertexDensity(this.data.radius),
-    radius,
     source: this,
   };
+
+  if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
 
   const boundaryShape = this.boundaryPolygon();
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];

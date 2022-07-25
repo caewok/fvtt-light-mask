@@ -167,7 +167,7 @@ export class RegularPolygon extends PIXI.Polygon {
   }
 
   /**
-   * Convert the shape to a normal polygon
+   * Convert the shape to a normal polygon, for testing.
    * @returns {PIXI.Polygon}
    */
   toPolygon() { return new PIXI.Polygon(this.points); }
@@ -287,6 +287,8 @@ export class RegularPolygon extends PIXI.Polygon {
    * @returns {PIXI.Polygon|null}       The intersected polygon or null if no solution was present
    */
   intersectPolygon(polygon, {clipType, scalingFactor}={}) {
+    return polygon.intersectPolygon(this.toPolygon(), {clipType, scalingFactor});
+
     if ( !this.radius ) return new PIXI.Polygon([]);
     clipType ??= ClipperLib.ClipType.ctIntersection;
 
@@ -297,7 +299,13 @@ export class RegularPolygon extends PIXI.Polygon {
 
     const union = clipType === ClipperLib.ClipType.ctUnion;
     const wa = WeilerAthertonClipper.fromPolygon(polygon, { union });
-    const res = wa.combine(this);
+    const res = wa.combine(this)[0];
+
+    if ( !res ) {
+      console.warn("RegularPolygon.prototype.intersectPolygon returned undefined.");
+      return new PIXI.Polygon([]);
+    }
+
     return res instanceof PIXI.Polygon ? res : res.toPolygon();
   }
 

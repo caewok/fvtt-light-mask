@@ -82,7 +82,6 @@ export class RegularStar extends RegularPolygon {
   _generateFixedPoints() {
     const { numPoints, outerPoints } = this;
 
-
     // Construct the segments connecting the outside points to form a star.
     const diagonals = outerPoints.map((pt, idx) => {
       const dest = (idx + 2) % numPoints;
@@ -105,7 +104,7 @@ export class RegularStar extends RegularPolygon {
       pts.push(d.A, ix[idx]);
     });
 
-    return new this(pts);
+    return pts;
   }
 
   /**
@@ -174,7 +173,7 @@ export class RegularStar extends RegularPolygon {
    */
   intersectPolygon(polygon, {clipType, scalingFactor}={}) {
     if ( !this.radius ) return new PIXI.Polygon([]);
-    return super.super.intersectPolygon(polygon, {clipType, scalingFactor});
+    return polygon.intersectPolygon(this.toPolygon(), {clipType, scalingFactor})
   }
 
 }

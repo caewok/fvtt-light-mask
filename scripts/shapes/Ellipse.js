@@ -264,6 +264,8 @@ export class Ellipse extends PIXI.Ellipse {
    * @returns {PIXI.Polygon|null}       The intersected polygon or null if no solution was present
    */
   intersectPolygon(polygon, { density, clipType, scalingFactor } = {}) {
+    return polygon.intersectPolygon(this.toPolygon({density}), { clipType, scalingFactor });
+
     if ( !this.major || !this.minor ) return new PIXI.Polygon([]);
 
     // Default to the larger radius for density
@@ -279,6 +281,12 @@ export class Ellipse extends PIXI.Ellipse {
     const union = clipType === ClipperLib.ClipType.ctUnion;
     const wa = WeilerAthertonClipper.fromPolygon(polygon, { union, density });
     const res = wa.combine(this)[0];
+
+    if ( !res ) {
+      console.warn("Ellipse.prototype.intersectPolygon returned undefined.");
+      return new PIXI.Polygon([]);
+    }
+
     return res instanceof PIXI.Polygon ? res : res.toPolygon();
   }
 }

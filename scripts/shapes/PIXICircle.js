@@ -152,5 +152,11 @@ function intersectPolygonPIXICircle(wrapped, polygon, {density, ...options}={}) 
   const union = options.clipType === ClipperLib.ClipType.ctUnion;
   const wa = WeilerAthertonClipper.fromPolygon(polygon, { union, density });
   const res = wa.combine(this)[0];
+
+  if ( !res ) {
+    console.warn("PIXI.Circle.prototype.intersectPolygon returned undefined.");
+    return new PIXI.Polygon([]);
+  }
+
   return res instanceof PIXI.Polygon ? res : res.toPolygon();
 }

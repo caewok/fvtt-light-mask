@@ -90,6 +90,12 @@ export class RegularPolygon extends PIXI.Polygon {
   get innerCircle() { return new PIXI.Circle(0, 0, this.apothem); }
 
   /**
+   * Interior angle of two sides, in degrees
+   * @type {number}
+   */
+  get interiorAngle() { return (180 + (180 * (this.numSides - 3))) / this.numSides; }
+
+  /**
    * Generate the points of the shape in shape-space (before rotation or translation)
    * @return {Points[]}
    */
@@ -108,8 +114,9 @@ export class RegularPolygon extends PIXI.Polygon {
   _generatePoints() {
     // Faster to use for loop rather than flatten
     const pts = [];
-    const { numSides, fixedPoints: fp } = this;
-    for ( let i = 0; i < numSides; i += 1 ) {
+    const fp = this.fixedPoints;
+    const ln = fp.length;
+    for ( let i = 0; i < ln; i += 1 ) {
       const pt = this.toCartesianCoords(fp[i]);
       pts.push(pt.x, pt.y);
     }

@@ -16,10 +16,16 @@ import { RegularPolygon } from "./RegularPolygon.js";
  */
 export class Square extends RegularPolygon {
   constructor(origin, radius, {rotation = 0, width} = {}) {
+    if ( !radius && !width ) {
+      console.warn("Square should have either radius or width defined.");
+      radius = 0;
+      width = 0;
+    }
+
     radius ??= Math.sqrt(Math.pow(width, 2) * 2);
     super(origin, radius, { rotation, numSides: 4 });
 
-    this.width = width ?? (this.radius * Math.SQRT2);
+    this.width = width ?? (this.radius * Math.SQRT1_2);
   }
 
   /**

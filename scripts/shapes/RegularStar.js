@@ -1,12 +1,10 @@
 /* globals
-Ray,
 foundry,
-ClipperLib,
 PIXI
 */
 "use strict";
 
-import { midPoint } from "./util.js";
+import { rotatePoint } from "./util.js";
 import { RegularPolygon } from "./RegularPolygon.js";
 
 /**
@@ -24,7 +22,8 @@ export class RegularStar extends RegularPolygon {
     super(origin, radius, { numSides: numPoints, rotation});
 
     // Placeholders for getters
-    this._outsidePoints = undefined;
+    this._outerPoints = undefined;
+    this._innerPoints = undefined;
   }
 
   /**
@@ -34,32 +33,29 @@ export class RegularStar extends RegularPolygon {
   get numPoints() { return this.numSides; }
 
   /**
-   * Apothem here defined as the radius of the outer circle of the regular shape
+   * Define the "outerApothem" as the distance to the outer polygon side.
+   * If this were a polygon, not a star, this would be the apothem
+   */
+  get outerApothem() { return this.radius * Math.cos(Math.PI / this.numSides); }
+
+  /**
+   * The apothem here is defined as the radius of the outer circle of the regular shape
    * contained in the middle of the star.
    * E.g., the outer circle radius of the inner pentagon for a 5-shaped star
    * Equivalent to the distance from the center to an inner point of the star
    */
   get apothem() {
-    const { outerPoints: op, numPoints, center } = this;
+    const { sideLength, interiorAngle, outerApothem } = this;
 
-    // The midpoint of the line between the two outer points
-    const mid = midPoint(op[0], op[1]);
-    if ( numPoints < 5 ) return Math.hypot(mid.x - center.x, mid.y - center.y) * 0.5;
+    // See http://mathcentral.uregina.ca/qq/database/qq.09.06/s/chetna2.html#:~:text=area%20of%20the%20star%20%3D%205,and%20vertex%20angle%20108%C2%B0.
+    // Assume A and B are two outer points
+    // O is the center, X is the interior point we need to calculate the apothem.
+    // Need the angle at X
+    const ln1_2 = sideLength / 2;
+    const angle = Math.toRadians(interiorAngle) / 2;
+    const height = ln1_2 / Math.tan(angle);
 
-    // The internal angle of the regular shape at the center of this star
-    const internalAngle = ((numPoints - 2) * Math.PI) / numPoints;
-
-    // Length of the line from op[0] to midPoint
-    const opp = Math.hypot(mid.x - op[0].x, mid.y - op[0].y);
-    const theta = internalAngle * 0.5;
-    const distanceIn = opp / Math.tan(theta);
-
-    return Math.hypot(mid.x - center.x, mid.y - center.y) - distanceIn;
-  }
-
-  get sideLength() {
-    console.warn("sideLength not implemented for RegularStar");
-    return super.sideLength;
+    return outerApothem - height;
   }
 
   get area() {
@@ -73,36 +69,38 @@ export class RegularStar extends RegularPolygon {
    */
   get outerPoints() { return this._outerPoints || (this._outerPoints = super._generateFixedPoints()); }
 
-  get innerPoints() { return this.innerCircle.toPolygon({density: this.numPoints}); }
+  get innerPoints() {
+    if ( !this._innerPoints ) {
+      const numPoints = this.numPoints;
+
+      const pts = this.innerCircle.toPolygon({density: numPoints}).points;
+      this._innerPoints = [];
+      const ln = pts.length;
+      for ( let i = 0; i < ln; i += 2 ) {
+        // Rotate the inner points by half the angle between the outer points
+        // So the inner point lies halfway between two outerpoints
+        const angle = Math.PI / (numPoints);
+        const pt = rotatePoint({ x: pts[i], y: pts[i+1] }, angle);
+        this._innerPoints.push(pt);
+      }
+    }
+
+    return this._innerPoints;
+  }
 
   /**
    * Generate the points of the shape in shape-space (before rotation or translation)
    * @return {Points[]}
    */
   _generateFixedPoints() {
-    const { numPoints, outerPoints } = this;
+    const { numPoints, outerPoints, innerPoints } = this;
 
-    // Construct the segments connecting the outside points to form a star.
-    const diagonals = outerPoints.map((pt, idx) => {
-      const dest = (idx + 2) % numPoints;
-      return new Ray(pt, outerPoints[dest]);
-    });
-
-    // The concave points of the star are found at the intersections of the diagonals.
-    const ix = diagonals.map((d, idx) => {
-      const near = (idx + (numPoints - 1)) % numPoints;
-      const near_d = diagonals[near];
-      return foundry.utils.lineLineIntersection(d.A, d.B, near_d.A, near_d.B);
-    });
-
-    // Walk the star along diagonals to form the shape
+    // Alternate between outer and inner points to construct the star
     const pts = [];
-    diagonals.forEach((d, idx) => {
-      // Diagonal goes A1 -- x1 -- y1 -- B1
-      // For 5 points, we have:
-      // A1 -- x1 -- A2 -- x2 -- A3 -- x3 -- A4 -- x4 -- A5 -- x5
-      pts.push(d.A, ix[idx]);
-    });
+    for ( let i = 0; i < numPoints; i += 1 ) {
+      pts.push(outerPoints[i]);
+      pts.push(innerPoints[i]);
+    }
 
     return pts;
   }
@@ -173,7 +171,7 @@ export class RegularStar extends RegularPolygon {
    */
   intersectPolygon(polygon, {clipType, scalingFactor}={}) {
     if ( !this.radius ) return new PIXI.Polygon([]);
-    return polygon.intersectPolygon(this.toPolygon(), {clipType, scalingFactor})
+    return polygon.intersectPolygon(this.toPolygon(), {clipType, scalingFactor});
   }
 
 }

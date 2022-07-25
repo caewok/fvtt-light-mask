@@ -51,7 +51,7 @@ export class RegularPolygon extends PIXI.Polygon {
 
   set points(value) { }
 
-  get fixedPoints() { return this._fixedPoints || (this._fixedPoints = this.#generateFixedPoints()); }
+  get fixedPoints() { return this._fixedPoints || (this._fixedPoints = this._generateFixedPoints()); }
 
   /**
    * Calculate the distance of the line segment from the center to the midpoint of a side.
@@ -93,7 +93,7 @@ export class RegularPolygon extends PIXI.Polygon {
    * Generate the points of the shape in shape-space (before rotation or translation)
    * @return {Points[]}
    */
-  #generateFixedPoints() {
+  _generateFixedPoints() {
     const { numSides, radius } = this;
 
     const angles = Array.fromRange(numSides).map(i => (360 / numSides) * i);

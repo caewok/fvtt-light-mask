@@ -1,6 +1,9 @@
 /* globals
+PIXI
 */
 "use strict";
+
+import { RegularPolygon } from "./RegularPolygon.js";
 
 /**
  * "Column" hexagon with points at W and E
@@ -75,7 +78,7 @@ export class Hexagon extends RegularPolygon {
    * Simpler and more mathematically precise than the default version.
    * @returns {Point[]}
    */
-  #generateFixedPoints() {
+  _generateFixedPoints() {
     // Shape before rotation is [] rotated 45º
     const { radius, apothem } = this;
     const r1_2 = radius * 0.5;
@@ -100,7 +103,7 @@ export class Hexagon extends RegularPolygon {
     const r1_2 = radius * 0.5;
 
     switch ( rotation ) {
-      // pointy-side E/W
+      // Pointy-side E/W
       case 0:
       case 180:
         return [
@@ -112,7 +115,7 @@ export class Hexagon extends RegularPolygon {
           { x: r1_2 + x, y: -apothem + y }
         ];
 
-      // pointy-side N/S
+      // Pointy-side N/S
       case 90:
       case 270:
         return [
@@ -141,9 +144,9 @@ export class Hexagon extends RegularPolygon {
           fp[3].x + x,
           fp[4].y + y,
           radius * 2,
-          apothem * 2)
+          apothem * 2);
 
-      // pointy-side N/S
+      // Pointy-side N/S
       case 90:
       case 270:
         return new PIXI.Rectangle(

@@ -5,7 +5,8 @@ ui,
 renderTemplate,
 AmbientSoundConfig,
 AmbientLightConfig,
-TokenConfig
+TokenConfig,
+DefaultTokenConfig
 */
 
 "use strict";

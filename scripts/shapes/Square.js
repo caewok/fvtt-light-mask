@@ -1,6 +1,9 @@
 /* globals
+PIXI
 */
 "use strict";
+
+import { RegularPolygon } from "./RegularPolygon.js";
 
 /**
  * Square is oriented at 0º rotation like a diamond.
@@ -35,14 +38,14 @@ export class Square extends RegularPolygon {
    * Calculate area of this square.
    * @type {number}
    */
-  get area() { this.sideLength * 2; }
+  get area() { return this.sideLength * 2; }
 
   /**
    * Construct a square like a PIXI.Rectangle, where the point is the top left corner.
    */
   static fromPoint(point, width) {
     const w1_2 = width / 2;
-    return new this({x: point.x + w1_2, y: point.y + w1_2}, undefined, { rotation: 45, width })
+    return new this({x: point.x + w1_2, y: point.y + w1_2}, undefined, { rotation: 45, width });
   }
 
   /**
@@ -51,8 +54,8 @@ export class Square extends RegularPolygon {
    * @return {Hexagon}
    */
   static fromToken(token) {
-    const { x, y } = this.token.center;
-    const { width, height } = this.token.hitArea;
+    const { x, y } = token.center;
+    const { width, height } = token.hitArea;
 
     if ( width !== height ) return new PIXI.Rectangle(x, y, width, height);
 
@@ -64,7 +67,7 @@ export class Square extends RegularPolygon {
    * Simpler and more mathematically precise than the default version.
    * @returns {Point[]}
    */
-  #generateFixedPoints() {
+  _generateFixedPoints() {
     // Shape before rotation is [] rotated 45º
     const r = this.radius;
 
@@ -81,10 +84,10 @@ export class Square extends RegularPolygon {
    * @return {Points[]}
    */
   _generatePoints() {
-    const { x, y, rotation, apothem } = this;
+    const { x, y, radius, rotation, apothem } = this;
 
     switch ( rotation ) {
-      // oriented []
+      // Oriented []
       case 45:
       case 135:
       case 225:
@@ -93,19 +96,19 @@ export class Square extends RegularPolygon {
           { x: apothem + x, y: apothem + y },
           { x: -apothem + x, y: apothem + y },
           { x: -apothem + x, y: -apothem + y },
-          { x: apothem + x, y: -apothem + y },
-        ]
+          { x: apothem + x, y: -apothem + y }
+        ];
 
-      // oriented [] turned 45º
+      // Oriented [] turned 45º
       case 0:
       case 90:
       case 180:
       case 270:
         return [
-          { x: r + x, y},
-          { x, y: r + y },
-          { x: -r + x, y: r + y},
-          { x, y: -r + y }
+          { x: radius + x, y},
+          { x, y: radius + y },
+          { x: -radius + x, y: radius + y},
+          { x, y: -radius + y }
         ];
     }
 
@@ -118,19 +121,19 @@ export class Square extends RegularPolygon {
 
     switch ( this.rotation ) {
       // PIXI.Rectangle(x, y, width, height)
-      // oriented []
+      // Oriented []
       case 45:
       case 135:
       case 225:
       case 315:
         return new PIXI.Rectangle(-apothem + x, -apothem + y, sideLength, sideLength);
 
-      // oriented [] turned 45º
+      // Oriented [] turned 45º
       case 0:
       case 90:
       case 180:
       case 270:
-        return new PIXI.Rectangle(fp[2], fp[3], sideLenth, sideLength);
+        return new PIXI.Rectangle(fp[2], fp[3], sideLength, sideLength);
     }
 
     return super.getBounds();

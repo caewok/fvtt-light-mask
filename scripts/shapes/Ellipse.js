@@ -5,7 +5,7 @@ ClipperLib
 "use strict";
 
 import { rotatePoint, translatePoint } from "./util.js";
-import { WeilerAthertonClipper } from "../WeilerAtherton";
+import { WeilerAthertonClipper } from "../WeilerAtherton.js";
 
 /*
   e = new Ellipse(1000, 1000, 400, 100);
@@ -278,7 +278,7 @@ export class Ellipse extends PIXI.Ellipse {
 
     const union = clipType === ClipperLib.ClipType.ctUnion;
     const wa = WeilerAthertonClipper.fromPolygon(polygon, { union, density });
-    const res = wa.combine(this);
+    const res = wa.combine(this)[0];
     return res instanceof PIXI.Polygon ? res : res.toPolygon();
   }
 }

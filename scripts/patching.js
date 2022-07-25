@@ -5,14 +5,17 @@ SoundSource,
 AmbientSoundConfig,
 DefaultTokenConfig,
 TokenConfig,
-foundry
+foundry,
+CONFIG,
+PIXI,
+canvas
 */
 "use strict";
 
 import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./render.js";
-import { MODULE_ID } from "./const.js";
+import { MODULE_ID, KEYS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
-import { customEdges } from "./customEdges.js";
+import { identifyEdgesClockwiseSweepPolygon } from "./customEdges.js";
 import { log } from "./module.js";
 
 export function registerLightMask() {
@@ -58,12 +61,6 @@ export function registerLightMask() {
     configurable: true
   });
 
-  Object.defineProperty(LightSource.prototype, "customEdges", {
-    value: customEdges,
-    writable: true,
-    configurable: true
-  });
-
   // ----- Sound Source ----- //
   Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
     value: boundaryPolygon,
@@ -71,11 +68,55 @@ export function registerLightMask() {
     configurable: true
   });
 
-  Object.defineProperty(SoundSource.prototype, "customEdges", {
-    value: customEdges,
-    writable: true,
-    configurable: true
+  // ----- Sweep ----- //
+  libWrapper.register(MODULE_ID, "LightSource.prototype._createLOS", createLOSLightSource, libWrapper.MIXED);
+  libWrapper.register(MODULE_ID, "SoundSource.prototype.initialize", initializeSoundSource, libWrapper.MIXED);
+  libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._identifyEdges", identifyEdgesClockwiseSweepPolygon, libWrapper.MIXED, { perf_mode: libWrapper.PERF_FAST});
+}
+
+/**
+ * Wrapper for LightSource.prototype._createLOS
+ * Pass in the relevant boundary shape in lieu of the default
+ */
+function createLOSLightSource(wrapper) {
+  if ( this instanceof GlobalLightSource ) return wrapper();
+
+  const doc = this.object.document;
+  const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
+  if ( shape === "circle" ) return wrapper();
+
+  const origin = {x: this.data.x, y: this.data.y};
+  const los = CONFIG.Canvas.losBackend.create(origin, {
+    type: this.data.walls ? "light" : "universal",
+    angle: this.data.angle,
+    density: PIXI.Circle.approximateVertexDensity(this.radius),
+    rotation: this.data.rotation,
+    source: this,
+    boundaryShapes: [this.boundaryPolygon(origin, this.radius, this.rotation)]
   });
+
+  // Update the flag for whether soft edges are required
+  this._flags.renderSoftEdges &&= ((los.edges.size > 0) || (this.data.angle < 360));
+  return los;
+}
+
+/**
+ * Wrapper for SoundSource.prototype.initialize
+ * Pass in the relevant boundary shape in lieu of the default
+ */
+function initializeSoundSource(wrapper, data={}) {
+  const doc = this.object.document;
+  const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
+  if ( shape === "circle" ) return wrapper();
+
+  this._initializeData(data);
+  this.los = CONFIG.Canvas.losBackend.create({x: this.data.x, y: this.data.y}, {
+    type: this.data.walls ? "sound" : "universal",
+    density: PIXI.Circle.approximateVertexDensity(this.data.radius),
+    source: this,
+    boundaryShapes: [this.boundaryPolygon(origin, this.radius, this.rotation)]
+  });
+  return this;
 }
 
 /**
@@ -104,8 +145,7 @@ async function getDataDefaultTokenConfig(wrapper, options) {
  */
 async function onChangeInputFormApplication(wrapper, event) {
   log("formApplicationChangeInput", event, this);
-//   if ( event.type !== "change" ) return wrapper(event);
-  if ( event.type !== "change"  || event.currentTarget.className !== "lightmask") return wrapper(event);
+  if ( event.type !== "change" || event.currentTarget.className !== "lightmask") return wrapper(event);
 
   let refresh = false;
   let render = false;
@@ -145,7 +185,7 @@ function refreshAmbientSoundConfig() {
   let s = this.document.object;
   if ( !s ) return;
 
-  if ( !s.id  ) {
+  if ( !s.id ) {
     // Cannot easily refresh a newly created Sound without ghosting
     // Try updating the preview object instead
     if ( canvas.sounds.preview.children.length !== 1 ) return;

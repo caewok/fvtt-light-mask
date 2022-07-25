@@ -1,8 +1,6 @@
 /* globals
 Hooks,
 game,
-benchmarkSight,
-CONFIG,
 loadTemplates,
 Handlebars
 */
@@ -11,13 +9,10 @@ Handlebars
 
 import { MODULE_ID, TEMPLATES } from "./const.js";
 import { registerLightMask } from "./patching.js";
-import { registerPIXIPolygonMethods } from "./ClockwiseSweep/PIXIPolygon.js";
-import { registerPIXIRectangleMethods } from "./ClockwiseSweep/PIXIRectangle.js";
-import { registerPIXICircleMethods } from "./ClockwiseSweep/PIXICircle.js";
-import { registerPolygonVertexMethods } from "./ClockwiseSweep/SimplePolygonEdge.js";
-import { registerSettings } from "./settings.js";
+import { registerPIXIPolygonMethods } from "./shapes/PIXIPolygon.js";
+import { registerPIXIRectangleMethods } from "./shapes/PIXIRectangle.js";
+import { registerPIXICircleMethods } from "./shapes/PIXICircle.js";
 
-import { LightMaskClockwisePolygonSweep } from "./ClockwiseSweep/LightMaskClockwisePolygonSweep.js";
 import {
   controlledWallIDs,
   injectAmbientLightConfiguration,
@@ -25,6 +20,17 @@ import {
   injectTokenLightConfiguration } from "./render.js";
 
 import { lightMaskPreUpdateAmbientLight } from "./preUpdate.js";
+
+// ----- WeilerAtherton ----- //
+import { WeilerAthertonClipper } from "./WeilerAtherton.js";
+
+// ----- Shapes ----- //
+import { RegularPolygon } from "./shapes/RegularPolygon.js";
+import { EquilateralTriangle } from "./shapes/EquilateralTriangle.js";
+import { Square } from "./shapes/Square.js";
+import { Hexagon } from "./shapes/Hexagon.js";
+import { RegularStar } from "./shapes/RegularStar.js";
+import { Ellipse } from "./shapes/Ellipse.js";
 
 /**
  * Log message only when debug flag is enabled from DevMode module.
@@ -41,11 +47,6 @@ export function log(...args) {
   }
 }
 
-async function lightMaskBenchmarkSight(n=1000, ...args) {
-  await benchmarkSight(n, ...args);
-  await LightMaskClockwisePolygonSweep.benchmark(n, ...args);
-}
-
 Hooks.once("init", async function() {
   log("Initializing...");
 
@@ -53,22 +54,18 @@ Hooks.once("init", async function() {
   registerPIXIPolygonMethods();
   registerPIXIRectangleMethods();
   registerPIXICircleMethods();
-  registerPolygonVertexMethods();
 
   Handlebars.registerHelper("max2", function(a, b) { return Math.max(a, b); });
 
   game.modules.get(MODULE_ID).api = {
-    LightMaskClockwisePolygonSweep: LightMaskClockwisePolygonSweep,
-    controlledWallIDs: controlledWallIDs,
-    benchmark: lightMaskBenchmarkSight
+    controlledWallIDs,
+    WeilerAthertonClipper,
+    shape: { RegularPolygon, EquilateralTriangle, Square, Hexagon, RegularStar, Ellipse }
   };
-
-  CONFIG.Canvas.losBackend = LightMaskClockwisePolygonSweep;
 });
 
 Hooks.once("setup", async function() {
   log("Setup...");
-  registerSettings();
   loadTemplates(Object.values(TEMPLATES));
 });
 

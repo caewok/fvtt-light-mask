@@ -1,6 +1,9 @@
 /* globals
+PIXI
 */
 "use strict";
+
+import { RegularPolygon } from "./RegularPolygon.js";
 
 export class EquilateralTriangle extends RegularPolygon {
   constructor(origin, radius, {rotation = 0} = {}) {
@@ -29,14 +32,14 @@ export class EquilateralTriangle extends RegularPolygon {
    * Calculate area of this equilateral triangle.
    * @type {number}
    */
-  get area() { Math.pow(this.altitude, 2) / Math.SQRT3; }
+  get area() { return Math.pow(this.altitude, 2) / Math.SQRT3; }
 
   /**
    * Generate the points of the equilateral triangle using the provided configuration.
    * Simpler and more mathematically precise than the default version.
    * @returns {Point[]}
    */
-  #generateFixedPoints() {
+  _generateFixedPoints() {
     // Shape before rotation is ∆ turned clockwise 90º
     const sqrt3_2 = Math.SQRT3 / 2;
     const { radius, apothem } = this;
@@ -58,7 +61,7 @@ export class EquilateralTriangle extends RegularPolygon {
         return new PIXI.Rectangle(
           fp[2].x + x,
           fp[2].y + y,
-          altitude, sideLength)
+          altitude, sideLength);
 
       case 90:
         // ∆ upside down
@@ -72,7 +75,7 @@ export class EquilateralTriangle extends RegularPolygon {
         return new PIXI.Rectangle(
           -altitude + apothem + x,
           fp[2].y + y,
-          altitude, sideLength)
+          altitude, sideLength);
 
       case 270:
         // ∆

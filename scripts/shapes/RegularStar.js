@@ -1,4 +1,8 @@
 /* globals
+Ray,
+foundry,
+ClipperLib,
+PIXI
 */
 "use strict";
 
@@ -36,21 +40,21 @@ export class RegularStar extends RegularPolygon {
    * Equivalent to the distance from the center to an inner point of the star
    */
   get apothem() {
-    const { outerPoints: op, numPoints } = this;
+    const { outerPoints: op, numPoints, center } = this;
 
     // The midpoint of the line between the two outer points
-    const midPoint = midPoint(op[0], op[1]);
-    if ( numPoints < 5 ) return Math.hypot(midPoint.x - center.x, midPoint.y - center.y) * 0.5;
+    const mid = midPoint(op[0], op[1]);
+    if ( numPoints < 5 ) return Math.hypot(mid.x - center.x, mid.y - center.y) * 0.5;
 
     // The internal angle of the regular shape at the center of this star
     const internalAngle = ((numPoints - 2) * Math.PI) / numPoints;
 
     // Length of the line from op[0] to midPoint
-    const opp = Math.hypot(midpoint.x - op[0].x, midpoint.y - op[0].y);
+    const opp = Math.hypot(mid.x - op[0].x, mid.y - op[0].y);
     const theta = internalAngle * 0.5;
     const distanceIn = opp / Math.tan(theta);
 
-    return Math.hypot(midPoint.x - center.x, midPoint.y - center.y) - distanceIn;
+    return Math.hypot(mid.x - center.x, mid.y - center.y) - distanceIn;
   }
 
   get sideLength() {
@@ -67,29 +71,27 @@ export class RegularStar extends RegularPolygon {
    * The outer points of the star shape.
    * @type {Point}
    */
-  get outerPoints() { return this._outerPoints || (this._outerPoints = super.#generateFixedPoints()); }
-  get innerPoints() {
-    this.innerCircle.toPolygon({density: this.numPoints})
-  }
+  get outerPoints() { return this._outerPoints || (this._outerPoints = super._generateFixedPoints()); }
+
+  get innerPoints() { return this.innerCircle.toPolygon({density: this.numPoints}); }
 
   /**
    * Generate the points of the shape in shape-space (before rotation or translation)
    * @return {Points[]}
    */
-  #generateFixedPoints() {
-    const { numSides, radius } = this;
+  _generateFixedPoints() {
+    const { numPoints, outerPoints } = this;
 
-    const outer_pts = this.outerPoints;
 
     // Construct the segments connecting the outside points to form a star.
-    const diagonals = outer_pts.map((pt, idx) => {
-      const dest = (idx + 2) % points;
-      return new Ray(pt, outer_pts[dest]);
+    const diagonals = outerPoints.map((pt, idx) => {
+      const dest = (idx + 2) % numPoints;
+      return new Ray(pt, outerPoints[dest]);
     });
 
     // The concave points of the star are found at the intersections of the diagonals.
     const ix = diagonals.map((d, idx) => {
-      const near = (idx + (points - 1)) % points;
+      const near = (idx + (numPoints - 1)) % numPoints;
       const near_d = diagonals[near];
       return foundry.utils.lineLineIntersection(d.A, d.B, near_d.A, near_d.B);
     });
@@ -119,8 +121,6 @@ export class RegularStar extends RegularPolygon {
     if ( !this.outerCircle.contains(pt.x, pt.y) ) return false;
     if ( this.innerCircle.contains(pt.x, pt.y) ) return true;
 
-    const pt = this.fromCartesianCoords({ x, y });
-
     // Use orientation to test the point.
     // Moving clockwise, must be clockwise to each side (meaning, the outside points)
     const { outsidePoints: op, numSides } = this;
@@ -136,7 +136,7 @@ export class RegularStar extends RegularPolygon {
     // First point is outer
     const { fixedPoints: fp } = this;
     const ln = fp.length;
-    const prevOP = fp[0];
+    let prevOP = fp[0];
     for ( let i = 1; i < ln; i += 2 ) {
       const nextOP = fp[(i + 1) % ln];
       const ip = fp[i];
@@ -163,7 +163,7 @@ export class RegularStar extends RegularPolygon {
     return super._checkSide(point);
   }
 
-   /**
+  /**
    * Intersect this shape with a PIXI.Polygon.
    * Use WeilerAtherton to perform precise intersect.
    * @param {PIXI.Polygon} polygon      A PIXI.Polygon
@@ -174,12 +174,7 @@ export class RegularStar extends RegularPolygon {
    */
   intersectPolygon(polygon, {clipType, scalingFactor}={}) {
     if ( !this.radius ) return new PIXI.Polygon([]);
-    clipType ??= ClipperLib.ClipType.ctIntersection;
-
-    if ( clipType !== ClipperLib.ClipType.ctIntersection
-      && clipType !== ClipperLib.ClipType.ctUnion) {
-      return super.super.intersectPolygon(polygon, {clipType, scalingFactor});
-    }
+    return super.super.intersectPolygon(polygon, {clipType, scalingFactor});
   }
 
 }

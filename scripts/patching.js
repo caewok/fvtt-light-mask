@@ -86,14 +86,18 @@ function createLOSLightSource(wrapper) {
   if ( shape === "circle" ) return wrapper();
 
   const origin = {x: this.data.x, y: this.data.y};
-  const los = CONFIG.Canvas.losBackend.create(origin, {
+  const cfg = {
     type: this.data.walls ? "light" : "universal",
     angle: this.data.angle,
     density: PIXI.Circle.approximateVertexDensity(this.radius),
     rotation: this.data.rotation,
-    source: this,
-    boundaryShapes: [this.boundaryPolygon(origin, this.radius, this.rotation)]
-  });
+    source: this
+  };
+
+  const boundaryShape = this.boundaryPolygon();
+  if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
+
+  const los = CONFIG.Canvas.losBackend.create(origin, cfg);
 
   // Update the flag for whether soft edges are required
   this._flags.renderSoftEdges &&= ((los.edges.size > 0) || (this.data.angle < 360));
@@ -110,12 +114,18 @@ function initializeSoundSource(wrapper, data={}) {
   if ( shape === "circle" ) return wrapper();
 
   this._initializeData(data);
-  this.los = CONFIG.Canvas.losBackend.create({x: this.data.x, y: this.data.y}, {
+
+  const origin = {x: this.data.x, y: this.data.y};
+  const cfg = {
     type: this.data.walls ? "sound" : "universal",
     density: PIXI.Circle.approximateVertexDensity(this.data.radius),
     source: this,
-    boundaryShapes: [this.boundaryPolygon(origin, this.radius, this.rotation)]
-  });
+  };
+
+  const boundaryShape = this.boundaryPolygon();
+  if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
+
+  this.los = CONFIG.Canvas.losBackend.create(origin, cfg);
   return this;
 }
 

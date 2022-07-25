@@ -60,7 +60,7 @@ Hooks.once("init", async function() {
   game.modules.get(MODULE_ID).api = {
     controlledWallIDs,
     WeilerAthertonClipper,
-    shape: { RegularPolygon, EquilateralTriangle, Square, Hexagon, RegularStar, Ellipse }
+    shapes: { RegularPolygon, EquilateralTriangle, Square, Hexagon, RegularStar, Ellipse }
   };
 });
 

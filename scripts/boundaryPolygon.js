@@ -15,21 +15,20 @@ import { Hexagon } from "./shapes/Hexagon.js";
 
 /**
  * Method added to the light/sound AmbientLight class to create a custom boundary polygon.
- * A boundary polygon must be closed and contain the radius.
- * Called by ClockwiseSweep.
- * @param {Point}   origin      Center of the polygon.
- * @param {Number}  radius      Extent of the polygon, measured as distance from origin.
- * @param {Number}  rotation    Rotation in degrees. Default 0.
+ * A boundary polygon must be closed and contain the origin.
  * @return {PIXI.Polygon}
  */
-export function boundaryPolygon(origin, radius, rotation = 0) {
+export function boundaryPolygon() {
+  const radius = this.radius;
   if (!radius) return undefined;
+
+  const origin = { x: this.data.x, y: this.data.y };
   const doc = this.object.document;
 
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   const sides = doc.getFlag(MODULE_ID, KEYS.SIDES) || 3;
   const minor = (doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
-  rotation = doc.getFlag(MODULE_ID, KEYS.ROTATION) || rotation; // Is this necessary? Possibly for sounds.
+  const rotation = doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? this.data.rotation ?? 0; // Need flag for sounds
 
   switch ( shape ) {
     case "circle": return new PIXI.Circle(origin.x, origin.y, radius);
@@ -47,6 +46,6 @@ export function boundaryPolygon(origin, radius, rotation = 0) {
     case "star":
       return new RegularStar(Math.max(5, sides), origin, radius, { rotation });
 
-    case "none": return "none";
+    case "none": return undefined;
   }
 }

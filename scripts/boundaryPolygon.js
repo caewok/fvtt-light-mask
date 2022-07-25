@@ -28,7 +28,7 @@ export function boundaryPolygon() {
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   const sides = doc.getFlag(MODULE_ID, KEYS.SIDES) || 3;
   const minor = (doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
-  const rotation = doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? this.data.rotation ?? 0; // Need flag for sounds
+  const rotation = this.data?.rotation ?? doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? 0; // Need flag for sounds
 
   switch ( shape ) {
     case "circle": return new PIXI.Circle(origin.x, origin.y, radius);
@@ -40,11 +40,11 @@ export function boundaryPolygon() {
         case 3: return new EquilateralTriangle(origin, radius, { rotation });
         case 4: return new Square(origin, radius, { rotation });
         case 6: return new Hexagon(origin, radius, { rotation});
-        default: return new RegularPolygon(sides, origin, radius, { rotation });
+        default: return new RegularPolygon(origin, radius, { numSides: sides, rotation });
       }
 
     case "star":
-      return new RegularStar(Math.max(5, sides), origin, radius, { rotation });
+      return new RegularStar(origin, radius, { numPoints: Math.max(5, sides),  rotation });
 
     case "none": return undefined;
   }

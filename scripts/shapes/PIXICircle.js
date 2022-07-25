@@ -140,17 +140,19 @@ function pointsForArc(fromAngle, toAngle, {density, includeEndpoints=true} = {})
   return points;
 }
 
-function intersectPolygonPIXICircle(wrapped, polygon, {density, ...options}={}) {
+function intersectPolygonPIXICircle(wrapped, polygon, options) {
+  return wrapped(polygon, options);
+
   if ( !this.radius ) return new PIXI.Polygon([]);
   options.clipType ??= ClipperLib.ClipType.ctIntersection;
 
   if ( options.clipType !== ClipperLib.ClipType.ctIntersection
     && options.clipType !== ClipperLib.ClipType.ctUnion) {
-    return wrapped(polygon, {density, ...options});
+    return wrapped(polygon, options);
   }
 
   const union = options.clipType === ClipperLib.ClipType.ctUnion;
-  const wa = WeilerAthertonClipper.fromPolygon(polygon, { union, density });
+  const wa = WeilerAthertonClipper.fromPolygon(polygon, { union, density: options.density });
   const res = wa.combine(this)[0];
 
   if ( !res ) {

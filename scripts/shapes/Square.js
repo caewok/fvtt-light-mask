@@ -74,7 +74,7 @@ export class Square extends RegularPolygon {
     return [
       { x: r, y: 0 },
       { x: 0, y: r },
-      { x: -r, y: r },
+      { x: -r, y: 0 },
       { x: 0, y: -r }
     ];
   }
@@ -93,10 +93,10 @@ export class Square extends RegularPolygon {
       case 225:
       case 315:
         return [
-          { x: apothem + x, y: apothem + y },
-          { x: -apothem + x, y: apothem + y },
-          { x: -apothem + x, y: -apothem + y },
-          { x: apothem + x, y: -apothem + y }
+          apothem + x, apothem + y,
+          -apothem + x, apothem + y,
+          -apothem + x, -apothem + y,
+          apothem + x, -apothem + y
         ];
 
       // Oriented [] turned 45º
@@ -105,10 +105,10 @@ export class Square extends RegularPolygon {
       case 180:
       case 270:
         return [
-          { x: radius + x, y},
-          { x, y: radius + y },
-          { x: -radius + x, y: radius + y},
-          { x, y: -radius + y }
+          radius + x, y,
+          x, radius + y,
+          -radius + x, y,
+          x, -radius + y
         ];
     }
 

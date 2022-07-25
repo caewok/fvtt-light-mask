@@ -107,24 +107,24 @@ export class Hexagon extends RegularPolygon {
       case 0:
       case 180:
         return [
-          { x: radius + x, y },
-          { x: r1_2 + x, y: apothem + y },
-          { x: -r1_2 + x, y: apothem + y },
-          { x: -radius + x, y },
-          { x: -r1_2 + x, y: -apothem + y },
-          { x: r1_2 + x, y: -apothem + y }
+          radius + x, y ,
+          r1_2 + x, apothem + y,
+          -r1_2 + x, apothem + y,
+          -radius + x, y,
+          -r1_2 + x, -apothem + y,
+          r1_2 + x, -apothem + y
         ];
 
       // Pointy-side N/S
       case 90:
       case 270:
         return [
-          { x: apothem + x, y: r1_2 + y },
-          { x, y: radius + y },
-          { x: -apothem + x, y: r1_2 + y },
-          { x: -apothem + x, y: -r1_2 + y },
-          { x, y: -radius + y },
-          { x: apothem + x, y: -r1_2 + y }
+          apothem + x, r1_2 + y,
+          x, radius + y,
+          -apothem + x, r1_2 + y,
+          -apothem + x, -r1_2 + y,
+          x, -radius + y,
+          apothem + x, -r1_2 + y
         ];
     }
 

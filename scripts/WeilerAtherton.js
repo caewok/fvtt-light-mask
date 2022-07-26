@@ -1,7 +1,6 @@
 /* globals
 PolygonVertex,
-PIXI,
-foundry
+PIXI
 */
 "use strict";
 
@@ -90,7 +89,7 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    * @returns {WeilerAthertonClipper}
    */
   static fromPolygon(polygon, { union = true, clippingOpts = {} } = {}) {
-    return new this(polygon.points, { union, clippingOpts })
+    return new this(polygon.points, { union, clippingOpts });
   }
 
   /**
@@ -139,14 +138,18 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    * @returns {[PIXI.Polygon]}
    */
   _combineNoHoles(trackingArray, clipObject, { union = this.config.union } = {}) {
-    const { opts } = this.config;
+    // Get the first non-tangent intersection
+    const prevIdx = trackingArray.findIndex(ix => ix.type);
+    if ( !~prevIdx ) return [new PIXI.Polygon(this.points)]; // No non-tangent intersections
 
-    let prevIx = trackingArray[0];
+    let prevIx = trackingArray[prevIdx];
     let tracePolygon = (prevIx.type === this.constructor.INTERSECTION_TYPES.OUT_IN) ^ union;
     const points = [prevIx];
     const ln = trackingArray.length;
-    for ( let i = 1; i < ln; i += 1 ) {
+    for ( let i = prevIdx + 1; i < ln; i += 1 ) {
       const ix = trackingArray[i];
+      if ( !ix.type ) continue; // Tangent; skip
+
       this._processIntersection(ix, prevIx, tracePolygon, points, clipObject);
       tracePolygon = !tracePolygon;
       prevIx = ix;
@@ -210,6 +213,8 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    * Construct an array of intersections between the polygon and the clipping object.
    * The intersections follow clockwise around the polygon.
    * Round all intersections and polygon vertices to the nearest pixel (integer).
+   * Assumes that clipObject is a convex shape such that drawing a line through it
+   * will intersect at most twice.
    *
    * @param {PIXI.Polygon} polygon
    * @param {PIXI.Polygon} polygon    Polygon to test
@@ -217,7 +222,7 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    *                                  - "segmentIntersections" method
    * @returns {PolygonVertex[]}
    */
-   _buildPointTrackingArray(clipObject) {
+  _buildPointTrackingArray(clipObject) {
     const points = this.points;
     const ln = points.length;
     if ( ln < 6 ) return []; // Minimum 3 Points required
@@ -228,7 +233,6 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
     // For _findIntersection, also track the edges before and after the edge of interest
     // To make this easier, start at the end of the polygon so it cycles through.
     // If the polygon has only 4 points (6 coords), double-back to beginning
-    let prevPt = new PolygonVertex(points[(ln - 4) % ln], points[(ln - 3) % ln]); // Ignore closing point
     let a = new PolygonVertex(points[0], points[1]);
 
     // At each intersection, add the intersection points to the trackingArray.
@@ -246,169 +250,190 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
     // an intersection for a -- b near b on a -- b -- c could be rounded to "b" but then
     // b -- c may have no intersection.
 
+    // Label intersections as in/out, out/in or tangent.
+    // Tangent means the edge ends at the intersection and the next edge is on the same side.
+
+    // Check if the last edge is a possible tangent
+    const lastPt = new PolygonVertex(points[ln - 4], points[ln - 3]);
+    let previousInside = this._determineStartingLocation(lastPt, a, clipObject);
+
     for ( let i = 2; i < ln; i += 2 ) {
       const b = new PolygonVertex(points[i], points[i + 1]);
-      const ixs = clipObject.segmentIntersections(a, b).map(ix => {
-        const v = PolygonVertex.fromPoint(ix)
-        v.leadingPoints = []; // Ensure leadingPoints is defined.
-        return v;
-      });
-
+      const ixs = this._findIntersections(a, b, clipObject);
       const ixsLn = ixs.length;
       if ( ixsLn ) {
-        // If the intersection is the starting endpoint, prefer the intersection.
-        if ( ixs[0].equals(a) ) leadingPoints.pop();
+        if ( this._checkForTangent(ixs, a, b, clipObject,
+          previousInside, leadingPoints, trackingArray)) continue;
+
+        previousInside = this._setIntersectionType(ixs, previousInside);
         ixs[0].leadingPoints = leadingPoints;
         trackingArray.push(...ixs);
         leadingPoints = [];
       }
 
       // Always add b unless we already did because it is an intersection.
-      if ( !ixsLn || (trackingArray.length && !b.equals(trackingArray[trackingArray.length - 1])) ) leadingPoints.push(b);
+      if ( !ixsLn || (trackingArray.length
+        && !b.equals(trackingArray[trackingArray.length - 1])) ) leadingPoints.push(b);
 
       // Cycle to next edge
-      prevPt = a;
       a = b;
     }
 
+    if ( !trackingArray.length ) return trackingArray;
+
     // Add the points at the end of the points array leading up to the initial intersection
     // Pop the last leading point to avoid repetition (closed polygon)
-    const tLn = trackingArray.length;
-    if ( !tLn ) return trackingArray;
-
     leadingPoints.pop();
     trackingArray[0].leadingPoints.unshift(...leadingPoints);
 
-    // Determine the first intersection label
-    const ix = trackingArray[0];
-    const priorIx = trackingArray[tLn - 1];
-    let nextIx = trackingArray[1] || ix;
-    const priorPt = ix.leadingPoints[ix.leadingPoints.length - 1] || priorIx;
-    const nextPt = nextIx.leadingPoints[0] || nextIx;
-    this.constructor._labelIntersections([ix], priorPt, nextPt, clipObject)
+    this.constructor._labelIntersections(trackingArray, clipObject);
 
     return trackingArray;
   }
 
   /**
-   * Label an array of intersections for an edge as in/out or out/in.
+   * Find intersections
+   */
+  _findIntersections(a, b, clipObject) {
+    return clipObject.segmentIntersections(a, b).map(ix => {
+      const v = PolygonVertex.fromPoint(ix);
+      v.leadingPoints = []; // Ensure leadingPoints is defined.
+      v.attachEdge({A: a, B: b});  // For debugging
+      return v;
+    });
+  }
+
+  /**
+   * Determine whether the starting point is inside or outside
+   */
+  _determineStartingLocation(a, b, clipObject) {
+    const ixs = clipObject.segmentIntersections(a, b).map(ix => PolygonVertex.fromPoint(ix));
+    const ln = ixs.length;
+    let previousInside = true;
+    if ( !ln || !ixs[0].equals(a) ) {
+      previousInside = clipObject.contains(a.x, a.y);
+    } else if ( ln === 1 || !ixs[1].equals(a) ) {
+      previousInside = clipObject.contains(b.x, b.y);
+    }
+    // Otherwise, lastPt and a are both intersections; keep true
+    return previousInside;
+  }
+
+  /**
+   * Check for tangent intersection
+   */
+  _checkForTangent(ixs, a, b, clipObject, previousInside, leadingPoints, trackingArray) {
+    const lastIx = trackingArray[trackingArray.length - 1];
+
+    if ( ixs[0].equals(a)) {
+      if ( ixs.length === 1 && this._insideEqualsPrevious(a, b, clipObject, previousInside) ) {
+        // Tangent
+        if ( lastIx && lastIx.equals(a) ) {
+          leadingPoints = lastIx.leadingPoints;
+          leadingPoints.push(a, b);
+          trackingArray.pop();
+        } else leadingPoints.push(b);
+        return true;
+      }
+      // If the intersection is the starting endpoint, prefer the intersection.
+      leadingPoints.pop();
+    }
+    return false;
+  }
+
+  /**
+   * Has a tangent
+   */
+  _insideEqualsPrevious(a, b, clipObject, previousInside) {
+    const bInside = clipObject.contains(b.x, b.y);
+    return previousInside === bInside;
+  }
+
+  /**
+   * Set the type for each intersection
+   */
+  _setIntersectionType(ixs, previousInside) {
+    const types = this.constructor.INTERSECTION_TYPES;
+    const type = previousInside ? types.IN_OUT : types.OUT_IN;
+    let sign = 1;
+    ixs.forEach(ix => {
+      ix.type = type * sign;
+      sign *= -1;
+      previousInside = !previousInside;
+    });
+
+    return previousInside;
+  }
+
+  /**
+   * Label an array of intersections for an edge as in/out or out/in or tangent.
    * Intersections are labeled in place.
+   * If not for tangent intersections, we could get away with only labeling the first.
+   * But in order to properly skip tangents, we need to know at least that much, as well
+   * as knowing in/out for the first proper intersection.
    * @param {Point} ix
    * @param {Point} prevPt
    * @param {Point} nextPt
-   * @param {boolean} If the intersection is a tangent, return false
    */
-  static _labelIntersections(ixs, a, b, clipObject) {
-    if ( !ixs.length ) return false;
+  static _labelIntersections(trackingArray, clipObject) {
+    // Each ix in the tracking array has 0+ lead points.
+    // E.g., points 0, 1, ix0, ix1, 3, 4, ix2
+    // [0, 1] are lead points to ix0
+    // [] lead points to ix1
+    // [3, 4] are lead points to ix2
+    // We need the point on either side of an intersection
+    // So walk all the intersections, marking previous and next points as we go.
+    const ln = trackingArray.length;
+    if ( !ln ) return;
 
     const types = this.INTERSECTION_TYPES;
-    const aInside = clipObject.contains(a.x, a.y);
-    const bInside = clipObject.contains(b.x, b.y);
 
-    //if ( !(aInside ^ bInside) && ixs.length === 1 ) return types.TANGENT;
+    // Find the first intersection with leading points
+    const startIdx = trackingArray.findIndex(ix => ix.leadingPoints.length);
+    if ( !~startIdx ) return; // No leading points; all tangents.
 
-    const type = aInside ? types.IN_OUT : types.OUT_IN;
-    let sign = 1;
-    ixs.forEach(ix => {
-      ix.attachEdge({A: a, B: b});
-      ix.type = type * sign;
-      sign *= -1;
-    });
+    const startIx = trackingArray[startIdx];
+    const currentIxs = [startIx];
+    let prevPt = startIx.leadingPoints[startIx.leadingPoints.length - 1];
+    let nextPt;
 
-    return true;
+    // Skip this first intersection and look for the next one with leading points
+    for ( let i = 1; i < ln; i += 1 ) {
+      const j = (startIdx + i) % ln;
+      const nextIx = trackingArray[j];
+
+      if ( nextIx.leadingPoints.length ) nextPt = nextIx.leadingPoints[0];
+
+      // If we have found previous and next, label intersections, then reset.
+      if ( nextPt ) {
+        const aInside = clipObject.contains(prevPt.x, prevPt.y);
+        const bInside = clipObject.contains(nextPt.x, nextPt.y);
+
+        // If ix has points that share a side, tangent
+        // Otherwise, use aInside to define
+        let type = types.TANGENT;
+        if ( aInside ^ bInside ) type = aInside ? types.IN_OUT : types.OUT_IN;
+
+        // Any interior intersections (between two intersections) are tangents
+        // Just need to set the type for the first and last (if any).
+        currentIxs[0].type = type;
+        if ( currentIxs.length > 1 ) currentIxs[currentIxs.length - 1] = type * -1;
+
+        // For debugging
+        for ( const ix of currentIxs) {
+          ix.prevPt = { x: prevPt.x, y: prevPt.y };
+          ix.nextPt = { x: nextPt.x, y: nextPt.y };
+        }
+
+        // Reset
+        prevPt = nextIx.leadingPoints[nextIx.leadingPoints.length - 1];
+        nextPt = undefined;
+        currentIxs.length = 0;
+        currentIxs.push(nextIx);
+      } else {
+        // No leading points, so remember this intersection to process later
+        currentIxs.push(nextIx);
+      }
+    }
   }
-}
-
-
-// Needed to change 1 line in the quadraticIntersection, but cannot override, so...
-// May as well trim down lineCircleIntersection a bit while we are at it...
-/**
- * Determine the intersection between a candidate wall and the circular radius of the polygon.
- * @memberof helpers
- *
- * @param {Point} a                   The initial vertex of the candidate edge
- * @param {Point} b                   The second vertex of the candidate edge
- * @param {Point} center              The center of the bounding circle
- * @param {number} radius             The radius of the bounding circle
- * @param {number} epsilon            A small tolerance for floating point precision
- *
- * @returns {LineCircleIntersection}  The intersection of the segment AB with the circle
- */
-function lineCircleIntersection(a, b, center, radius, epsilon=1e-8) {
-  const r2 = Math.pow(radius, 2);
-  let intersections = [];
-
-  // Test whether endpoint A is contained
-  const ar2 = Math.pow(a.x - center.x, 2) + Math.pow(a.y - center.y, 2);
-  const aInside = ar2 <= r2 + epsilon;
-
-  // Test whether endpoint B is contained
-  const br2 = Math.pow(b.x - center.x, 2) + Math.pow(b.y - center.y, 2);
-  const bInside = br2 <= r2 + epsilon;
-
-  // Find quadratic intersection points
-  const contained = aInside && bInside;
-  if ( !contained ) {
-    intersections = quadraticIntersection(a, b, center, radius, epsilon);
-  }
-
-  // Return the intersection data
-  return {
-    aInside,
-    bInside,
-    contained,
-    intersections
-  };
-}
-
-
-/**
- * Determine the points of intersection between a line segment (p0,p1) and a circle.
- * There will be zero, one, or two intersections
- * See https://math.stackexchange.com/a/311956
- * @memberof helpers
- *
- * @param {Point} p0            The initial point of the line segment
- * @param {Point} p1            The terminal point of the line segment
- * @param {Point} center        The center of the circle
- * @param {number} radius       The radius of the circle
- * @param {number} [epsilon=0]  A small tolerance for floating point precision
- */
-function quadraticIntersection(p0, p1, center, radius, epsilon=0) {
-  const dx = p1.x - p0.x;
-  const dy = p1.y - p0.y;
-  // Quadratic terms where at^2 + bt + c = 0
-  const a = Math.pow(dx, 2) + Math.pow(dy, 2);
-  const b = (2 * dx * (p0.x - center.x)) + (2 * dy * (p0.y - center.y));
-  const c = Math.pow(p0.x - center.x, 2) + Math.pow(p0.y - center.y, 2) - Math.pow(radius, 2);
-
-  // Discriminant
-  const disc2 = Math.pow(b, 2) - (4 * a * c);
-  if ( disc2 < 0 ) return []; // No intersections
-
-  // Roots
-  const disc = Math.sqrt(disc2);
-  const t1 = (-b - disc) / (2 * a);
-  const t2 = (-b + disc) / (2 * a);
-  // If t1 hits (between 0 and 1) it indicates an "entry"
-  const intersections = [];
-  if ( t1.between(0-epsilon, 1+epsilon) ) {
-    intersections.push({
-      x: p0.x + (dx * t1),
-      y: p0.y + (dy * t1)
-    });
-  }
-
-  // If the discriminant is exactly 0, a segment endpoint touches the circle
-  // (and only one intersection point)
-  if ( disc2 === 0 ) return intersections;
-
-  // If t2 hits (between 0 and 1) it indicates an "exit"
-  if ( t2.between(0-epsilon, 1+epsilon) ) {
-    intersections.push({
-      x: p0.x + (dx * t2),
-      y: p0.y + (dy * t2)
-    });
-  }
-  return intersections;
 }

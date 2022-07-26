@@ -299,10 +299,22 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
   _determineStartingLocation(a, b, clipObject) {
     const ixs = clipObject.segmentIntersections(a, b).map(ix => PolygonVertex.fromPoint(ix));
     const ln = ixs.length;
-    if ( !ln || !ixs[ln - 1].equals(b) ) return clipObject.contains(b.x, b.y);
-    else if ( !ixs[0].equals(a) ) return clipObject.contains(a.x, a.y);
+    if ( !ln ) return clipObject.contains(b.x, b.y);
 
-    // Otherwise, a and b are both intersections; keep true
+    if ( ln === 1 && !ixs[ln - 1].equals(b) ) return clipObject.contains(b.x, b.y);
+
+    if ( ln === 1 && ixs[ln - 1].equals(b) ) return clipObject.contains(a.x, a.y);
+
+    if ( ln === 2 && !ixs[ln - 1].equals(b) ) return clipObject.contains(b.x, b.y);
+
+    if ( ln === 2 && ixs[ln - 1].equals(b) ) {
+      if ( ixs[0].equals(a) ) return true;
+
+      // ixs[0] does not equal a.
+      // goes a --> ix --> ix
+      return !clipObject.contains(a.x, a.y);
+    }
+
     return true;
   }
 

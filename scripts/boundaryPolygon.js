@@ -28,7 +28,7 @@ export function boundaryPolygon() {
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   const sides = doc.getFlag(MODULE_ID, KEYS.SIDES) || 3;
   const minor = (doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
-  const rotation = this.data?.rotation ?? doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? 0; // Need flag for sounds
+  const rotation = this.data.rotation ?? doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? 0; // Need flag for sounds
 
   switch ( shape ) {
     case "circle": return new PIXI.Circle(origin.x, origin.y, radius);

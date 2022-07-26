@@ -89,26 +89,27 @@ export class Ellipse extends PIXI.Ellipse {
   }
 
   /**
-   * Test whether the ellipse contains a given point.
-   * @param {Point} p
+   * Test whether the ellipse contains a given point {x,y}.
+   * @param {number} x
+   * @param {number} y
    * @return {Boolean}
    */
-  containsPoint(p) {
-    // Use the equation for an ellipse
-    // See https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
-    // (x - h)^2 / rx^2 + (y - k)^2 / ry^2 ≤ 1
-    // --> ry^2*(x-h)^2 + rx^2*(y-k)^2 ≤ rx^2*ry^2
-    // h,k is ellipse origin
-    // x,y is the point to test
-    // rx = semi-major axis; ry = semi-minor axis
-    const rx2 = Math.pow(this.major, 2);
-    const ry2 = Math.pow(this.minor, 2);
-    const left = ((Math.pow(p.x - this.x, 2) * ry2) + (Math.pow(p.y - this.y, 2) * rx2));
-    const right = (rx2 * ry2);
-    return left <= right || left.almostEqual(right);
-  }
+  contains(x, y) {
+    const { width, height } = this;
+    if ( width <= 0 || height <= 0 ) return false;
 
-  contains(x, y) { return this.containsPoint({x, y}); }
+    // Move point to Ellipse-space
+    const pt = this.fromCartesianCoords({x, y});
+
+    // Just like PIXI.Ellipse.prototype.contains but we are already at 0, 0
+    // Normalize the coords to an ellipse
+    let normx = (pt.x / width);
+    let normy = (pt.y / height);
+    normx *= normx;
+    normy *= normy;
+
+    return (normx + normy <= 1);
+  }
 
   /**
    * Convert to a polygon
@@ -190,23 +191,23 @@ export class Ellipse extends PIXI.Ellipse {
    * @param {number} [options.scalingFactor]  A scaling factor passed to Polygon#toClipperPoints to preserve precision
    * @returns {PIXI.Polygon|null}       The intersected polygon or null if no solution was present
    */
-  intersectPolygon(polygon, { density, clipType, scalingFactor } = {}) {
-    return polygon.intersectPolygon(this.toPolygon({density}), { clipType, scalingFactor });
-
+  intersectPolygon(polygon, options) {
     if ( !this.major || !this.minor ) return new PIXI.Polygon([]);
 
     // Default to the larger radius for density
-    density ??= PIXI.Circle.approximateVertexDensity(this.major);
+    options.density ??= PIXI.Circle.approximateVertexDensity(this.major);
 
-    clipType ??= ClipperLib.ClipType.ctIntersection;
-    if ( clipType !== ClipperLib.ClipType.ctIntersection
-      && clipType !== ClipperLib.ClipType.ctUnion) {
-      const ellipsePolygon = this.toPolygon({density});
-      return polygon.intersectPolygon(ellipsePolygon, {clipType, scalingFactor});
+    options.clipType ??= ClipperLib.ClipType.ctIntersection;
+    if ( options.clipType !== ClipperLib.ClipType.ctIntersection
+      && options.clipType !== ClipperLib.ClipType.ctUnion) {
+      const ellipsePolygon = this.toPolygon({ density: options.density });
+      return polygon.intersectPolygon(ellipsePolygon, options);
     }
 
-    const union = clipType === ClipperLib.ClipType.ctUnion;
-    const wa = WeilerAthertonClipper.fromPolygon(polygon, { union, density });
+    polygon._preWApoints = [...polygon.points];
+
+    const union = options.clipType === ClipperLib.ClipType.ctUnion;
+    const wa = WeilerAthertonClipper.fromPolygon(polygon, { union, density: options.density });
     const res = wa.combine(this)[0];
 
     if ( !res ) {

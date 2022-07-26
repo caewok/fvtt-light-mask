@@ -294,15 +294,16 @@ export class RegularPolygon extends PIXI.Polygon {
    * @returns {PIXI.Polygon|null}       The intersected polygon or null if no solution was present
    */
   intersectPolygon(polygon, {clipType, scalingFactor}={}) {
-    return polygon.intersectPolygon(this.toPolygon(), {clipType, scalingFactor});
-
     if ( !this.radius ) return new PIXI.Polygon([]);
     clipType ??= ClipperLib.ClipType.ctIntersection;
 
     if ( clipType !== ClipperLib.ClipType.ctIntersection
       && clipType !== ClipperLib.ClipType.ctUnion) {
+      // polygon.intersectPolygon(this.toPolygon(), {clipType, scalingFactor});
       return super.intersectPolygon(polygon, {clipType, scalingFactor});
     }
+
+    polygon._preWApoints = [...polygon.points];
 
     const union = clipType === ClipperLib.ClipType.ctUnion;
     const wa = WeilerAthertonClipper.fromPolygon(polygon, { union });

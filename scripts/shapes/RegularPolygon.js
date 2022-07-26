@@ -193,8 +193,14 @@ export class RegularPolygon extends PIXI.Polygon {
     const ixs = [];
     const fp = this.fixedPoints;
     const ln = fp.length;
+
+    // To ensure intersections are clockwise, start with the side for a
+    let aSide = this._getSide(a);
+    if ( !~aSide ) aSide = 0;
+
     for ( let i = 0; i < ln; i += 1 ) {
-      const x = foundry.utils.lineSegmentIntersection(fp[i], fp[(i + 1) % ln], a, b);
+      const j = (i + aSide) % ln;
+      const x = foundry.utils.lineSegmentIntersection(fp[j], fp[(j + 1) % ln], a, b);
       if ( x ) ixs.push(x);
     }
 
@@ -228,7 +234,7 @@ export class RegularPolygon extends PIXI.Polygon {
       // Either a is before b moving clockwise (no points)
       // or a is after b moving clockwise (all points)
       if ( foundry.utils.orient2dFast({x: 0, y: 0}, a, b) < 0 ) return [];
-      pts.push(...[0, 1, 2].map(i => fp[(i + aSide + 1) % numSides]));
+      pts.push(...Array.fromRange(numSides).map(i => fp[(i + aSide + 1) % numSides]));
     } else {
       let currSide = aSide;
       while ( currSide !== bSide ) {
@@ -245,10 +251,11 @@ export class RegularPolygon extends PIXI.Polygon {
 
   /**
    * Determine on which side a point lies.
+   * Defined here as the side that intersects a ray from the origin through the point.
    * @param {Point} point  Point, in shape-space
    * @returns {number} 0, 1, or 2 for the side.
    *                   If point is on a corner, returns the next side
-   *                   Returns -1 if inside.
+   *
    */
   _getSide(point) {
     const numSides = this.numSides;
@@ -268,19 +275,20 @@ export class RegularPolygon extends PIXI.Polygon {
    */
   _checkSide(point, side) {
     const numSides = this.numSides;
-    const fp0 = this.fixedPoints[side];
-    const fp1 = this.fixedPoints[(side + 1) % numSides];
+    const a = this.fixedPoints[side];
+    const b = this.fixedPoints[(side + 1) % numSides];
+    const o = {x: 0, y: 0};
 
-    if ( fp1.x.almostEqual(point.x) && fp1.y.almostEqual(point.y) ) return (side + 1) % numSides;
+    if ( a.x.almostEqual(point.x) && b.y.almostEqual(point.y) ) return (side + 1) % numSides;
 
-    const orient01 = foundry.utils.orient2dFast(fp0, fp1, point);
+    // If point is in the triangle formed by AOB, it is on this side (where AB is a side).
+    // Recall that a, b oriented clockwise around the shape.
+    const oa = foundry.utils.orient2dFast(o, a, point);
+    if ( oa > 0 ) return -1; // point is ccw to OA
 
-    // If clockwise, the point is inside relative to this side
-    if ( orient01 < 0 ) return -1;
+    const ob = foundry.utils.orient2dFast(o, b, point);
+    if ( ob < 0 ) return -1; // point is cw to OB
 
-    // If counterclockwise, the point is on this side, but might be equivalent to fp1
-    const orientC = foundry.utils.orient2dFast({x: 0, y: 0}, fp1, point);
-    if ( !orientC ) return (side + 1) % numSides;
     return side;
   }
 

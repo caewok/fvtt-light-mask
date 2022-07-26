@@ -262,6 +262,7 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
       const ixs = this._findIntersections(a, b, clipObject);
       const ixsLn = ixs.length;
       if ( ixsLn ) {
+        // If this intersection is a tangent, skip to next
         if ( this._checkForTangent(ixs, a, b, clipObject,
           previousInside, leadingPoints, trackingArray)) continue;
 
@@ -286,13 +287,13 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
     leadingPoints.pop();
     trackingArray[0].leadingPoints.unshift(...leadingPoints);
 
-    this.constructor._labelIntersections(trackingArray, clipObject);
+//     this.constructor._labelIntersections(trackingArray, clipObject);
 
     return trackingArray;
   }
 
   /**
-   * Find intersections
+   * Find intersections of this polygon with the clipObject.
    */
   _findIntersections(a, b, clipObject) {
     return clipObject.segmentIntersections(a, b).map(ix => {
@@ -304,7 +305,7 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
   }
 
   /**
-   * Determine whether the starting point is inside or outside
+   * Determine whether the starting point is inside or outside.
    */
   _determineStartingLocation(a, b, clipObject) {
     const ixs = clipObject.segmentIntersections(a, b).map(ix => PolygonVertex.fromPoint(ix));
@@ -329,6 +330,9 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
       if ( ixs.length === 1 && this._insideEqualsPrevious(a, b, clipObject, previousInside) ) {
         // Tangent
         if ( lastIx && lastIx.equals(a) ) {
+          // TO-DO: Can this happen? Means lastIx had equaled (b)
+          // We can skip this previous intersection so long as we keep the leadingPoints
+          // to add to the next valid intersection.
           leadingPoints = lastIx.leadingPoints;
           leadingPoints.push(a, b);
           trackingArray.pop();

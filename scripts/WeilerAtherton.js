@@ -138,17 +138,14 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
     if ( !ln ) return this.testForEnvelopment(clipObject, { union });
 
     let prevIx = trackingArray[ln - 1];
-    let tracePolygon = (prevIx.type === this.constructor.INTERSECTION_TYPES.OUT_IN) ^ union;
-    const points = [prevIx];
+    let wasTracingPolygon = (prevIx.type === this.constructor.INTERSECTION_TYPES.OUT_IN) ^ union;
+    const points = [];
     for ( let i = 0; i < ln; i += 1 ) {
       const ix = trackingArray[i];
-      this._processIntersection(ix, prevIx, tracePolygon, points, clipObject);
-      tracePolygon = !tracePolygon;
+      this._processIntersection(ix, prevIx, wasTracingPolygon, points, clipObject);
+      wasTracingPolygon = !wasTracingPolygon;
       prevIx = ix;
     }
-
-    // Finish by filling in points leading up to the first intersection.
-    this._processIntersection(trackingArray[0], prevIx, tracePolygon, points, clipObject);
     return [new PIXI.Polygon(points)];
   }
 
@@ -158,12 +155,12 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    * @param {PolygonVertex} prevIx
    * @param {PolygonVertex} ix
    * @param {Object} clipObject
-   * @param {boolean} tracePolygon  Whether we are tracing the polygon (true) or the clipObject (false).
+   * @param {boolean} wasTracingPolygon  Whether we were tracing the polygon (true) or the clipObject (false).
    */
-  _processIntersection(ix, prevIx, tracePolygon, points, clipObject) {
+  _processIntersection(ix, prevIx, wasTracingPolygon, points, clipObject) {
     const { opts } = this.config;
 
-    if ( tracePolygon ) points.push(...ix.leadingPoints);
+    if ( wasTracingPolygon ) points.push(...ix.leadingPoints);
     else points.push(...clipObject.pointsBetween(prevIx, ix, {opts}));
 
     points.push(ix);

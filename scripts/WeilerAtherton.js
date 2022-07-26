@@ -121,11 +121,7 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    */
   combine(clipObject, { union = this.config.union } = {}) {
     console.log(`WA Combining polygon (${this.points.length} points) with clipObject`, clipObject);
-
     const trackingArray = this._buildPointTrackingArray(clipObject);
-
-    if ( !trackingArray.length ) return this.testForEnvelopment(clipObject, { union });
-
     return this._combineNoHoles(trackingArray, clipObject, { union });
   }
 
@@ -138,18 +134,14 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    * @returns {[PIXI.Polygon]}
    */
   _combineNoHoles(trackingArray, clipObject, { union = this.config.union } = {}) {
-    // Get the first non-tangent intersection
-    const prevIdx = trackingArray.findIndex(ix => ix.type);
-    if ( !~prevIdx ) return [new PIXI.Polygon(this.points)]; // No non-tangent intersections
+    const ln = trackingArray.length;
+    if ( !ln ) return this.testForEnvelopment(clipObject, { union });
 
-    let prevIx = trackingArray[prevIdx];
+    let prevIx = trackingArray[ln - 1];
     let tracePolygon = (prevIx.type === this.constructor.INTERSECTION_TYPES.OUT_IN) ^ union;
     const points = [prevIx];
-    const ln = trackingArray.length;
-    for ( let i = prevIdx + 1; i < ln; i += 1 ) {
+    for ( let i = 0; i < ln; i += 1 ) {
       const ix = trackingArray[i];
-      if ( !ix.type ) continue; // Tangent; skip
-
       this._processIntersection(ix, prevIx, tracePolygon, points, clipObject);
       tracePolygon = !tracePolygon;
       prevIx = ix;
@@ -263,8 +255,8 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
       const ixsLn = ixs.length;
       if ( ixsLn ) {
         // If this intersection is a tangent, skip to next
-        if ( this._checkForTangent(ixs, a, b, clipObject,
-          previousInside, leadingPoints, trackingArray)) continue;
+        // if ( this._checkForTangent(ixs, a, b, clipObject,
+//           previousInside, leadingPoints, trackingArray)) continue;
 
         previousInside = this._setIntersectionType(ixs, previousInside);
         ixs[0].leadingPoints = leadingPoints;
@@ -305,19 +297,16 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
   }
 
   /**
-   * Determine whether the starting point is inside or outside.
+   * Determine whether the edge a --> b is outside or inside
    */
   _determineStartingLocation(a, b, clipObject) {
     const ixs = clipObject.segmentIntersections(a, b).map(ix => PolygonVertex.fromPoint(ix));
     const ln = ixs.length;
-    let previousInside = true;
-    if ( !ln || !ixs[0].equals(a) ) {
-      previousInside = clipObject.contains(a.x, a.y);
-    } else if ( ln === 1 || !ixs[1].equals(a) ) {
-      previousInside = clipObject.contains(b.x, b.y);
-    }
-    // Otherwise, lastPt and a are both intersections; keep true
-    return previousInside;
+    if ( !ln || !ixs[ln - 1].equals(b) ) return clipObject.contains(b.x, b.y);
+    else if ( !ixs[0].equals(a) ) return clipObject.contains(a.x, a.y);
+
+    // Otherwise, a and b are both intersections; keep true
+    return true;
   }
 
   /**

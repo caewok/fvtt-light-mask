@@ -167,14 +167,14 @@ function initializeSoundSource(wrapper, data={}) {
 
   this._initializeData(data);
 
-  log(`initializeSoundSource radius ${data.radius}`);
+  log(`initializeSoundSource radius ${this.data.radius}`);
 
   const origin = {x: this.data.x, y: this.data.y};
   const cfg = {
     type: this.data.walls ? "sound" : "universal",
     density: PIXI.Circle.approximateVertexDensity(this.data.radius),
     source: this,
-    radius: this.radius
+//     radius: this.data.radius
   };
 
   if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;

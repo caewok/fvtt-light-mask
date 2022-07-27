@@ -19,7 +19,7 @@ import { Hexagon } from "./shapes/Hexagon.js";
  * @return {PIXI.Polygon}
  */
 export function boundaryPolygon() {
-  const radius = this.radius;
+  const radius = this.data?.radius || this.radius;
   if (!radius) return undefined;
 
   const origin = { x: this.data.x, y: this.data.y };

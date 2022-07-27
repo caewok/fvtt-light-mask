@@ -167,15 +167,15 @@ function onCheckRelative(event) {
 export async function updateRotation(event) {
   log("updateRotation", event, this);
 
-  let docData = this.document?.data;
-  if ( this instanceof TokenConfig ) docData = this.token.data;
+  let doc = this.document;
+  if ( this instanceof TokenConfig ) doc = this.token;
 
   const rotation = parseInt(event.target.value);
   const newData = {};
   newData[`flags.${MODULE_ID}.${KEYS.ROTATION}`] = rotation;
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(docData, previewData, {inplace: true});
+  foundry.utils.mergeObject(doc, previewData, {inplace: true});
 }
 
 /**
@@ -188,17 +188,17 @@ export async function updateShapeIndicator(event) {
   log("updateShapeIndicator", event, this);
 
   let doc = this.document;
-  let docData = this.document?.data;
 
   if ( this instanceof DefaultTokenConfig ) {
     log("Default token data update");
     doc = this.token;
-    docData = this.data;
+//     docData = this.data;
 
   } else if ( this instanceof TokenConfig ) {
     log("Token data update");
-    doc = this.token;
-    docData = this.isPrototype ? this.actor.data.token : this.token.data;
+    doc = this.isPrototype ? this.actor.token : this.token;
+//     doc = this.token;
+//     docData = this.isPrototype ? this.actor.data.token : this.token.data;
   }
 
   const shape = event.target.value;
@@ -215,11 +215,11 @@ export async function updateShapeIndicator(event) {
 
     let major = 0;
     if ( this instanceof AmbientSoundConfig ) {
-      major = docData.radius;
+      major = doc.radius;
     } else if ( this instanceof AmbientLightConfig ) {
-      major = Math.max(docData.config.dim, docData.config.bright);
+      major = Math.max(doc.config.dim, doc.config.bright);
     } else if ( this instanceof TokenConfig ) {
-      major = Math.max(docData.light.dim, docData.light.bright);
+      major = Math.max(doc.light.dim, doc.light.bright);
     } else {
       console.warn("updateShapeIndicator|Config object not recognized.", this);
     }
@@ -230,7 +230,7 @@ export async function updateShapeIndicator(event) {
   }
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(docData, previewData, {inplace: true});
+  foundry.utils.mergeObject(doc, previewData, {inplace: true});
 }
 
 /**

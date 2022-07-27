@@ -16,7 +16,7 @@ Each can be intersected quickly using WA
 */
 
 import { WeilerAthertonClipper } from "../WeilerAtherton.js";
-import { pointFromAngle, rotatePoint, translatePoint } from "./util.js";
+import { pointFromAngle, rotatePoint, translatePoint, pointsAlmostEqual } from "./util.js";
 
 export class RegularPolygon extends PIXI.Polygon {
 
@@ -198,10 +198,17 @@ export class RegularPolygon extends PIXI.Polygon {
     let aSide = this._getSide(a);
     if ( !~aSide ) aSide = 0;
 
+    let prevIx = {x: 0, y: 0}; // If polygon has radius, no intersections at 0,0.
     for ( let i = 0; i < ln; i += 1 ) {
       const j = (i + aSide) % ln;
       const x = foundry.utils.lineSegmentIntersection(fp[j], fp[(j + 1) % ln], a, b);
-      if ( x ) ixs.push(x);
+
+      // Because we are cycling over sides, it is possible for an intersection to occur
+      // at a shared vertex and thus be repeated.
+      if ( x && !pointsAlmostEqual(prevIx, x) ) {
+        ixs.push(x);
+        prevIx = x;
+      }
     }
 
     return ixs.map(ix => this.toCartesianCoords(ix));

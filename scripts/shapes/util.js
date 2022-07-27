@@ -71,3 +71,13 @@ export function pointFromAngle(origin, radians, distance) {
   const dy = Math.sin(radians);
   return { x: origin.x + (dx * distance), y: origin.y + (dy * distance) };
 }
+
+/**
+ * Test if two points are almost equal, within some small epsilon.
+ * @param {Point} a
+ * @param {Point} b
+ * @returns {booleam}
+ */
+export function pointsAlmostEqual(a, b, epsilon = 1e-8) {
+  return a.x.almostEqual(b.x, epsilon) && a.y.almostEqual(b, epsilon);
+}

@@ -16,7 +16,7 @@ export class Hexagon extends RegularPolygon {
     radius ??= Math.max(width, height) / 2;
     if ( width && height > width ) rotation = 90;
 
-    super(origin, radius, {rotation});
+    super(origin, radius, {numSides: 5, rotation});
 
     switch ( rotation ) {
       case 0:

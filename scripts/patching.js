@@ -160,13 +160,14 @@ function createLOSLightSource(wrapper) {
  * Pass in the relevant boundary shape in lieu of the default
  */
 function initializeSoundSource(wrapper, data={}) {
+  log(`initializeSoundSource`, data);
+
+  const shape = this.object.document.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
+  if ( shape === "circle" ) return wrapper(data);
+
   this._initializeData(data);
 
-  console.log(`initializeSoundSource radius ${data.radius}`);
-
-  const doc = this.object.document;
-  const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
-  if ( shape === "circle" ) return wrapper();
+  log(`initializeSoundSource radius ${data.radius}`);
 
   const origin = {x: this.data.x, y: this.data.y};
   const cfg = {
@@ -221,6 +222,7 @@ function defaultOptionsAmbientSoundConfig(wrapper) {
 }
 
 /**
+ * New method.
  * Add refresh functionality for sound configuration.
  * Based on refresh for AmbientLightConfig
  */

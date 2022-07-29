@@ -251,9 +251,14 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
       const ixs = this._findIntersections(a, b, clipObject);
       const ixsLn = ixs.length;
       if ( ixsLn ) {
+        // If the intersection is the starting endpoint, prefer the intersection.
+        if ( ixs[0].equals(a) ) leadingPoints.pop();
+
         // If this intersection is a tangent, skip to next
-        // if ( this._checkForTangent(ixs, a, b, clipObject,
-//           previousInside, leadingPoints, trackingArray)) continue;
+        if ( this._checkForTangent(ixs, a, b, clipObject, previousInside)) {
+          this._processTangent(a, b, leadingPoints, trackingArray);
+          continue;
+        }
 
         previousInside = this._setIntersectionType(ixs, previousInside);
         ixs[0].leadingPoints = leadingPoints;
@@ -319,28 +324,47 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
   }
 
   /**
-   * Check for tangent intersection
+   * Check for tangent intersection.
+   * Tangent can be:
+   * 1. On line A|B, where A and B both share a side.
+   * 2. At endpoint A or B.
    */
-  _checkForTangent(ixs, a, b, clipObject, previousInside, leadingPoints, trackingArray) {
-    const lastIx = trackingArray[trackingArray.length - 1];
+  _checkForTangent(ixs, a, b, clipObject, previousInside) {
+    if ( ixs.length !== 1 ) return false;
+    const ix = ixs[0];
+    if ( ix.equals(a) ) {
+      const bInside = clipObject.contains(b.x, b.y);
+      return previousInside === bInside;
 
-    if ( ixs[0].equals(a)) {
-      if ( ixs.length === 1 && this._insideEqualsPrevious(a, b, clipObject, previousInside) ) {
-        // Tangent
-        if ( lastIx && lastIx.equals(a) ) {
-          // TO-DO: Can this happen? Means lastIx had equaled (b)
-          // We can skip this previous intersection so long as we keep the leadingPoints
-          // to add to the next valid intersection.
-          leadingPoints = lastIx.leadingPoints;
-          leadingPoints.push(a, b);
-          trackingArray.pop();
-        } else leadingPoints.push(b);
-        return true;
-      }
-      // If the intersection is the starting endpoint, prefer the intersection.
-      leadingPoints.pop();
+    } else if ( ix.equals(b) ) {
+      return false; // TO-DO: Do we need to handle this?
     }
-    return false;
+
+    // Intersection within A|B
+    const aInside = clipObject.contains(b.x, b.y);
+    const bInside = clipObject.contains(b.x, b.y);
+
+    if ( aInside !== previousInside ) {
+      console.warn(`_checkForTangent aInside (${aInside}) ≠ previousInside (${previousInside})`);
+    }
+    return aInside === bInside;
+  }
+
+  /**
+   * Process the tangent by adjusting the leading points and previous intersection,
+   * if necessary.
+   */
+  _processTangent(a, b, leadingPoints, trackingArray) {
+    const lastIx = trackingArray[trackingArray.length - 1];
+    if ( lastIx && lastIx.equals(a) ) {
+      console.warn("_processTangent lastIx equals a")
+      // TO-DO: Can this happen? Means lastIx had equaled (b)
+      // We can skip this previous intersection so long as we keep the leadingPoints
+      // to add to the next valid intersection.
+      leadingPoints = lastIx.leadingPoints;
+      leadingPoints.push(a, b);
+      trackingArray.pop();
+    } else leadingPoints.push(b);
   }
 
   /**

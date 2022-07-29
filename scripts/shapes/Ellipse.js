@@ -72,20 +72,19 @@ export class Ellipse extends PIXI.Ellipse {
    * @return {PIXI.Rectangle}
    */
   getBounds() {
-    const m2 = this.major * 2;
     // Bounds rectangle measured from top left corner. x, y, width, height
     switch ( this.rotation ) {
       case 0:
       case 180:
-        return super.getBounds();
+        return new PIXI.Rectangle(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2);
 
       case 90:
       case 270:
-        return new PIXI.Rectangle(this.x - this.minor, this.y - this.major, this.minor * 2, m2);
+        return new PIXI.Rectangle(this.x - this.height, this.y - this.width, this.height * 2, this.width * 2);
     }
 
     // Default to bounding box of the radius circle
-    return new PIXI.Rectangle(this.x - this.major, this.y - this.major, m2, m2);
+    return new PIXI.Rectangle(this.x - this.major, this.y - this.major, this.major * 2, this.major * 2);
   }
 
   /**
@@ -100,6 +99,12 @@ export class Ellipse extends PIXI.Ellipse {
 
     // Move point to Ellipse-space
     const pt = this.fromCartesianCoords({x, y});
+
+    // reject if x is outside the bounds
+    if ( pt.x < -width
+      || pt.x > width
+      || pt.y < -height
+      || pt.y > height ) return false;
 
     // Just like PIXI.Ellipse.prototype.contains but we are already at 0, 0
     // Normalize the coords to an ellipse

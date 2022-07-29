@@ -45,7 +45,7 @@ export class Ellipse extends PIXI.Ellipse {
    * Area of the ellipse
    * @type {number}
    */
-  get area() { return Math.PI * this.major * this.minor; }
+  get area() { return Math.PI * this.width * this.height; }
 
   /**
    * Shift from cartesian coordinates to the shape space.
@@ -76,11 +76,11 @@ export class Ellipse extends PIXI.Ellipse {
     switch ( this.rotation ) {
       case 0:
       case 180:
-        return new PIXI.Rectangle(this.x - this.major, this.y - this.minor, this.major * 2, this.minor * 2);
+        return new PIXI.Rectangle(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2);
 
       case 90:
       case 270:
-        return new PIXI.Rectangle(this.x - this.minor, this.y - this.major, this.minor * 2, this.major * 2);
+        return new PIXI.Rectangle(this.x - this.height, this.y - this.width, this.height * 2, this.width * 2);
     }
 
     // Default to bounding box of the radius circle
@@ -101,10 +101,10 @@ export class Ellipse extends PIXI.Ellipse {
     const pt = this.fromCartesianCoords({x, y});
 
     // reject if x is outside the bounds
-    if ( pt.x < -this.major
-      || pt.x > this.major
-      || pt.y < -this.minor
-      || pt.y > this.minor ) return false;
+    if ( pt.x < -width
+      || pt.x > width
+      || pt.y < -height
+      || pt.y > height ) return false;
 
     // Just like PIXI.Ellipse.prototype.contains but we are already at 0, 0
     // Normalize the coords to an ellipse

@@ -16,8 +16,8 @@
     "lightmask.AmbientConfiguration.NumSides.Hint": "Min 3 for Regular Polygon",
     "lightmask.AmbientConfiguration.NumPoints.Name": "Points",
     "lightmask.AmbientConfiguration.NumPoints.Hint": "Min 5 for Regular Star",
-    "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name": "Semi-minor axis (height)",
-    "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Hint": "When rotation = 0, distance in grid units from origin to edge in vertical direction. (In default configuration, radius is the major axis.)",
+    "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name": "Height",
+    "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Hint": "When rotation = 0, distance in grid units from origin to edge in vertical direction. Radius is used for width.",
 
     "lightmask.Circle": "Circle",
     "lightmask.Triangle": "Triangle",

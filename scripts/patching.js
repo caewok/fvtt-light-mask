@@ -88,7 +88,9 @@ export function registerLightMask() {
  */
 async function onChangeInputFormApplication(wrapper, event) {
   log("formApplicationChangeInput", event, this);
-  if ( event.type !== "change" || event.currentTarget.className !== "lightmask") return wrapper(event);
+  if ( event.type !== "change"
+    || (event.currentTarget.className !== "lightmask"
+    && event.target.name !== "flags.lightmask.rotation") ) return wrapper(event);
 
   let refresh = false;
   let render = false;

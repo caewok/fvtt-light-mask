@@ -28,7 +28,10 @@ export function boundaryPolygon() {
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   const sides = doc.getFlag(MODULE_ID, KEYS.SIDES) || 3;
   const minor = (doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
-  const rotation = this.data.rotation ?? doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? 0; // Need flag for sounds
+
+  // Token lights rotate when the token rotates by using this.data.rotation.
+  // For tokens and sounds, need to track rotation of the initial light separately.
+  const rotation = (this.data.rotation ?? 0) + (doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? 0);
 
   switch ( shape ) {
     case "circle": return new PIXI.Circle(origin.x, origin.y, radius);

@@ -102,12 +102,13 @@ export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
       log(`Adding wall ${wall.id} to cache.`);
 
       // Store limited wall data. This will include c (coordinates) as well as types.
+      const wd = wall.document;
       edges_cache.push({
-        c: wall.data.c,
-        light: wall.data.light,
-        move: wall.data.move,
-        sight: wall.data.sight,
-        sound: wall.data.sound,
+        c: wd.c,
+        light: wd.light,
+        move: wd.move,
+        sight: wd.sight,
+        sound: wd.sound,
         id: id
       });
     });

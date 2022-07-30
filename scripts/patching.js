@@ -15,7 +15,7 @@ canvas
 import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./render.js";
 import { MODULE_ID, KEYS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
-import { identifyEdgesClockwiseSweepPolygon } from "./customEdges.js";
+import { identifyEdgesClockwiseSweepPolygon, computeClockwiseSweep } from "./customEdges.js";
 import { log } from "./module.js";
 
 export function registerLightMask() {
@@ -72,6 +72,7 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "LightSource.prototype._createLOS", createLOSLightSource, libWrapper.MIXED);
   libWrapper.register(MODULE_ID, "SoundSource.prototype.initialize", initializeSoundSource, libWrapper.MIXED);
   libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._identifyEdges", identifyEdgesClockwiseSweepPolygon, libWrapper.MIXED, { perf_mode: libWrapper.PERF_FAST});
+  libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._compute", computeClockwiseSweep, libWrapper.WRAPPER, { perf_mode: libWrapper.PERF_FAST});
 }
 
 

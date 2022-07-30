@@ -120,7 +120,7 @@ function onAddWallIDs(event) {
   };
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
+  foundry.utils.mergeObject(this.object, previewData, {inplace: true});
 
   this.render();
 }
@@ -134,8 +134,8 @@ function onAddWallIDs(event) {
 function onCheckRelative(event) {
   log("lightMaskOnCheckRelative", event, this);
 
-  const current_origin = { x: this.object.data.x,
-                           y: this.object.data.y }; // eslint-disable-line indent
+  const current_origin = { x: this.object.x,
+                           y: this.object.y }; // eslint-disable-line indent
   const newData = {};
   if (event.target.checked) {
     // Update with the new origin
@@ -155,7 +155,7 @@ function onCheckRelative(event) {
   }
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.object.data, previewData, {inplace: true});
+  foundry.utils.mergeObject(this.object, previewData, {inplace: true});
   this.render();
 }
 

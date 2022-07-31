@@ -13,8 +13,9 @@ import { registerPIXIPolygonMethods } from "./shapes/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./shapes/PIXIRectangle.js";
 import { registerPIXICircleMethods } from "./shapes/PIXICircle.js";
 
+import { controlledWallIDs } from "./customEdges.js";
+
 import {
-  controlledWallIDs,
   injectAmbientLightConfiguration,
   injectAmbientSoundConfiguration,
   injectTokenLightConfiguration } from "./render.js";

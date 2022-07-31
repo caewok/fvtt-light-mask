@@ -9,6 +9,9 @@ Wall
 
 import { log } from "./module.js";
 import { KEYS, MODULE_ID } from "./const.js";
+import {
+  lightMaskUpdateCustomEdgeCache,
+  lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
 
 /*
 Likely easiest if ClockwiseSweep checks the source object for a method to get a
@@ -23,6 +26,111 @@ Here, it can store custom edges and whether the edges are relative or absolute.
 
 Thus, it is assumed that this _customEdgeData function will access this, the source object.
 */
+
+/**
+ * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
+ */
+export function lightMaskActivateListeners(wrapped, html) {
+  log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
+
+  html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
+  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
+
+  return wrapped(html);
+}
+
+/**
+ * Listener to handle when a user check/unchecks the "Relative" checkbox.
+ * If "Relative" is checked, the edges cache must be updated by a directional vector
+ * based on the shift in origin.
+ * @param {PointerEvent} event    The originating click event
+ */
+function onCheckRelative(event) {
+  log("lightMaskOnCheckRelative", event, this);
+
+  const current_origin = { x: this.object.x,
+                           y: this.object.y }; // eslint-disable-line indent
+  const newData = {};
+  if (event.target.checked) {
+    // Update with the new origin
+    newData[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = current_origin;
+
+  } else {
+    // Set the wall locations based on the last origin because when the user unchecks
+    // relative, we want the walls to stay at the last relative position (not their
+    // original position)
+    let edges_cache = this.object.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
+    const stored_origin = this.object.getFlag(MODULE_ID, KEYS.ORIGIN) || current_origin;
+    const delta = { dx: current_origin.x - stored_origin.x,
+                    dy: current_origin.y - stored_origin.y }; // eslint-disable-line indent
+
+    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
+    newData[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+  }
+
+  const previewData = this._getSubmitData(newData);
+  foundry.utils.mergeObject(this.object, previewData, {inplace: true});
+  this.render();
+}
+
+
+/**
+ * Add a method to the AmbientLightConfiguration to handle when user
+ * clicks the button to add custom wall ids.
+ * @param {PointerEvent} event    The originating click event
+ */
+export function onAddWallIDs(event) {
+  log("lightMaskOnAddWallIDs", event, this);
+
+  let ids_to_add;
+  if ( event.target.name == "flags.lightmask.customWallIDs" ) {
+    ids_to_add = event.target.value;
+  } else {
+    ids_to_add = controlledWallIDs();
+    if (!ids_to_add) return;
+  }
+
+  log(`Ids to add: ${ids_to_add}`);
+
+  // Change the data and refresh...
+  let edges_cache = this.object.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
+  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
+
+  const newData = {
+    [`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.IDS}`]: ids_to_add,
+    [`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`]: edges_cache
+  };
+
+  const previewData = this._getSubmitData(newData);
+  foundry.utils.mergeObject(this.object, previewData, {inplace: true});
+
+  this.render();
+}
+
+/**
+ * Retrieve a comma-separated list of wall ids currently controlled on the canvas.
+ * @return {string}
+ */
+export function controlledWallIDs() {
+  const walls = canvas.walls.controlled;
+  if (walls.length === 0) {
+    console.warn("Please select one or more walls on the canvas.");
+    ui.notifications.warn("Please select one or more walls on the canvas.");
+    return;
+  }
+
+  const id = walls.map(w => w.id);
+  return id.join(",");
+}
+
+
+/**
+ * If the edges list has manually changed, update the configuration.
+ */
+// export function updateCustomEdges(event) {
+//   log("updateCustomEdges", event, this);
+//   onAddWallIDs.bind(this)(event);
+// }
 
 /**
  * Adds custom edges.
@@ -62,37 +170,39 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
     const e = PolygonEdge.fromWall(w, this.config.type);
     e._isTemporary = true;
     return e;
+  }).filter(w => {
+    return !this.edges.some(e => e.A.equals(w.A) && e.B.equals(w.B)
+      || e.A.equals(w.B) && e.B.equals(w.A))
   });
-  //     .filter(w => {
-  //       return !this.edges.some(e => e.A.equals(w.A) && e.B.equals(w.B)
-  //         || e.A.equals(w.B) && e.B.equals(w.A))
-  //     });
 
   log(`identifyEdgesClockwiseSweepPolygon ${tmpEdges.length} edges`, tmpEdges);
 
   const ln = tmpEdges.length;
   if ( !ln ) return;
 
-  // Edges must be checked for intersections between each other.
+  // Tmp edges must be checked for intersections
   // Set of arbitrary user-created walls could have intersections.
   // Could do this when first added to cache, but would need to split walls there or
   // figure out how to shift edges and edge intersections relative to the origin here.
   for ( let i = 0; i < ln; i += 1 ) {
+    const tmp = tmpEdges[i];
+
+    // Check tmp edges for intersections against each other.
     for ( let j = i + 1; j < ln; j += 1 ) {
-      tmpEdges[i].wall._identifyIntersectionsWith(tmpEdges[j].wall);
+      tmp.wall._identifyIntersectionsWith(tmpEdges[j].wall);
     }
-  }
 
-  // Edges must also be checked for intersections against the existing set
-  // Note: Temp edges must be removed later
-  for ( const e1 of this.edges ) {
-    for ( const e2 of tmpEdges ) {
-      // Must use TempEdge to call _identifyIntersectionsWith
-      e2.wall._identifyIntersectionsWith(e1.wall);
+    // Check against the existing canvas walls
+    for ( const e of this.edges ) {
+      tmp.wall._identifyIntersectionsWith(e.wall);
     }
-  }
 
-  for ( const e of tmpEdges ) this.edges.add(e);
+    // Add to the sweep edge set
+    this.edges.add(tmp);
+
+    // For debugging
+    this._tmpEdges = tmpEdges;
+  }
 }
 
 // Remove temporary intersections from walls
@@ -115,6 +225,7 @@ export class TempWall {
     this.document = new cls({_id, c, light, move, sight, sound }, ctx);
     this.intersectsWith = new Map();
     this.#initializeVertices();
+    this.id = _id;
   }
 
   #wallKeys;

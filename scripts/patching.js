@@ -12,7 +12,8 @@ canvas
 */
 "use strict";
 
-import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./render.js";
+import { lightMaskActivateListeners, onAddWallIDs } from "./customEdges.js";
+import { updateShapeIndicator, updateRotation } from "./render.js";
 import { MODULE_ID, KEYS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { identifyEdgesClockwiseSweepPolygon, computeClockwiseSweep } from "./customEdges.js";
@@ -99,6 +100,10 @@ async function onChangeInputFormApplication(wrapper, event) {
   if ( event.target.name === "flags.lightmask.rotation" ) {
     await updateRotation.call(this, event);
     refresh = true;
+  } else if ( event.target.name == "flags.lightmask.customWallIDs" ) {
+    onAddWallIDs.call(this, event);
+    refresh = true;
+
   } else {
     // Covers: lightmaskshapes, lightmasksides, lightmaskpoints, lightmaskEllipseMinor
     // If changing shapes, we need to update the sub-parameter selections.

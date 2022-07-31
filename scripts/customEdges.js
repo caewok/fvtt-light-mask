@@ -101,6 +101,11 @@ export function onAddWallIDs(event) {
     [`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`]: edges_cache
   };
 
+  if ( this.object.getFlag(MODULE_ID, KEYS.RELATIVE) ) {
+    log("Relative key is true; storing origin");
+    newData[`flags.${MODULE_ID}.${KEYS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
+  }
+
   const previewData = this._getSubmitData(newData);
   foundry.utils.mergeObject(this.object, previewData, {inplace: true});
 

@@ -214,78 +214,125 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    * @returns {PolygonVertex[]}
    */
   _buildPointTrackingArray(clipObject) {
+    // Moving clockwise around this polygon, construct an array of endpoints with
+    // intersections with the clipObject inserted in place.
+    const points = this._buildPointIntersectionArray(clipObject);
+    if ( !points.length ) return [];
+
+    // Label points as inside or outside.
+    // Omit tangent intersections
+    const labeledPoints = this._buildLabeledIntersectionsArray(points, clipObject);
+    if ( !labeledPoints.length ) return [];
+
+    // Consolidate to an array of intersections.
+    // Add leading points to the next intersection
+    return this._consolidatePoints(labeledPoints);
+  }
+
+  /**
+   * Given a set of labeled points, consolidate into a tracking array of intersections,
+   * where each intersection contains its array of leadingPoints.
+   * @param {Point[]} points
+   * @returns {Point[]} Array of intersections
+   */
+  _consolidatePoints(labeledPoints) {
+    // Locate the first intersection
+    const startIxIdx = labeledPoints.findIndex(pt => pt.isIntersection);
+    if ( !~startIxIdx ) return []; // No intersections, so no tracking array
+
+    const labeledLn = labeledPoints.length;
+    let leadingPoints = [];
+    const trackingArray = [];
+
+    // Closed polygon, so use the last point to circle back
+    for ( let i = 0; i < labeledLn; i += 1 ) {
+      const j = (i + startIxIdx) % labeledLn;
+      const pt = labeledPoints[j];
+      if ( pt.isIntersection ) {
+        pt.leadingPoints = leadingPoints;
+        leadingPoints = [];
+        trackingArray.push(pt)
+      } else leadingPoints.push(pt);
+    }
+
+    // Add leading points to first intersection
+    trackingArray[0].leadingPoints = leadingPoints;
+
+    return trackingArray;
+  }
+
+
+  /**
+   * Given a set of points that are either endpoints or intersections of this polygon,
+   * in clockwise order, label intersections as out/in or in/out and remove tangents.
+   * @param {Point[]} points    Points array built by _buildPointIntersectionArray
+   * @param {object} clipObject
+   * @return {Point[]} Labeled array of points
+   */
+  _buildLabeledIntersectionsArray(points, clipObject) {
+    const startIdx = points.findIndex(pt => !pt.isIntersection);
+    if ( !~startIdx ) return []; // All intersections, so all tangent
+
+    const types = this.constructor.INTERSECTION_TYPES;
+    const startPt = points[startIdx];
+    let previousInside = clipObject.contains(startPt.x, startPt.y);
+    let type = previousInside ? types.IN_OUT : types.OUT_IN;
+    let numPrevIx = 0;
+    const labeledPoints = [startPt];
+    const ln = points.length;
+
+    // We added the starting point already, so we can skip i = 0.
+    for ( let i = 1; i < ln; i += 1 ) {
+      const j = (i + startIdx) % ln;
+      const pt = points[j];
+
+      if ( pt.isIntersection ) {
+        pt.type = previousInside ? types.IN_OUT : types.OUT_IN;
+        if ( numPrevIx > 1 ) labeledPoints.pop();
+        else previousInside = !previousInside;
+      } else {
+        // if the intersection type does not match location, we have a tangency
+        const isInside = clipObject.contains(pt.x, pt.y);
+        if ( isInside !== previousInside ) {
+          while ( labeledPoints.length
+            && labeledPoints[labeledPoints.length - 1].isIntersection ) labeledPoints.pop();
+        }
+      }
+      labeledPoints.push(pt);
+    }
+    return labeledPoints;
+  }
+
+  /**
+   * Construct an array that holds all the points of the polygon with all the
+   * intersections with the clipObject inserted, in correct position moving clockwise.
+   * If an intersection and endpoint are nearly the same, prefer the intersection.
+   * @param {object} clipObject
+   * @returns {Point[]}
+   */
+  _buildPointIntersectionArray(clipObject) {
     const points = this.points;
     const ln = points.length;
     if ( ln < 6 ) return []; // Minimum 3 Points required
 
-    const trackingArray = [];
-
-    // Cycle over each edge of the polygon in turn
-    // For _findIntersection, also track the edges before and after the edge of interest
-    // To make this easier, start at the end of the polygon so it cycles through.
-    // If the polygon has only 4 points (6 coords), double-back to beginning
     let a = { x: points[0], y: points[1] };
+    const pointsIxs = [a];
 
-    // At each intersection, add the intersection points to the trackingArray.
-    // Add the points leading up to this intersection to the first intersection
-    let leadingPoints = [a];
-
-    // Example:
-    // Points: a -- b -- c -- a
-    // Edges: a|b, b|c, c|a
-    // If ix0 is on a|b and ix1 is on c|a, leading points for ix1 are b and c.
-    // The trick is not doubling up the a point
-
-    // You would think if you find an intersection at an endpoint, it would also show up
-    // next round, but you would be (sometimes) wrong. For example,
-    // an intersection for a -- b near b on a -- b -- c could be rounded to "b" but then
-    // b -- c may have no intersection.
-
-    // Label intersections as in/out, out/in or tangent.
-    // Tangent means the edge ends at the intersection and the next edge is on the same side.
-
-    // Check if the last edge is a possible tangent
-    const lastPt = { x: points[ln - 4], y: points[ln - 3] };
-    let previousInside = this._determineStartingLocation(lastPt, a, clipObject);
-
-    for ( let i = 2; i < ln; i += 2 ) {
-      const b = { x: points[i], y: points[i + 1] };
+    // Closed polygon, so we can use the last point to circle back
+    for ( let i = 2; i < ln; i += 2) {
+      const b = { x: points[i], y: points[i+1] };
       const ixs = this._findIntersections(a, b, clipObject);
       const ixsLn = ixs.length;
       if ( ixsLn ) {
-        // If the intersection is the starting endpoint, prefer the intersection.
-        if ( pointsAlmostEqual(ixs[0], a) ) leadingPoints.pop();
-
-        // If this intersection is a tangent, skip to next
-        if ( this._checkForTangent(ixs, a, b, clipObject, previousInside)) {
-          this._processTangent(a, b, leadingPoints, trackingArray);
-          continue;
-        }
-
-        previousInside = this._setIntersectionType(ixs, previousInside);
-        ixs[0].leadingPoints = leadingPoints;
-        trackingArray.push(...ixs);
-        leadingPoints = [];
+        if ( pointsAlmostEqual(ixs[0], a) ) pointsIxs.pop();
+        if ( pointsAlmostEqual(ixs[ixsLn - 1], b) ) ixs.pop(); // Get next round
+        pointsIxs.push(...ixs);
       }
+      pointsIxs.push(b);
 
-      // Always add b unless we already did because it is an intersection.
-      if ( !ixsLn || (trackingArray.length
-        && !pointsAlmostEqual(b, trackingArray[trackingArray.length - 1])) ) leadingPoints.push(b);
-
-      // Cycle to next edge
       a = b;
     }
-
-    if ( !trackingArray.length ) return trackingArray;
-
-    // Add the points at the end of the points array leading up to the initial intersection
-    // Pop the last leading point to avoid repetition (closed polygon)
-    leadingPoints.pop();
-    trackingArray[0].leadingPoints.unshift(...leadingPoints);
-
-//     this.constructor._labelIntersections(trackingArray, clipObject);
-
-    return trackingArray;
+    return pointsIxs;
   }
 
   /**
@@ -293,6 +340,7 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    */
   _findIntersections(a, b, clipObject) {
     return clipObject.segmentIntersections(a, b).map(ix => {
+      ix.isIntersection = true;
       ix.leadingPoints = []; // Ensure leadingPoints is defined.
       ix._edge = {A: a, B: b};  // For debugging
       return ix;
@@ -318,137 +366,5 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
     }
 
     return true;
-  }
-
-  /**
-   * Check for tangent intersection.
-   * Tangent can be:
-   * 1. On line A|B, where A and B both share a side.
-   * 2. At endpoint A or B.
-   */
-  _checkForTangent(ixs, a, b, clipObject, previousInside) {
-    if ( ixs.length !== 1 ) return false;
-    const ix = ixs[0];
-    if ( pointsAlmostEqual(a, ix) ) {
-      const bInside = clipObject.contains(b.x, b.y);
-      return previousInside === bInside;
-    } else if ( pointsAlmostEqual(b, ix) ) {
-      console.warn(`_checkForTangent pointsAlmostEqual(b, ix)`);
-      return false; // TO-DO: Do we need to handle this?
-    }
-
-    // Intersection within A|B
-    const aInside = clipObject.contains(a.x, a.y);
-    const bInside = clipObject.contains(b.x, b.y);
-
-    if ( aInside !== previousInside ) {
-      console.warn(`_checkForTangent aInside (${aInside}) ≠ previousInside (${previousInside})`);
-    }
-    return aInside === bInside;
-  }
-
-  /**
-   * Process the tangent by adjusting the leading points and previous intersection,
-   * if necessary.
-   */
-  _processTangent(a, b, leadingPoints, trackingArray) {
-    const lastIx = trackingArray[trackingArray.length - 1];
-    if ( lastIx && pointsAlmostEqual(lastIx, a) ) {
-      console.warn("_processTangent lastIx equals a");
-      // TO-DO: Can this happen? Means lastIx had equaled (b)
-      // We can skip this previous intersection so long as we keep the leadingPoints
-      // to add to the next valid intersection.
-      leadingPoints = lastIx.leadingPoints;
-      leadingPoints.push(a, b);
-      trackingArray.pop();
-    } else leadingPoints.push(b);
-  }
-
-  /**
-   * Set the type for each intersection
-   */
-  _setIntersectionType(ixs, previousInside) {
-    const types = this.constructor.INTERSECTION_TYPES;
-    const type = previousInside ? types.IN_OUT : types.OUT_IN;
-    let sign = 1;
-    ixs.forEach(ix => {
-      ix.type = type * sign;
-      sign *= -1;
-      previousInside = !previousInside;
-    });
-
-    return previousInside;
-  }
-
-  /**
-   * Label an array of intersections for an edge as in/out or out/in or tangent.
-   * Intersections are labeled in place.
-   * If not for tangent intersections, we could get away with only labeling the first.
-   * But in order to properly skip tangents, we need to know at least that much, as well
-   * as knowing in/out for the first proper intersection.
-   * @param {Point} ix
-   * @param {Point} prevPt
-   * @param {Point} nextPt
-   */
-  static _labelIntersections(trackingArray, clipObject) {
-    // Each ix in the tracking array has 0+ lead points.
-    // E.g., points 0, 1, ix0, ix1, 3, 4, ix2
-    // [0, 1] are lead points to ix0
-    // [] lead points to ix1
-    // [3, 4] are lead points to ix2
-    // We need the point on either side of an intersection
-    // So walk all the intersections, marking previous and next points as we go.
-    const ln = trackingArray.length;
-    if ( !ln ) return;
-
-    const types = this.INTERSECTION_TYPES;
-
-    // Find the first intersection with leading points
-    const startIdx = trackingArray.findIndex(ix => ix.leadingPoints.length);
-    if ( !~startIdx ) return; // No leading points; all tangents.
-
-    const startIx = trackingArray[startIdx];
-    const currentIxs = [startIx];
-    let prevPt = startIx.leadingPoints[startIx.leadingPoints.length - 1];
-    let nextPt;
-
-    // Skip this first intersection and look for the next one with leading points
-    for ( let i = 1; i < ln; i += 1 ) {
-      const j = (startIdx + i) % ln;
-      const nextIx = trackingArray[j];
-
-      if ( nextIx.leadingPoints.length ) nextPt = nextIx.leadingPoints[0];
-
-      // If we have found previous and next, label intersections, then reset.
-      if ( nextPt ) {
-        const aInside = clipObject.contains(prevPt.x, prevPt.y);
-        const bInside = clipObject.contains(nextPt.x, nextPt.y);
-
-        // If ix has points that share a side, tangent
-        // Otherwise, use aInside to define
-        let type = types.TANGENT;
-        if ( aInside ^ bInside ) type = aInside ? types.IN_OUT : types.OUT_IN;
-
-        // Any interior intersections (between two intersections) are tangents
-        // Just need to set the type for the first and last (if any).
-        currentIxs[0].type = type;
-        if ( currentIxs.length > 1 ) currentIxs[currentIxs.length - 1] = type * -1;
-
-        // For debugging
-        for ( const ix of currentIxs) {
-          ix.prevPt = { x: prevPt.x, y: prevPt.y };
-          ix.nextPt = { x: nextPt.x, y: nextPt.y };
-        }
-
-        // Reset
-        prevPt = nextIx.leadingPoints[nextIx.leadingPoints.length - 1];
-        nextPt = undefined;
-        currentIxs.length = 0;
-        currentIxs.push(nextIx);
-      } else {
-        // No leading points, so remember this intersection to process later
-        currentIxs.push(nextIx);
-      }
-    }
   }
 }

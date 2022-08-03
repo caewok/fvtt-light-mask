@@ -281,22 +281,43 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
     const labeledPoints = [startPt];
     const ln = points.length;
 
+    let lastIx;
+    let secondLastIx;
+
     // We added the starting point already, so we can skip i = 0.
     for ( let i = 1; i < ln; i += 1 ) {
       const j = (i + startIdx) % ln;
       const pt = points[j];
 
       if ( pt.isIntersection ) {
-        pt.type = previousInside ? types.IN_OUT : types.OUT_IN;
-        if ( numPrevIx > 1 ) labeledPoints.pop();
-        else previousInside = !previousInside;
-      } else {
-        // if the intersection type does not match location, we have a tangency
+        numPrevIx += 1;
+        pt.type = lastIx ? -lastIx.type
+          : previousInside ? types.IN_OUT : types.OUT_IN;
+
+        secondLastIx = lastIx;
+        lastIx = pt;
+
+      } else if ( numPrevIx ) {
         const isInside = clipObject.contains(pt.x, pt.y);
-        if ( isInside !== previousInside ) {
-          while ( labeledPoints.length
-            && labeledPoints[labeledPoints.length - 1].isIntersection ) labeledPoints.pop();
+        const changedSide = isInside ^ previousInside;
+        const isOdd = numPrevIx & 1;
+
+        // If odd number of intersections, should switch. e.g., outside --> ix --> inside
+        // If even number of intersections, should stay same. e.g., outside --> ix --> ix --> outside.
+        if ( isOdd ^ changedSide ) {
+          if ( numPrevIx === 1 ) {
+            lastIx.isIntersection = false;
+          } else {
+            secondLastIx.isIntersection = false;
+            lastIx.type = secondLastIx.type;
+          }
         }
+
+        previousInside = isInside;
+        numPrevIx = 0;
+        secondLastIx = undefined;
+        lastIx = undefined;
+
       }
       labeledPoints.push(pt);
     }

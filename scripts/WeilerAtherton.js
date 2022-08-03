@@ -1,5 +1,4 @@
 /* globals
-PolygonVertex,
 PIXI
 */
 "use strict";
@@ -122,7 +121,6 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
    * @returns {PIXI.Polygon[]}
    */
   combine(clipObject, { union = this.config.union } = {}) {
-    console.log(`WA Combining polygon (${this.points.length} points) with clipObject`, clipObject);
     const trackingArray = this._buildPointTrackingArray(clipObject);
     return this._combineNoHoles(trackingArray, clipObject, { union });
   }

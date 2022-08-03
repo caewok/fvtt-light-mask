@@ -79,5 +79,5 @@ export function pointFromAngle(origin, radians, distance) {
  * @returns {booleam}
  */
 export function pointsAlmostEqual(a, b, epsilon = 1e-8) {
-  return a.x.almostEqual(b.x, epsilon) && a.y.almostEqual(b, epsilon);
+  return a.x.almostEqual(b.x, epsilon) && a.y.almostEqual(b.y, epsilon);
 }

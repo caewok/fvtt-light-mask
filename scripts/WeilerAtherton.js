@@ -230,37 +230,36 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
   }
 
   /**
-   * Given a set of labeled points, consolidate into a tracking array of intersections,
-   * where each intersection contains its array of leadingPoints.
-   * @param {Point[]} points
-   * @returns {Point[]} Array of intersections
+   * Construct an array that holds all the points of the polygon with all the
+   * intersections with the clipObject inserted, in correct position moving clockwise.
+   * If an intersection and endpoint are nearly the same, prefer the intersection.
+   * @param {object} clipObject
+   * @returns {Point[]}
    */
-  _consolidatePoints(labeledPoints) {
-    // Locate the first intersection
-    const startIxIdx = labeledPoints.findIndex(pt => pt.isIntersection);
-    if ( !~startIxIdx ) return []; // No intersections, so no tracking array
+  _buildPointIntersectionArray(clipObject) {
+    const points = this.points;
+    const ln = points.length;
+    if ( ln < 6 ) return []; // Minimum 3 Points required
 
-    const labeledLn = labeledPoints.length;
-    let leadingPoints = [];
-    const trackingArray = [];
+    let a = { x: points[0], y: points[1] };
+    const pointsIxs = [a];
 
-    // Closed polygon, so use the last point to circle back
-    for ( let i = 0; i < labeledLn; i += 1 ) {
-      const j = (i + startIxIdx) % labeledLn;
-      const pt = labeledPoints[j];
-      if ( pt.isIntersection ) {
-        pt.leadingPoints = leadingPoints;
-        leadingPoints = [];
-        trackingArray.push(pt)
-      } else leadingPoints.push(pt);
+    // Closed polygon, so we can use the last point to circle back
+    for ( let i = 2; i < ln; i += 2) {
+      const b = { x: points[i], y: points[i+1] };
+      const ixs = this._findIntersections(a, b, clipObject);
+      const ixsLn = ixs.length;
+      if ( ixsLn ) {
+        if ( pointsAlmostEqual(ixs[0], a) ) pointsIxs.pop();
+        if ( pointsAlmostEqual(ixs[ixsLn - 1], b) ) ixs.pop(); // Get next round
+        pointsIxs.push(...ixs);
+      }
+      pointsIxs.push(b);
+
+      a = b;
     }
-
-    // Add leading points to first intersection
-    trackingArray[0].leadingPoints = leadingPoints;
-
-    return trackingArray;
+    return pointsIxs;
   }
-
 
   /**
    * Given a set of points that are either endpoints or intersections of this polygon,
@@ -276,7 +275,6 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
     const types = this.constructor.INTERSECTION_TYPES;
     const startPt = points[startIdx];
     let previousInside = clipObject.contains(startPt.x, startPt.y);
-    let type = previousInside ? types.IN_OUT : types.OUT_IN;
     let numPrevIx = 0;
     const labeledPoints = [startPt];
     const ln = points.length;
@@ -325,35 +323,35 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
   }
 
   /**
-   * Construct an array that holds all the points of the polygon with all the
-   * intersections with the clipObject inserted, in correct position moving clockwise.
-   * If an intersection and endpoint are nearly the same, prefer the intersection.
-   * @param {object} clipObject
-   * @returns {Point[]}
+   * Given a set of labeled points, consolidate into a tracking array of intersections,
+   * where each intersection contains its array of leadingPoints.
+   * @param {Point[]} points
+   * @returns {Point[]} Array of intersections
    */
-  _buildPointIntersectionArray(clipObject) {
-    const points = this.points;
-    const ln = points.length;
-    if ( ln < 6 ) return []; // Minimum 3 Points required
+  _consolidatePoints(labeledPoints) {
+    // Locate the first intersection
+    const startIxIdx = labeledPoints.findIndex(pt => pt.isIntersection);
+    if ( !~startIxIdx ) return []; // No intersections, so no tracking array
 
-    let a = { x: points[0], y: points[1] };
-    const pointsIxs = [a];
+    const labeledLn = labeledPoints.length;
+    let leadingPoints = [];
+    const trackingArray = [];
 
-    // Closed polygon, so we can use the last point to circle back
-    for ( let i = 2; i < ln; i += 2) {
-      const b = { x: points[i], y: points[i+1] };
-      const ixs = this._findIntersections(a, b, clipObject);
-      const ixsLn = ixs.length;
-      if ( ixsLn ) {
-        if ( pointsAlmostEqual(ixs[0], a) ) pointsIxs.pop();
-        if ( pointsAlmostEqual(ixs[ixsLn - 1], b) ) ixs.pop(); // Get next round
-        pointsIxs.push(...ixs);
-      }
-      pointsIxs.push(b);
-
-      a = b;
+    // Closed polygon, so use the last point to circle back
+    for ( let i = 0; i < labeledLn; i += 1 ) {
+      const j = (i + startIxIdx) % labeledLn;
+      const pt = labeledPoints[j];
+      if ( pt.isIntersection ) {
+        pt.leadingPoints = leadingPoints;
+        leadingPoints = [];
+        trackingArray.push(pt);
+      } else leadingPoints.push(pt);
     }
-    return pointsIxs;
+
+    // Add leading points to first intersection
+    trackingArray[0].leadingPoints = leadingPoints;
+
+    return trackingArray;
   }
 
   /**
@@ -366,26 +364,5 @@ export class WeilerAthertonClipper extends PIXI.Polygon {
       ix._edge = {A: a, B: b};  // For debugging
       return ix;
     });
-  }
-
-  /**
-   * Determine whether the edge a --> b is outside or inside
-   */
-  _determineStartingLocation(a, b, clipObject) {
-    const ixs = clipObject.segmentIntersections(a, b).map(ix => PolygonVertex.fromPoint(ix));
-    const ln = ixs.length;
-    if ( !ln ) return clipObject.contains(b.x, b.y);
-
-    if ( ln === 1 && !pointsAlmostEqual(b, ixs[ln - 1]) ) return clipObject.contains(b.x, b.y);
-    if ( ln === 1 && pointsAlmostEqual(b, ixs[ln - 1]) ) return clipObject.contains(a.x, a.y);
-    if ( ln === 2 && !pointsAlmostEqual(b, ixs[ln - 1]) ) return clipObject.contains(b.x, b.y);
-    if ( ln === 2 && pointsAlmostEqual(b, ixs[ln - 1]) ) {
-      if ( pointsAlmostEqual(a, ixs[0]) ) return true;
-      // ixs[0] does not equal a.
-      // goes a --> ix --> ix
-      return !clipObject.contains(a.x, a.y);
-    }
-
-    return true;
   }
 }

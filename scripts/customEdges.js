@@ -144,7 +144,7 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
   wrapped();
 
   const src = this.config.source;
-  const origin = this.origin;
+  if ( !(src instanceof PointSource) ) return;
 
   // See class LightSource and initialize method
   const doc = src.object.document;
@@ -155,6 +155,7 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
   edges_cache = duplicate(edges_cache);  // Avoid modifying the cache below
 
   const is_relative = doc.getFlag(MODULE_ID, KEYS.RELATIVE);
+  const origin = this.origin;
   const stored_origin = is_relative
     ? (doc.getFlag(MODULE_ID, KEYS.ORIGIN) || origin)
     : origin;

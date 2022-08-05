@@ -214,6 +214,9 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
 // Remove temporary intersections from walls
 export function computeClockwiseSweep(wrapper) {
   wrapper();
+  const src = this.config.source;
+  if ( !(src instanceof PointSource) ) return;
+
   this.edges.forEach(e => {
     if ( !e._isTemporary ) return;
     e.wall._removeIntersections();

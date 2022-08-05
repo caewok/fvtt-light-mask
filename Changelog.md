@@ -1,3 +1,9 @@
+## 0.5.0
+Foundry v10 version! Major rewrite to accommodate improvements to v10 ClockwiseSweep, data model, and sound/lighting. As a result, not compatible with v9.
+- No longer overrides the Foundry sweep methodology, which should improve compatibility and results in much less code to upkeep.
+- Improved Weiler-Atherton clipping methodology for faster intersects of a polygon with convex polygon shapes, circles, and ellipses.
+- New classes to handle different types of regular polygons and ellipses.
+
 ## 0.4.1
 Fix for [issue #11](https://github.com/caewok/fvtt-light-mask/issues/11). Avoid console errors when selecting modules in the Module Config screen.
 

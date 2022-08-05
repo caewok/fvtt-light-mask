@@ -19,13 +19,13 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   log(`Hooking preUpdateAmbientLight ${id}!`, doc, new_data, options);
 
   const ids_to_add = new_data?.flags?.[MODULE_ID]?.[KEYS.CUSTOM_WALLS.IDS];
-  if (ids_to_add) {
+  if (ids_to_add || ids_to_add === "") {
     // Retrieve the existing cache, if any
     let edges_cache = doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
     edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
     // Add the edges cache
-    new_data[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+    new_data.flags[`${MODULE_ID}`][`${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 
   // If relative is being set to true: store origin
@@ -34,8 +34,8 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   if (relative_key) {
     // Prefer the new origin position, if any
     const new_origin = {
-      x: new_data?.x || doc.data.x,
-      y: new_data?.y || doc.data.y };
+      x: new_data?.x || doc.x,
+      y: new_data?.y || doc.y };
 
     // If this is a token, the origin needs to be the center, whereas x,y is top left
     if ( doc instanceof TokenDocument ) {
@@ -44,8 +44,8 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
       new_origin.x += offsetX;
       new_origin.y += offsetY;
     }
+    new_data.flags[`${MODULE_ID}`][`${KEYS.ORIGIN}`] = new_origin;
 
-    new_data[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = new_origin;
   } else if (relative_key === false) {
     // Set the wall locations based on the last origin because when the user unchecks
     // relative, we want the walls to stay at the last relative position (not their
@@ -54,8 +54,8 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
     let edges_cache = new_data?.flags?.[MODULE_ID]?.[KEYS.CUSTOM_WALLS.EDGES]
       || doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
     const new_origin = {
-      x: new_data?.x || doc.data.x,
-      y: new_data?.y || doc.data.y };
+      x: new_data?.x || doc.x,
+      y: new_data?.y || doc.y };
 
     // If this is a token, the origin needs to be the center, whereas x,y is top left
     if ( doc instanceof TokenDocument ) {
@@ -71,7 +71,7 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
       dy: new_origin.y - stored_origin.y };
 
     edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    new_data[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+    new_data.flags[`${MODULE_ID}`][`${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 }
 
@@ -102,12 +102,13 @@ export function lightMaskUpdateCustomEdgeCache(edges_cache, custom_ids) {
       log(`Adding wall ${wall.id} to cache.`);
 
       // Store limited wall data. This will include c (coordinates) as well as types.
+      const wd = wall.document;
       edges_cache.push({
-        c: wall.data.c,
-        light: wall.data.light,
-        move: wall.data.move,
-        sight: wall.data.sight,
-        sound: wall.data.sound,
+        c: wd.c,
+        light: wd.light,
+        move: wd.move,
+        sight: wd.sight,
+        sound: wd.sound,
         id: id
       });
     });

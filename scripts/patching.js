@@ -5,14 +5,18 @@ SoundSource,
 AmbientSoundConfig,
 DefaultTokenConfig,
 TokenConfig,
-foundry
+foundry,
+CONFIG,
+PIXI,
+canvas
 */
 "use strict";
 
-import { lightMaskActivateListeners, updateShapeIndicator, updateRotation } from "./render.js";
-import { MODULE_ID } from "./const.js";
+import { lightMaskActivateListeners, onAddWallIDs } from "./customEdges.js";
+import { updateShapeIndicator, updateRotation } from "./render.js";
+import { MODULE_ID, KEYS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
-import { customEdges } from "./customEdges.js";
+import { identifyEdgesClockwiseSweepPolygon, computeClockwiseSweep } from "./customEdges.js";
 import { log } from "./module.js";
 
 export function registerLightMask() {
@@ -58,12 +62,6 @@ export function registerLightMask() {
     configurable: true
   });
 
-  Object.defineProperty(LightSource.prototype, "customEdges", {
-    value: customEdges,
-    writable: true,
-    configurable: true
-  });
-
   // ----- Sound Source ----- //
   Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
     value: boundaryPolygon,
@@ -71,27 +69,15 @@ export function registerLightMask() {
     configurable: true
   });
 
-  Object.defineProperty(SoundSource.prototype, "customEdges", {
-    value: customEdges,
-    writable: true,
-    configurable: true
-  });
+  // ----- Sweep ----- //
+  libWrapper.register(MODULE_ID, "LightSource.prototype._createLOS", createLOSLightSource, libWrapper.MIXED);
+  libWrapper.register(MODULE_ID, "SoundSource.prototype.initialize", initializeSoundSource, libWrapper.MIXED);
+  libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._identifyEdges", identifyEdgesClockwiseSweepPolygon, libWrapper.MIXED, { perf_mode: libWrapper.PERF_FAST});
+  libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._compute", computeClockwiseSweep, libWrapper.WRAPPER, { perf_mode: libWrapper.PERF_FAST});
 }
 
-/**
- * Wrapper for DefaultTokenConfig.prototype.getData
- * Force to pull data from local, not source.
- * This fixes an issue where Application.prototype._render was not getting the updated
- * shape selection when using getData, which it needs to pass to the render hook.
- * @param {Function} wrapper
- * @param {Object} options      See DefaultTokenConfig.prototype.getData
- * @return {Object|Promise}
- */
-async function getDataDefaultTokenConfig(wrapper, options) {
-  const out = await wrapper(options);
-  out.object = this.data.toObject(false);
-  return out;
-}
+
+// ----- Form Application ----- //
 
 /**
  * Wrapper for FormApplication.prototype._onChangeInput
@@ -104,8 +90,9 @@ async function getDataDefaultTokenConfig(wrapper, options) {
  */
 async function onChangeInputFormApplication(wrapper, event) {
   log("formApplicationChangeInput", event, this);
-//   if ( event.type !== "change" ) return wrapper(event);
-  if ( event.type !== "change"  || event.currentTarget.className !== "lightmask") return wrapper(event);
+  if ( event.type !== "change"
+    || (event.currentTarget.className !== "lightmask"
+    && event.target.name !== "flags.lightmask.rotation") ) return wrapper(event);
 
   let refresh = false;
   let render = false;
@@ -113,6 +100,10 @@ async function onChangeInputFormApplication(wrapper, event) {
   if ( event.target.name === "flags.lightmask.rotation" ) {
     await updateRotation.call(this, event);
     refresh = true;
+  } else if ( event.target.name == "flags.lightmask.customWallIDs" ) {
+    onAddWallIDs.call(this, event);
+    refresh = true;
+
   } else {
     // Covers: lightmaskshapes, lightmasksides, lightmaskpoints, lightmaskEllipseMinor
     // If changing shapes, we need to update the sub-parameter selections.
@@ -135,7 +126,111 @@ async function onChangeInputFormApplication(wrapper, event) {
 }
 
 
+// ----- Light Source ----- //
+
 /**
+ * Wrapper for LightSource.prototype._createLOS
+ * Pass in the relevant boundary shape in lieu of the default
+ */
+function createLOSLightSource(wrapper) {
+  if ( this instanceof GlobalLightSource ) return wrapper();
+
+  const doc = this.object.document;
+  const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
+  if ( shape === "circle" ) return wrapper();
+
+  const origin = {x: this.data.x, y: this.data.y};
+  const cfg = {
+    type: this.data.walls ? "light" : "universal",
+    angle: this.data.angle,
+    density: PIXI.Circle.approximateVertexDensity(this.radius),
+    rotation: this.data.rotation,
+    source: this
+  };
+
+  if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
+
+  const boundaryShape = this.boundaryPolygon();
+  if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
+
+  const los = CONFIG.Canvas.losBackend.create(origin, cfg);
+
+  // Update the flag for whether soft edges are required
+  this._flags.renderSoftEdges &&= ((los.edges.size > 0) || (this.data.angle < 360));
+  return los;
+}
+
+
+// ----- Sound Source ----- //
+
+/**
+ * Wrapper for SoundSource.prototype.initialize
+ * Pass in the relevant boundary shape in lieu of the default
+ */
+function initializeSoundSource(wrapper, data={}) {
+  log(`initializeSoundSource`, data);
+
+  const shape = this.object.document.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
+  if ( shape === "circle" ) return wrapper(data);
+
+  this._initializeData(data);
+
+  log(`initializeSoundSource radius ${this.data.radius}`);
+
+  const origin = {x: this.data.x, y: this.data.y};
+  const cfg = {
+    type: this.data.walls ? "sound" : "universal",
+    density: PIXI.Circle.approximateVertexDensity(this.data.radius),
+    source: this,
+//     radius: this.data.radius
+  };
+
+  if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
+
+  const boundaryShape = this.boundaryPolygon();
+  if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
+
+  this.los = CONFIG.Canvas.losBackend.create(origin, cfg);
+  return this;
+}
+
+// ----- Ambient Light Config ----- //
+
+/**
+ * Set the starting shape flag if none set for a given source.
+ * Light and Sound sources are not async.
+ * @param {Function} wrapper
+ * @param {Object} options      See underlying method
+ * @return {Object}
+ */
+function getDataAmbientConfig(wrapper, options) {
+  log("getDataAmbientConfig", this);
+  const data = wrapper(options);
+
+  // When first loaded, a light may not have flags.lightmask.
+  if ( data.data?.flags?.lightmask?.shape ) return data;
+  return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
+}
+
+
+// ----- Ambient Sound Config ----- //
+
+/**
+ * Wrapper for AmbientSoundConfig.defaultOptions
+ * Make the sound config window resize height automatically, to accommodate
+ * different shape parameters.
+ * @param {Function} wrapper
+ * @return {Object} See AmbientSoundConfig.defaultOptions.
+ */
+function defaultOptionsAmbientSoundConfig(wrapper) {
+  const options = wrapper();
+  return foundry.utils.mergeObject(options, {
+    height: "auto"
+  });
+}
+
+/**
+ * New method.
  * Add refresh functionality for sound configuration.
  * Based on refresh for AmbientLightConfig
  */
@@ -145,7 +240,7 @@ function refreshAmbientSoundConfig() {
   let s = this.document.object;
   if ( !s ) return;
 
-  if ( !s.id  ) {
+  if ( !s.id ) {
     // Cannot easily refresh a newly created Sound without ghosting
     // Try updating the preview object instead
     if ( canvas.sounds.preview.children.length !== 1 ) return;
@@ -172,6 +267,23 @@ async function closeAmbientSoundConfig(wrapper, options) {
 }
 
 
+// ----- Token Config ----- //
+
+/**
+ * Wrapper for DefaultTokenConfig.prototype.getData
+ * Force to pull data from local, not source.
+ * This fixes an issue where Application.prototype._render was not getting the updated
+ * shape selection when using getData, which it needs to pass to the render hook.
+ * @param {Function} wrapper
+ * @param {Object} options      See DefaultTokenConfig.prototype.getData
+ * @return {Object|Promise}
+ */
+async function getDataDefaultTokenConfig(wrapper, options) {
+  const out = await wrapper(options);
+  out.object = this.data.toObject(false);
+  return out;
+}
+
 /**
  * Add refresh functionality for token configuration.
  * Based on refresh for AmbientLightConfig
@@ -181,36 +293,6 @@ function refreshTokenConfig() {
   if ( !this.token.object ) return;
   this.token.object.updateSource();
   this.token.object.refresh();
-}
-
-/**
- * Wrapper for AmbientSoundConfig.defaultOptions
- * Make the sound config window resize height automatically, to accommodate
- * different shape parameters.
- * @param {Function} wrapper
- * @return {Object} See AmbientSoundConfig.defaultOptions.
- */
-function defaultOptionsAmbientSoundConfig(wrapper) {
-  const options = wrapper();
-  return foundry.utils.mergeObject(options, {
-    height: "auto"
-  });
-}
-
-/**
- * Set the starting shape flag if none set for a given source.
- * Light and Sound sources are not async.
- * @param {Function} wrapper
- * @param {Object} options      See underlying method
- * @return {Object}
- */
-function getDataAmbientConfig(wrapper, options) {
-  log("getDataAmbientConfig", this);
-  const data = wrapper(options);
-
-  // When first loaded, a light may not have flags.lightmask.
-  if ( data.data?.flags?.lightmask?.shape ) return data;
-  return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
 }
 
 /**

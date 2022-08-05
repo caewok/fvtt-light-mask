@@ -16,6 +16,10 @@ The chosen shape will be centered around the light/sound, sized to the light/sou
 
 Version 0.3.0 introduced the ability to mask token lights with a selected shape, just like masking other lights.
 
+The 0.4 versions are the last to be compatible with Foundry v9.
+
+The 0.5 versions requires Foundry v10.
+
 # Installation
 
 Add this [Manifest URL](https://github.com/caewok/fvtt-light-mask/releases/latest/download/module.json) in Foundry to install.

@@ -33,6 +33,9 @@ import { Hexagon } from "./shapes/Hexagon.js";
 import { RegularStar } from "./shapes/RegularStar.js";
 import { Ellipse } from "./shapes/Ellipse.js";
 
+// ----- ClockwiseSweep ----- //
+import { TempWall } from "./customEdges.js";
+
 /**
  * Log message only when debug flag is enabled from DevMode module.
  * @param {Object[]} args  Arguments passed to console.log.
@@ -61,7 +64,8 @@ Hooks.once("init", async function() {
   game.modules.get(MODULE_ID).api = {
     controlledWallIDs,
     WeilerAthertonClipper,
-    shapes: { RegularPolygon, EquilateralTriangle, Square, Hexagon, RegularStar, Ellipse }
+    shapes: { RegularPolygon, EquilateralTriangle, Square, Hexagon, RegularStar, Ellipse },
+    TempWall
   };
 });
 

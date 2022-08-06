@@ -1,3 +1,6 @@
+## 0.5.1
+Change "name" to "id" in module.json.
+
 ## 0.5.0
 Foundry v10 version! Major rewrite to accommodate improvements to v10 ClockwiseSweep, data model, and sound/lighting. As a result, not compatible with v9.
 - No longer overrides the Foundry sweep methodology, which should improve compatibility and results in much less code to upkeep.

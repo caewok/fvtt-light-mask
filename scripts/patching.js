@@ -140,6 +140,7 @@ function _getPolygonConfigurationLightSource(wrapper) {
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   if ( shape === "circle" ) return cfg;
   if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
+  else cfg.radius = undefined; // Don't let CWSweep add a circle boundary.
 
   const boundaryShape = this.boundaryPolygon();
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
@@ -160,6 +161,7 @@ function _getPolygonConfigurationSoundSource(wrapper) {
   const shape = this.object.document.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
   if ( shape === "circle" ) return cfg;
   if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
+  else cfg.radius = undefined; // Don't let CWSweep add a circle boundary.
 
   const boundaryShape = this.boundaryPolygon();
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];

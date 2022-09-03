@@ -42,17 +42,17 @@ export function registerLightMask() {
 
   // ------ TokenConfig ----- //
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
+//   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
 
-  Object.defineProperty(TokenConfig.prototype, "_refresh", {
-    value: refreshTokenConfig,
-    writable: true,
-    configurable: true
-  });
+//   Object.defineProperty(TokenConfig.prototype, "_refresh", {
+//     value: refreshTokenConfig,
+//     writable: true,
+//     configurable: true
+//   });
 
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", getDataDefaultTokenConfig, libWrapper.WRAPPER);
+//   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", getDataDefaultTokenConfig, libWrapper.WRAPPER);
 
 
   // ----- Light Source ----- //
@@ -117,7 +117,7 @@ async function onChangeInputFormApplication(wrapper, event) {
   // Default Token Config and Prototype Token are not on the map, so cannot be refreshed.
   refresh &&= !this.token || !(this.isPrototype);
   refresh &&= !(this instanceof DefaultTokenConfig);
-  refresh &&= (this instanceof AmbientSoundConfig || this instanceof TokenConfig);
+  refresh &&= (this instanceof AmbientSoundConfig)// || this instanceof TokenConfig);
   refresh && this._refresh(); // eslint-disable-line no-unused-expressions
 
   // Update the rendered config html options for the new shape
@@ -257,22 +257,22 @@ async function closeAmbientSoundConfig(wrapper, options) {
  * @param {Object} options      See DefaultTokenConfig.prototype.getData
  * @return {Object|Promise}
  */
-async function getDataDefaultTokenConfig(wrapper, options) {
-  const out = await wrapper(options);
-  out.object = this.data.toObject(false);
-  return out;
-}
+// async function getDataDefaultTokenConfig(wrapper, options) {
+//   const out = await wrapper(options);
+//   out.object = this.data.toObject(false);
+//   return out;
+// }
 
 /**
  * Add refresh functionality for token configuration.
  * Based on refresh for AmbientLightConfig
  */
-function refreshTokenConfig() {
-  log("refreshToken", this);
-  if ( !this.token.object ) return;
-  this.token.object.updateSource();
-  this.token.object.refresh();
-}
+// function refreshTokenConfig() {
+//   log("refreshToken", this);
+//   if ( !this.token.object ) return;
+//   this.token.object.updateSource();
+//   this.token.object.refresh();
+// }
 
 /**
  * Set the starting shape flag and other settings for a given token source.
@@ -281,20 +281,20 @@ function refreshTokenConfig() {
  * @param {Object} options      See underlying method
  * @return {Object}
  */
-async function getDataTokenConfig(wrapper, options) {
-  log("getDataTokenConfig", options, this);
-  const data = await wrapper(options);
-
-  // Location of the flag depends on type of source
-
-  const shape = this instanceof DefaultTokenConfig
-    ? data.flags?.lightmask?.shape
-    : data.object?.flags?.lightmask?.shape;
-  if ( shape ) return data;
-
-  if ( this instanceof DefaultTokenConfig ) {
-    return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
-  } else {
-    return foundry.utils.mergeObject(data, { "data.object.flags.lightmask.shape": "circle" });
-  }
-}
+// async function getDataTokenConfig(wrapper, options) {
+//   log("getDataTokenConfig", options, this);
+//   const data = await wrapper(options);
+//
+//   // Location of the flag depends on type of source
+//
+//   const shape = this instanceof DefaultTokenConfig
+//     ? data.flags?.lightmask?.shape
+//     : data.object?.flags?.lightmask?.shape;
+//   if ( shape ) return data;
+//
+//   if ( this instanceof DefaultTokenConfig ) {
+//     return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
+//   } else {
+//     return foundry.utils.mergeObject(data, { "data.object.flags.lightmask.shape": "circle" });
+//   }
+// }

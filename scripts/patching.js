@@ -121,8 +121,12 @@ async function onChangeInputFormApplication(wrapper, event) {
   refresh && this._refresh(); // eslint-disable-line no-unused-expressions
 
   // Update the rendered config html options for the new shape
-  render && this._render(); // eslint-disable-line no-unused-expressions
-  return await wrapper(event);
+//   render && this._render(); // eslint-disable-line no-unused-expressions
+//   return await wrapper(event);
+
+  const out = await wrapper(event);
+  render && this.render();
+  return out;
 }
 
 

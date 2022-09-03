@@ -115,13 +115,11 @@ export async function updateShapeIndicator(event) {
   if ( this instanceof DefaultTokenConfig ) {
     log("Default token data update");
     doc = this.token;
-//     docData = this.data;
 
   } else if ( this instanceof TokenConfig ) {
     log("Token data update");
-    doc = this.isPrototype ? this.actor.token : this.token;
-//     doc = this.token;
-//     docData = this.isPrototype ? this.actor.data.token : this.token.data;
+//     doc = this.isPrototype ? this.token : this.token;
+    doc = this.token;
   }
 
   const shape = event.target.value;

@@ -42,7 +42,7 @@ export function registerLightMask() {
 
   // ------ TokenConfig ----- //
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-//   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
 
 //   Object.defineProperty(TokenConfig.prototype, "_refresh", {
 //     value: refreshTokenConfig,
@@ -112,12 +112,11 @@ async function onChangeInputFormApplication(wrapper, event) {
     await updateShapeIndicator.call(this, event);
   }
 
-  // Refresh the sound or token light shape
+  // Refresh the sound shape
   // AmbientLight gets refreshed automatically
+  // Tokens get refreshed automatically
   // Default Token Config and Prototype Token are not on the map, so cannot be refreshed.
-  refresh &&= !this.token || !(this.isPrototype);
-  refresh &&= !(this instanceof DefaultTokenConfig);
-  refresh &&= (this instanceof AmbientSoundConfig)// || this instanceof TokenConfig);
+  refresh &&= this instanceof AmbientSoundConfig;
   refresh && this._refresh(); // eslint-disable-line no-unused-expressions
 
   // Update the rendered config html options for the new shape
@@ -247,6 +246,12 @@ async function closeAmbientSoundConfig(wrapper, options) {
 
 
 // ----- Token Config ----- //
+
+async function getDataTokenConfig(wrapper, options) {
+  const out = await wrapper(options);
+  out.object = this.object.toObject(false);
+  return out;
+}
 
 /**
  * Wrapper for DefaultTokenConfig.prototype.getData

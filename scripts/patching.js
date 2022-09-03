@@ -3,20 +3,20 @@ libWrapper,
 LightSource,
 SoundSource,
 AmbientSoundConfig,
-DefaultTokenConfig,
-TokenConfig,
 foundry,
-CONFIG,
-PIXI,
-canvas
+canvas,
+GlobalLightSource
 */
 "use strict";
 
-import { lightMaskActivateListeners, onAddWallIDs } from "./customEdges.js";
+import {
+  lightMaskActivateListeners,
+  onAddWallIDs,
+  identifyEdgesClockwiseSweepPolygon,
+  computeClockwiseSweep } from "./customEdges.js";
 import { updateShapeIndicator, updateRotation } from "./render.js";
 import { MODULE_ID, KEYS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
-import { identifyEdgesClockwiseSweepPolygon, computeClockwiseSweep } from "./customEdges.js";
 import { log } from "./module.js";
 
 export function registerLightMask() {
@@ -44,16 +44,8 @@ export function registerLightMask() {
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
 
-//   Object.defineProperty(TokenConfig.prototype, "_refresh", {
-//     value: refreshTokenConfig,
-//     writable: true,
-//     configurable: true
-//   });
-
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-//   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.getData", getDataDefaultTokenConfig, libWrapper.WRAPPER);
-
 
   // ----- Light Source ----- //
   Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
@@ -100,7 +92,7 @@ async function onChangeInputFormApplication(wrapper, event) {
   if ( event.target.name === "flags.lightmask.rotation" ) {
     await updateRotation.call(this, event);
     refresh = true;
-  } else if ( event.target.name == "flags.lightmask.customWallIDs" ) {
+  } else if ( event.target.name === "flags.lightmask.customWallIDs" ) {
     onAddWallIDs.call(this, event);
     refresh = true;
 
@@ -119,12 +111,10 @@ async function onChangeInputFormApplication(wrapper, event) {
   refresh &&= this instanceof AmbientSoundConfig;
   refresh && this._refresh(); // eslint-disable-line no-unused-expressions
 
-  // Update the rendered config html options for the new shape
-//   render && this._render(); // eslint-disable-line no-unused-expressions
-//   return await wrapper(event);
-
   const out = await wrapper(event);
-  render && this.render();
+
+  // Update the rendered config html options for the new shape
+  render && this.render(); // eslint-disable-line no-unused-expressions
   return out;
 }
 
@@ -247,59 +237,13 @@ async function closeAmbientSoundConfig(wrapper, options) {
 
 // ----- Token Config ----- //
 
+/**
+ * Wrap TokenConfig.prototype.getData.
+ * Use the local data, not the database, for the token information so that
+ * flags on the token update properly. E.g., shape indicator.
+ */
 async function getDataTokenConfig(wrapper, options) {
   const out = await wrapper(options);
   out.object = this.object.toObject(false);
   return out;
 }
-
-/**
- * Wrapper for DefaultTokenConfig.prototype.getData
- * Force to pull data from local, not source.
- * This fixes an issue where Application.prototype._render was not getting the updated
- * shape selection when using getData, which it needs to pass to the render hook.
- * @param {Function} wrapper
- * @param {Object} options      See DefaultTokenConfig.prototype.getData
- * @return {Object|Promise}
- */
-// async function getDataDefaultTokenConfig(wrapper, options) {
-//   const out = await wrapper(options);
-//   out.object = this.data.toObject(false);
-//   return out;
-// }
-
-/**
- * Add refresh functionality for token configuration.
- * Based on refresh for AmbientLightConfig
- */
-// function refreshTokenConfig() {
-//   log("refreshToken", this);
-//   if ( !this.token.object ) return;
-//   this.token.object.updateSource();
-//   this.token.object.refresh();
-// }
-
-/**
- * Set the starting shape flag and other settings for a given token source.
- * Token sources use an async getData method.
- * @param {Function} wrapper
- * @param {Object} options      See underlying method
- * @return {Object}
- */
-// async function getDataTokenConfig(wrapper, options) {
-//   log("getDataTokenConfig", options, this);
-//   const data = await wrapper(options);
-//
-//   // Location of the flag depends on type of source
-//
-//   const shape = this instanceof DefaultTokenConfig
-//     ? data.flags?.lightmask?.shape
-//     : data.object?.flags?.lightmask?.shape;
-//   if ( shape ) return data;
-//
-//   if ( this instanceof DefaultTokenConfig ) {
-//     return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
-//   } else {
-//     return foundry.utils.mergeObject(data, { "data.object.flags.lightmask.shape": "circle" });
-//   }
-// }

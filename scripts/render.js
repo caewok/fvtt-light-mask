@@ -1,7 +1,5 @@
 /* globals
-canvas,
 foundry,
-ui,
 renderTemplate,
 AmbientSoundConfig,
 AmbientLightConfig,
@@ -118,7 +116,6 @@ export async function updateShapeIndicator(event) {
 
   } else if ( this instanceof TokenConfig ) {
     log("Token data update");
-//     doc = this.isPrototype ? this.token : this.token;
     doc = this.token;
   }
 

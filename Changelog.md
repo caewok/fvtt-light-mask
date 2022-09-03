@@ -1,3 +1,7 @@
+## 0.5.2
+Add v9 compatible tags (not v9 compatible, just to eliminate errors with module updating).
+Updates for v10 stable.
+
 ## 0.5.1
 Change "name" to "id" in module.json.
 

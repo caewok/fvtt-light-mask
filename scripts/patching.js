@@ -70,8 +70,8 @@ export function registerLightMask() {
   });
 
   // ----- Sweep ----- //
-  libWrapper.register(MODULE_ID, "LightSource.prototype._createLOS", createLOSLightSource, libWrapper.MIXED);
-  libWrapper.register(MODULE_ID, "SoundSource.prototype.initialize", initializeSoundSource, libWrapper.MIXED);
+  libWrapper.register(MODULE_ID, "LightSource.prototype._getPolygonConfiguration", _getPolygonConfigurationLightSource, libWrapper.WRAPPER);
+  libWrapper.register(MODULE_ID, "SoundSource.prototype._getPolygonConfiguration", _getPolygonConfigurationSoundSource, libWrapper.WRAPPER);
   libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._identifyEdges", identifyEdgesClockwiseSweepPolygon, libWrapper.MIXED, { perf_mode: libWrapper.PERF_FAST});
   libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._compute", computeClockwiseSweep, libWrapper.WRAPPER, { perf_mode: libWrapper.PERF_FAST});
 }
@@ -129,69 +129,42 @@ async function onChangeInputFormApplication(wrapper, event) {
 // ----- Light Source ----- //
 
 /**
- * Wrapper for LightSource.prototype._createLOS
+ * Wrapper for LightSource.prototype._getPolygonConfiguration
  * Pass in the relevant boundary shape in lieu of the default
  */
-function createLOSLightSource(wrapper) {
-  if ( this instanceof GlobalLightSource ) return wrapper();
+function _getPolygonConfigurationLightSource(wrapper) {
+  const cfg = wrapper();
+  if ( this instanceof GlobalLightSource ) return cfg;
 
   const doc = this.object.document;
   const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
-  if ( shape === "circle" ) return wrapper();
-
-  const origin = {x: this.data.x, y: this.data.y};
-  const cfg = {
-    type: this.data.walls ? "light" : "universal",
-    angle: this.data.angle,
-    density: PIXI.Circle.approximateVertexDensity(this.radius),
-    rotation: this.data.rotation,
-    source: this
-  };
-
+  if ( shape === "circle" ) return cfg;
   if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
 
   const boundaryShape = this.boundaryPolygon();
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
 
-  const los = CONFIG.Canvas.losBackend.create(origin, cfg);
-
-  // Update the flag for whether soft edges are required
-  this._flags.renderSoftEdges &&= ((los.edges.size > 0) || (this.data.angle < 360));
-  return los;
+  return cfg;
 }
 
 
 // ----- Sound Source ----- //
 
 /**
- * Wrapper for SoundSource.prototype.initialize
+ * Wrapper for SoundSource.prototype._getPolygonConfiguration
  * Pass in the relevant boundary shape in lieu of the default
  */
-function initializeSoundSource(wrapper, data={}) {
-  log(`initializeSoundSource`, data);
+function _getPolygonConfigurationSoundSource(wrapper) {
+  const cfg = wrapper();
 
   const shape = this.object.document.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
-  if ( shape === "circle" ) return wrapper(data);
-
-  this._initializeData(data);
-
-  log(`initializeSoundSource radius ${this.data.radius}`);
-
-  const origin = {x: this.data.x, y: this.data.y};
-  const cfg = {
-    type: this.data.walls ? "sound" : "universal",
-    density: PIXI.Circle.approximateVertexDensity(this.data.radius),
-    source: this,
-//     radius: this.data.radius
-  };
-
+  if ( shape === "circle" ) return cfg;
   if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
 
   const boundaryShape = this.boundaryPolygon();
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
 
-  this.los = CONFIG.Canvas.losBackend.create(origin, cfg);
-  return this;
+  return cfg;
 }
 
 // ----- Ambient Light Config ----- //

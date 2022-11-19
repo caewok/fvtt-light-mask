@@ -7,7 +7,7 @@ Handlebars
 
 "use strict";
 
-import { MODULE_ID, TEMPLATES, SHAPE, KEYS } from "./const.js";
+import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
 import { registerLightMask } from "./patching.js";
 import { registerPIXIPolygonMethods } from "./shapes/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./shapes/PIXIRectangle.js";
@@ -36,21 +36,6 @@ import { Ellipse } from "./shapes/Ellipse.js";
 // ----- ClockwiseSweep ----- //
 import { TempWall } from "./customEdges.js";
 
-/**
- * Log message only when debug flag is enabled from DevMode module.
- * @param {Object[]} args  Arguments passed to console.log.
- */
-export function log(...args) {
-  try {
-    const isDebugging = game.modules.get("_dev-mode")?.api?.getPackageDebugValue(MODULE_ID);
-    if (isDebugging) {
-      console.log(MODULE_ID, "|", ...args);
-    }
-  } catch(e) {
-    // Empty
-  }
-}
-
 Hooks.once("init", async function() {
   log("Initializing...");
 
@@ -68,6 +53,72 @@ Hooks.once("init", async function() {
     TempWall
   };
 });
+
+Hooks.once("canvasInit", async function() {
+  log("Canvas Init...");
+
+});
+
+Hooks.once("drawSoundsLayer", async function() {
+  log("Drawing sounds layer...");
+});
+
+Hooks.once("drawLightingLayer", async function() {
+  log("Drawing lighting layer...");
+
+  const promises = [];
+  for ( const l of canvas.lighting.placeables ) {
+    promises.push(...setDefaultFlags(l));
+  }
+  await Promise.all(promises);
+}
+
+/**
+ * Set the default flags for a light or sound object.
+ * @param {AmbientLight|AmbientSound}
+ * @return {Promise[]}
+ */
+async function setDefaultFlags(object) {
+  const promises = [];
+
+  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.SHAPE) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE));
+  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.SIDES) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.SIDES, 3));
+  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.POINTS) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.POINTS, 5));
+  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR, 1));
+  return promises;
+}
+
+
+/**
+ * A hook event that fires for every Document type before execution of a creation workflow. Substitute the
+ * Document name in the hook event to target a specific Document type, for example "preCreateActor". This hook
+ * only fires for the client who is initiating the creation request.
+ *
+ * The hook provides the pending document instance which will be used for the Document creation. Hooked functions
+ * may modify the pending document with updateSource, or prevent the workflow entirely by returning false.
+ *
+ * @event preCreateDocument
+ * @category Document
+ * @param {Document} document                     The pending document which is requested for creation
+ * @param {object} data                           The initial data object provided to the document creation request
+ * @param {DocumentModificationContext} options   Additional options which modify the creation request
+ * @param {string} userId                         The ID of the requesting user, always game.user.id
+ * @returns {boolean|void}                        Explicitly return false to prevent creation of this Document
+ */
+Hooks.on("preCreateAmbientLight", preCreateAmbientLightHook);
+
+function preCreateAmbientLightHook(document, data, options, userId) {
+  log("Hooking preCreateAmbientLight");
+
+  const updates = {}
+  const gf = document.getFlag;
+  if ( typeof gf(MODULE_ID, FLAGS.SHAPE) === "undefined" ) updates[`flags.${MODULE_ID}.${FLAGS.SHAPE}`] = SHAPE.TYPES.CIRCLE;
+  if ( typeof gf(MODULE_ID, FLAGS.SIDES) === "undefined" ) updates[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;
+  if ( typeof gf(MODULE_ID, FLAGS.POINTS) === "undefined" ) updates[`flags.${MODULE_ID}.${FLAGS.POINTS}`] = 5;
+  if ( typeof gf(MODULE_ID, FLAGS.ELLIPSE.MINOR) === "undefined" ) updates[`flags.${MODULE_ID}.${ELLIPSE.MINOR}`] = 1;
+
+  if ( !isEmpty(updates) ) document.updateSource(updates);
+}
 
 Hooks.once("setup", async function() {
   log("Setup...");
@@ -108,34 +159,34 @@ Hooks.on("canvasReady", async canvas => {
  * @category PlaceableObject
  * @param {PlaceableObject} object    The object instance being drawn
  */
-Hooks.on("drawAmbientLight", setObjectFlagDefaults);
-Hooks.on("drawAmbientSound", setObjectFlagDefaults);
+// Hooks.on("drawAmbientLight", setObjectFlagDefaults);
+// Hooks.on("drawAmbientSound", setObjectFlagDefaults);
 
 /**
  * Helper to set the default flags for a light or sound object.
  * @param {AmbientLight|AmbientSound} object
  */
-function setObjectFlagDefaults(object) {
-  log(`Drawing ${object.id}`);
-
-//   if ( !object.id ) return;
-
-  // Set default flags if not set already
-  // Cannnot use setFlag b/c the object may not yet have an id.
-  object.document.flags ??= {};
-  object.document.flags[MODULE_ID] ??= {};
-  object.document.flags[MODULE_ID][KEYS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
-  object.document.flags[MODULE_ID][KEYS.SIDES] ??= 3
-  object.document.flags[MODULE_ID][KEYS.POINTS] ??= 5
-  object.document.flags[MODULE_ID][KEYS.ELLIPSE.MINOR] ??= 1;
-
-  // Set default flags if not set already
-  // Probably don't need to await each of these, as we are not using the flags yet.
-//   if ( !object.document.getFlag(MODULE_ID, KEYS.SHAPE) ) object.document.setFlag(MODULE_ID, KEYS.SHAPE, SHAPE.TYPES.CIRCLE);
-//   if ( !object.document.getFlag(MODULE_ID, KEYS.SIDES) ) object.document.setFlag(MODULE_ID, KEYS.SIDES, 3);
-//   if ( !object.document.getFlag(MODULE_ID, KEYS.POINTS) ) object.document.setFlag(MODULE_ID, KEYS.POINTS, 5);
-//   if ( !object.document.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) ) object.document.setFlag(MODULE_ID, KEYS.ELLIPSE.MINOR, 1);
-}
+// function setObjectFlagDefaults(object) {
+//   log(`Drawing ${object.id}`);
+//
+// //   if ( !object.id ) return;
+//
+//   // Set default flags if not set already
+//   // Cannnot use setFlag b/c the object may not yet have an id.
+//   object.document.flags ??= {};
+//   object.document.flags[MODULE_ID] ??= {};
+//   object.document.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
+//   object.document.flags[MODULE_ID][FLAGS.SIDES] ??= 3
+//   object.document.flags[MODULE_ID][FLAGS.POINTS] ??= 5
+//   object.document.flags[MODULE_ID][FLAGS.ELLIPSE.MINOR] ??= 1;
+//
+//   // Set default flags if not set already
+//   // Probably don't need to await each of these, as we are not using the flags yet.
+// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.SHAPE) ) object.document.setFlag(MODULE_ID, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE);
+// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.SIDES) ) object.document.setFlag(MODULE_ID, FLAGS.SIDES, 3);
+// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.POINTS) ) object.document.setFlag(MODULE_ID, FLAGS.POINTS, 5);
+// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR) ) object.document.setFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR, 1);
+// }
 
 
 /* Render the parameters for a given selected shape */

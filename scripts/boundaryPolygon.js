@@ -5,7 +5,7 @@ canvas
 "use strict";
 
 import { log } from "./module.js";
-import { MODULE_ID, KEYS } from "./const.js";
+import { MODULE_ID, FLAGS } from "./const.js";
 import { Ellipse } from "./shapes/Ellipse.js";
 import { RegularPolygon } from "./shapes/RegularPolygon.js";
 import { RegularStar } from "./shapes/RegularStar.js";
@@ -25,14 +25,14 @@ export function boundaryPolygon() {
   const origin = { x: this.data.x, y: this.data.y };
   const doc = this.object.document;
 
-  const shape = doc.getFlag(MODULE_ID, KEYS.SHAPE) || "circle";
-  const sides = doc.getFlag(MODULE_ID, KEYS.SIDES) || 3;
-  const minor = (doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
+  const shape = doc.getFlag(MODULE_ID, FLAGS.SHAPE) || "circle";
+  const sides = doc.getFlag(MODULE_ID, FLAGS.SIDES) || 3;
+  const minor = (doc.getFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
 
   // Token lights rotate when the token rotates by using this.data.rotation.
   // For tokens and sounds, need to track rotation of the initial light separately.
-  const rotation = (this.data.rotation ?? 0) + (doc.getFlag(MODULE_ID, KEYS.ROTATION) ?? 0);
-
+  const rotation = (this.data.rotation ?? 0) + (doc.getFlag(MODULE_ID, FLAGS.ROTATION) ?? 0);
+s
   switch ( shape ) {
     case "circle": return new PIXI.Circle(origin.x, origin.y, radius);
 

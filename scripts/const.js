@@ -4,7 +4,7 @@
 
 export const MODULE_ID = "lightmask";
 
-export const KEYS = {
+export const FLAGS = {
   SHAPE: "shape",
   SIDES: "sides",
   POINTS: "points",

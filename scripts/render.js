@@ -10,7 +10,7 @@ DefaultTokenConfig
 "use strict";
 
 import { log } from "./module.js";
-import { KEYS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
+import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
 import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
 
 
@@ -131,7 +131,7 @@ export async function updateRotation(event) {
 
   const rotation = parseInt(event.target.value);
   const newData = {};
-  newData[`flags.${MODULE_ID}.${KEYS.ROTATION}`] = rotation;
+  newData[`flags.${MODULE_ID}.${FLAGS.ROTATION}`] = rotation;
 
   const previewData = this._getSubmitData(newData);
   foundry.utils.mergeObject(doc, previewData, {inplace: true});
@@ -160,13 +160,13 @@ export async function updateShapeIndicator(event) {
   const shape = event.target.value;
   const newData = {};
 
-  const num_sides = doc.getFlag(MODULE_ID, KEYS.SIDES);
-  const minor = doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
+  const num_sides = doc.getFlag(MODULE_ID, FLAGS.SIDES);
+  const minor = doc.getFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR);
 
   if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
-    newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
+    newData[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;
   } else if ( shape === "star" && (!num_sides || num_sides < 5) ) {
-    newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 5;
+    newData[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 5;
   } else if ( shape === "ellipse" ) {
 
     let major = 0;
@@ -181,7 +181,7 @@ export async function updateShapeIndicator(event) {
     }
 
     if ( !minor || minor <= 0 || minor > major ) {
-      newData[`flags.${MODULE_ID}.${KEYS.ELLIPSE.MINOR}`] = major;
+      newData[`flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`] = major;
     }
   }
 

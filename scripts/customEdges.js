@@ -27,17 +27,8 @@ Here, it can store custom edges and whether the edges are relative or absolute.
 Thus, it is assumed that this _customEdgeData function will access this, the source object.
 */
 
-/**
- * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
- */
-export function lightMaskActivateListeners(wrapped, html) {
-  log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
 
-  html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
-  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
 
-  return wrapped(html);
-}
 
 /**
  * Listener to handle when a user check/unchecks the "Relative" checkbox.
@@ -45,7 +36,7 @@ export function lightMaskActivateListeners(wrapped, html) {
  * based on the shift in origin.
  * @param {PointerEvent} event    The originating click event
  */
-function onCheckRelative(event) {
+export function onCheckRelative(event) {
   log("lightMaskOnCheckRelative", event, this);
 
   const current_origin = { x: this.object.x,

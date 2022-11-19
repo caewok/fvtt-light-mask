@@ -10,7 +10,49 @@ DefaultTokenConfig
 "use strict";
 
 import { log } from "./module.js";
-import { KEYS, MODULE_ID, TEMPLATES, HTML_INJECTION } from "./const.js";
+import { KEYS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
+import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
+
+
+/**
+ * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
+ */
+export function lightMaskActivateListeners(wrapped, html) {
+  log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
+
+  html.on("change", "#lightmaskshapes", shapeChanged.bind(this));
+  html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
+  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
+
+  return wrapped(html);
+}
+
+function shapeChanged(event) {
+  log("shapeChanged!", event, this);
+  configShapeSubmenu(event.target.value);
+}
+
+function configShapeSubmenu(shape) {
+  const elemPolygon = document.getElementById(CONFIG_BLOCK_IDS.POLYGON);
+  const elemStar = document.getElementById(CONFIG_BLOCK_IDS.STAR);
+  const elemEllipse = document.getElementById(CONFIG_BLOCK_IDS.ELLIPSE);
+
+  elemPolygon.style.display = "none";
+  elemStar.style.display = "none";
+  elemEllipse.style.display = "none";
+
+  switch ( event.target.value ) {
+    case SHAPE.TYPES.POLYGON:
+      elemPolygon.style.display = "block";
+      break;
+    case SHAPE.TYPES.STAR:
+      elemStar.style.display = "block";
+      break;
+    case SHAPE.TYPES.ELLIPSE:
+      elemEllipse.style.display = "block";
+      break;
+  }
+}
 
 /**
  * Inject new template information into the configuration render
@@ -49,13 +91,7 @@ async function injectConfiguration(app, html, data, type) {
   // Avoid name collisions by using "lightmask"
   const renderData = {};
   renderData.lightmask = {
-    shapes: {
-      circle: "lightmask.Circle",
-      ellipse: "lightmask.Ellipse",
-      polygon: "lightmask.RegularPolygon",
-      star: "lightmask.RegularStar",
-      none: "lightmask.None"
-    },
+    shapes: SHAPE.LABELS,
     isStar: false,
     isPolygon: false,
     isEllipse: false,
@@ -78,6 +114,8 @@ async function injectConfiguration(app, html, data, type) {
 
   form.append(snippet);
   app.setPosition(app.position);
+
+  if ( shape ) configShapeSubmenu(shape);
 }
 
 /**

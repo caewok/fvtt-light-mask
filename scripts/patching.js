@@ -10,11 +10,10 @@ GlobalLightSource
 "use strict";
 
 import {
-  lightMaskActivateListeners,
   onAddWallIDs,
   identifyEdgesClockwiseSweepPolygon,
   computeClockwiseSweep } from "./customEdges.js";
-import { updateShapeIndicator, updateRotation } from "./render.js";
+import { updateShapeIndicator, updateRotation, lightMaskActivateListeners } from "./render.js";
 import { MODULE_ID, KEYS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { log } from "./module.js";
@@ -22,11 +21,11 @@ import { log } from "./module.js";
 export function registerLightMask() {
 
   // ------ Switching Shapes and selecting shape parameters ----- //
-  libWrapper.register(MODULE_ID, "FormApplication.prototype._onChangeInput", onChangeInputFormApplication, libWrapper.WRAPPER);
+//   libWrapper.register(MODULE_ID, "FormApplication.prototype._onChangeInput", onChangeInputFormApplication, libWrapper.WRAPPER);
 
   // ------ AmbientLightConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", getDataAmbientConfig, libWrapper.WRAPPER);
+//   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", getDataAmbientConfig, libWrapper.WRAPPER);
 
   // ------ AmbientSoundConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
@@ -42,7 +41,7 @@ export function registerLightMask() {
 
   // ------ TokenConfig ----- //
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
+//   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
 
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
@@ -236,6 +235,9 @@ async function closeAmbientSoundConfig(wrapper, options) {
 
 
 // ----- Token Config ----- //
+
+
+
 
 /**
  * Wrap TokenConfig.prototype.getData.

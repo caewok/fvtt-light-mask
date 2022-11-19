@@ -17,35 +17,29 @@
       </div>
     </div>
 
-    {{#if lightmask.isPolygon }}
-    <div class="form-group">
+    <div class="form-group" style="display:none;" id="lightmask-config-polygon-sides">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
         <input type="number" id="lightmasksides" name="flags.lightmask.sides" class="lightmask" step="1" min="3" value={{ object.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumSides.Hint" }}</p>
     </div>
-    {{/if}}
 
-    {{#if lightmask.isStar }}
-    <div class="form-group">
+    <div class="form-group" style="display:none;" id="lightmask-config-star-points">
       <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
       <div class="form-fields">
         <input type="number" id="lightmaskpoints" name="flags.lightmask.sides" class="lightmask" step="1" min="5" value={{ object.flags.lightmask.sides }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
     </div>
-    {{/if}}
 
-    {{#if lightmask.isEllipse }}
-    <div class="form-group">
+    <div class="form-group" style="display:none;" id="lightmask-config-ellipse-minor">
       <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
       <div class="form-fields">
         <input type="number" placeholder="{{gridUnits}}" id="lightmaskEllipseMinor" class="lightmask" name="flags.lightmask.ellipseMinor" step="any" value={{ object.flags.lightmask.ellipseMinor }}>
       </div>
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Hint" }}</p>
     </div>
-    {{/if}}
 
     {{#if lightmask.displayCached }}
     <div class="form-group">

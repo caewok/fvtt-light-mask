@@ -118,12 +118,23 @@ Hooks.on("drawAmbientSound", setObjectFlagDefaults);
 function setObjectFlagDefaults(object) {
   log(`Drawing ${object.id}`);
 
+//   if ( !object.id ) return;
+
+  // Set default flags if not set already
+  // Cannnot use setFlag b/c the object may not yet have an id.
+  object.document.flags ??= {};
+  object.document.flags[MODULE_ID] ??= {};
+  object.document.flags[MODULE_ID][KEYS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
+  object.document.flags[MODULE_ID][KEYS.SIDES] ??= 3
+  object.document.flags[MODULE_ID][KEYS.POINTS] ??= 5
+  object.document.flags[MODULE_ID][KEYS.ELLIPSE.MINOR] ??= 1;
+
   // Set default flags if not set already
   // Probably don't need to await each of these, as we are not using the flags yet.
-  if ( !object.document.getFlag(MODULE_ID, KEYS.SHAPE) ) object.document.setFlag(MODULE_ID, KEYS.SHAPE, SHAPE.TYPES.CIRCLE);
-  if ( !object.document.getFlag(MODULE_ID, KEYS.SIDES) ) object.document.setFlag(MODULE_ID, KEYS.SIDES, 3);
-  if ( !object.document.getFlag(MODULE_ID, KEYS.POINTS) ) object.document.setFlag(MODULE_ID, KEYS.POINTS, 5);
-  if ( !object.document.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) ) object.document.setFlag(MODULE_ID, KEYS.ELLIPSE.MINOR, 1);
+//   if ( !object.document.getFlag(MODULE_ID, KEYS.SHAPE) ) object.document.setFlag(MODULE_ID, KEYS.SHAPE, SHAPE.TYPES.CIRCLE);
+//   if ( !object.document.getFlag(MODULE_ID, KEYS.SIDES) ) object.document.setFlag(MODULE_ID, KEYS.SIDES, 3);
+//   if ( !object.document.getFlag(MODULE_ID, KEYS.POINTS) ) object.document.setFlag(MODULE_ID, KEYS.POINTS, 5);
+//   if ( !object.document.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR) ) object.document.setFlag(MODULE_ID, KEYS.ELLIPSE.MINOR, 1);
 }
 
 

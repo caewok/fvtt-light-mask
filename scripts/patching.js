@@ -25,11 +25,9 @@ export function registerLightMask() {
 
   // ------ AmbientLightConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-//   libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.getData", getDataAmbientConfig, libWrapper.WRAPPER);
 
   // ------ AmbientSoundConfig ----- //
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.getData", getDataAmbientConfig, libWrapper.WRAPPER);
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsAmbientSoundConfig, libWrapper.WRAPPER);
   libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.close", closeAmbientSoundConfig, libWrapper.WRAPPER);
 
@@ -41,7 +39,6 @@ export function registerLightMask() {
 
   // ------ TokenConfig ----- //
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-//   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
 
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
@@ -161,25 +158,6 @@ function _getPolygonConfigurationSoundSource(wrapper) {
   return cfg;
 }
 
-// ----- Ambient Light Config ----- //
-
-/**
- * Set the starting shape flag if none set for a given source.
- * Light and Sound sources are not async.
- * @param {Function} wrapper
- * @param {Object} options      See underlying method
- * @return {Object}
- */
-function getDataAmbientConfig(wrapper, options) {
-  log("getDataAmbientConfig", this);
-  const data = wrapper(options);
-
-  // When first loaded, a light may not have flags.lightmask.
-  if ( data.data?.flags?.lightmask?.shape ) return data;
-  return foundry.utils.mergeObject(data, { "data.flags.lightmask.shape": "circle" });
-}
-
-
 // ----- Ambient Sound Config ----- //
 
 /**
@@ -231,27 +209,4 @@ async function closeAmbientSoundConfig(wrapper, options) {
     });
   }
   return wrapper(options);
-}
-
-
-// ----- Token Config ----- //
-
-
-
-
-/**
- * Wrap TokenConfig.prototype.getData.
- * Use the local data, not the database, for the token information so that
- * flags on the token update properly. E.g., shape indicator.
- */
-async function getDataTokenConfig(wrapper, options) {
-  const out = await wrapper(options);
-
-  if ( !out.object ) return;
-
-  const existing = this.object.toObject(false);
-  const flags = existing.flags?.[MODULE_ID];
-  if ( typeof flags !== "undefined" ) out.object.flags[MODULE_ID] = flags;
-
-  return out;
 }

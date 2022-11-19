@@ -95,7 +95,6 @@ export function registerPIXIPolygonMethods() {
       if ( this.isClosed ) return;
       if ( this.points.length < 2 ) return;
       this.addPoint({x: this.points[0], y: this.points[1]});
-      this.is
     },
     writable: true,
     configurable: true

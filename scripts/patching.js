@@ -244,6 +244,12 @@ async function closeAmbientSoundConfig(wrapper, options) {
  */
 async function getDataTokenConfig(wrapper, options) {
   const out = await wrapper(options);
-  out.object = this.object.toObject(false);
+
+  if ( !out.object ) return;
+
+  const existing = this.object.toObject(false);
+  const flags = existing.flags?.[MODULE_ID];
+  if ( typeof flags !== "undefined" ) out.object.flags[MODULE_ID] = flags;
+
   return out;
 }

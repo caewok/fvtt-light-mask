@@ -91,7 +91,6 @@ function setDefaultFlags(object) {
   return promises;
 }
 
-
 /**
  * A hook event that fires for every Document type before execution of a creation workflow. Substitute the
  * Document name in the hook event to target a specific Document type, for example "preCreateActor". This hook
@@ -147,15 +146,20 @@ Hooks.once("devModeReady", ({ registerPackageDebugFlag }) => {
 Hooks.on("canvasReady", async canvas => {
   log("Refreshing templates on canvasReady.");
 
-  for ( const l of canvas.lighting.placeables ) {
-    await Promise.all(setDefaultFlags(l));
-    l.updateSource();
-  }
+  // forEach with joined array is fairly quick: https://jsbench.me/v7laoj4bo2/1
+  const promises = [];
+  const placeables = [
+    canvas.lighting.placeables,
+    canvas.sounds.placeables,
+    canvas.tokens.placeables // For lights in tokens
+  ];
 
-  for ( const s of canvas.sounds.placeables ) {
-    await Promise.all(setDefaultFlags(s));
-    s.updateSource();
-  }
+  // Set default flags as necessary
+  placeables.forEach(ps => ps.forEach(p => promises.push(...setDefaultFlags(p))));
+  await Promise.all(promises);
+
+  // Update the light or sound source
+  placeables.forEach(ps => ps.forEach(p => p.updateSource()));
 });
 
 /* Render the parameters for a given selected shape */

@@ -10,7 +10,7 @@
       </div>
     </div>
 
-    <div class="form-group lightmask-polygon" style="display:none;" id="lightmask-config-polygon-sides">
+    <div class="form-group" style="display:none;" id="lightmask-config-polygon-sides">
       <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
       <div class="form-fields">
         <input type="number" id="lightmasksides" name="flags.lightmask.sides" class="lightmask" step="1" min="3" value={{ data.flags.lightmask.sides }}>
@@ -18,7 +18,7 @@
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumSides.Hint" }}</p>
     </div>
 
-    <div class="form-group lightmask-star" style="display:none;" id="lightmask-config-star-points">
+    <div class="form-group" style="display:none;" id="lightmask-config-star-points">
       <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
       <div class="form-fields">
         <input type="number" id="lightmaskpoints" name="flags.lightmask.points" class="lightmask" step="1" min="5" value={{ data.flags.lightmask.points }}>
@@ -26,7 +26,7 @@
       <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
     </div>
 
-    <div class="form-group lightmask-ellipse" style="display:none;" id="lightmask-config-ellipse-minor">
+    <div class="form-group" style="display:none;" id="lightmask-config-ellipse-minor">
       <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
       <div class="form-fields">
         <input type="number" id="lightmaskEllipseMinor" placeholder="{{gridUnits}}" class="lightmask" name="flags.lightmask.ellipseMinor" step="any" value={{ data.flags.lightmask.ellipseMinor }}>

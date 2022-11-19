@@ -8,6 +8,15 @@
 // See AmbientLightConfig
 
 /**
+ * Wrapper for AmbientSound.prototype._refresh
+ * Because the sound can be created without drawing, need to catch this.
+ */
+export function _refreshAmbientSound(wrapper, options) {
+  if ( !this.field ) this.draw();
+  wrapper(options);
+}
+
+/**
  * Wrapper for AmbientSoundConfig.defaultOptions
  * Make the sound config window resize height automatically, to accommodate
  * different shape parameters.
@@ -67,6 +76,10 @@ export function _previewChangesAmbientSoundConfig(change) {
  */
 export function _resetPreviewAmbientSoundConfig() {
   this._previewChanges(this.original);
+
+  // If the last placeable is null id, pop it b/c it was a temp for the sound refresh
+  const s = canvas.sounds.placeables[canvas.sounds.placeables.length - 1];
+  if ( !s.id ) canvas.sounds.placeables.pop();
 }
 
 /**

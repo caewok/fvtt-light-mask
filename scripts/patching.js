@@ -15,6 +15,7 @@ import {
   computeClockwiseSweep } from "./customEdges.js";
 import { updateShapeIndicator, updateRotation, lightMaskActivateListeners } from "./render.js";
 import {
+  _refreshAmbientSound,
   defaultOptionsAmbientSoundConfig,
   _renderAmbientSoundConfig,
   closeAmbientSoundConfig,
@@ -69,6 +70,7 @@ export function registerLightMask() {
   });
 
   // ----- Sound Source ----- //
+  libWrapper.register(MODULE_ID, "AmbientSound.prototype._refresh", _refreshAmbientSound, libWrapper.WRAPPER);
   Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
     value: boundaryPolygon,
     writable: true,

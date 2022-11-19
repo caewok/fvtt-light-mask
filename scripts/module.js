@@ -80,7 +80,7 @@ Hooks.once("canvasInit", async function() {
  * @param {AmbientLight|AmbientSound}
  * @return {Promise[]}
  */
-async function setDefaultFlags(object) {
+function setDefaultFlags(object) {
   const promises = [];
   const doc = object.document;
 
@@ -154,7 +154,7 @@ Hooks.on("canvasReady", async canvas => {
     l.updateSource();
   }
 
-  for ( const s of canvas.lighting.sounds ) {
+  for ( const s of canvas.sounds.placeables ) {
     await Promise.all(setDefaultFlags(s));
     s.updateSource();
   }

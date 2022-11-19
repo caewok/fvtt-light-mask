@@ -2,19 +2,18 @@
 Hooks,
 game,
 loadTemplates,
-Handlebars
+Handlebars,
+isEmpty
 */
 
 "use strict";
 
 import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
-import { log, getFlag, noFlag, setFlag } from "./util.js";
+import { log, noFlag, setFlag } from "./util.js";
 import { registerLightMask } from "./patching.js";
 import { registerPIXIPolygonMethods } from "./shapes/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./shapes/PIXIRectangle.js";
 import { registerPIXICircleMethods } from "./shapes/PIXICircle.js";
-
-import { controlledWallIDs } from "./customEdges.js";
 
 import {
   injectAmbientLightConfiguration,
@@ -35,7 +34,7 @@ import { RegularStar } from "./shapes/RegularStar.js";
 import { Ellipse } from "./shapes/Ellipse.js";
 
 // ----- ClockwiseSweep ----- //
-import { TempWall } from "./customEdges.js";
+import { controlledWallIDs, TempWall } from "./customEdges.js";
 
 Hooks.once("init", async function() {
   log("Initializing...");
@@ -112,15 +111,14 @@ function setDefaultFlags(object) {
 Hooks.on("preCreateAmbientLight", preCreateAmbientSourceHook);
 Hooks.on("preCreateAmbientSound", preCreateAmbientSourceHook);
 
-function preCreateAmbientSourceHook(document, data, options, userId) {
+function preCreateAmbientSourceHook(document, data, options, userId) { // eslint-disable-line no-unused-vars
   log("Hooking preCreateAmbientLight");
 
-  const updates = {}
-  const gf = document.getFlag;
+  const updates = {};
   if ( noFlag(document, FLAGS.SHAPE) ) updates[`flags.${MODULE_ID}.${FLAGS.SHAPE}`] = SHAPE.TYPES.CIRCLE;
   if ( noFlag(document, FLAGS.SIDES) ) updates[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;
   if ( noFlag(document, FLAGS.POINTS) ) updates[`flags.${MODULE_ID}.${FLAGS.POINTS}`] = 5;
-  if ( noFlag(document, FLAGS.ELLIPSE.MINOR) ) updates[`flags.${MODULE_ID}.${ELLIPSE.MINOR}`] = 1;
+  if ( noFlag(document, FLAGS.ELLIPSE.MINOR) ) updates[`flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`] = 1;
 
   if ( !isEmpty(updates) ) document.updateSource(updates);
 }
@@ -131,7 +129,7 @@ Hooks.once("setup", async function() {
 });
 
 Hooks.once("ready", async function() {
-  log("Ready...")
+  log("Ready...");
 });
 
 /**
@@ -159,43 +157,6 @@ Hooks.on("canvasReady", async canvas => {
     s.updateSource();
   }
 });
-
-/**
- * A hook event that fires when a {@link PlaceableObject} is initially drawn.
- * The dispatched event name replaces "Object" with the named PlaceableObject subclass, i.e. "drawToken".
- * @event drawObject
- * @category PlaceableObject
- * @param {PlaceableObject} object    The object instance being drawn
- */
-// Hooks.on("drawAmbientLight", setObjectFlagDefaults);
-// Hooks.on("drawAmbientSound", setObjectFlagDefaults);
-
-/**
- * Helper to set the default flags for a light or sound object.
- * @param {AmbientLight|AmbientSound} object
- */
-// function setObjectFlagDefaults(object) {
-//   log(`Drawing ${object.id}`);
-//
-// //   if ( !object.id ) return;
-//
-//   // Set default flags if not set already
-//   // Cannnot use setFlag b/c the object may not yet have an id.
-//   object.document.flags ??= {};
-//   object.document.flags[MODULE_ID] ??= {};
-//   object.document.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
-//   object.document.flags[MODULE_ID][FLAGS.SIDES] ??= 3
-//   object.document.flags[MODULE_ID][FLAGS.POINTS] ??= 5
-//   object.document.flags[MODULE_ID][FLAGS.ELLIPSE.MINOR] ??= 1;
-//
-//   // Set default flags if not set already
-//   // Probably don't need to await each of these, as we are not using the flags yet.
-// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.SHAPE) ) object.document.setFlag(MODULE_ID, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE);
-// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.SIDES) ) object.document.setFlag(MODULE_ID, FLAGS.SIDES, 3);
-// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.POINTS) ) object.document.setFlag(MODULE_ID, FLAGS.POINTS, 5);
-// //   if ( !object.document.getFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR) ) object.document.setFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR, 1);
-// }
-
 
 /* Render the parameters for a given selected shape */
 Hooks.on("renderAmbientLightConfig", injectAmbientLightConfiguration);

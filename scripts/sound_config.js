@@ -1,8 +1,9 @@
 /* globals
+foundry,
+game,
+canvas
 */
 "use strict";
-
-
 
 // Allow sounds to be previewed, equivalent to the light preview approach.
 // See AmbientLightConfig

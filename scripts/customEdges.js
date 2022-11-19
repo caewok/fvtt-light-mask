@@ -3,11 +3,15 @@ getDocumentClass,
 canvas,
 PolygonEdge,
 PolygonVertex,
-Wall
+Wall,
+foundry,
+ui,
+PointSource,
+duplicate
 */
 "use strict";
 
-import { log, getFlag } from "./util.js";
+import { log, getFlag, noFlag } from "./util.js";
 import { FLAGS, MODULE_ID } from "./const.js";
 import {
   lightMaskUpdateCustomEdgeCache,
@@ -26,9 +30,6 @@ Here, it can store custom edges and whether the edges are relative or absolute.
 
 Thus, it is assumed that this _customEdgeData function will access this, the source object.
 */
-
-
-
 
 /**
  * Listener to handle when a user check/unchecks the "Relative" checkbox.
@@ -74,7 +75,7 @@ export function onAddWallIDs(event) {
   log("lightMaskOnAddWallIDs", event, this);
 
   let ids_to_add;
-  if ( event.target.name == "flags.lightmask.customWallIDs" ) {
+  if ( event.target.name === "flags.lightmask.customWallIDs" ) {
     ids_to_add = event.target.value;
   } else {
     ids_to_add = controlledWallIDs();
@@ -168,8 +169,8 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
     e._isTemporary = true;
     return e;
   }).filter(w => {
-    return !this.edges.some(e => e.A.equals(w.A) && e.B.equals(w.B)
-      || e.A.equals(w.B) && e.B.equals(w.A))
+    return !(this.edges.some(e => (e.A.equals(w.A) && e.B.equals(w.B))
+      || (e.A.equals(w.B) && e.B.equals(w.A))));
   });
 
   log(`identifyEdgesClockwiseSweepPolygon ${tmpEdges.length} edges`, tmpEdges);

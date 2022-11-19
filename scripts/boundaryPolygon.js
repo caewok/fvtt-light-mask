@@ -4,7 +4,7 @@ canvas
 */
 "use strict";
 
-import { log, getFlag } from "./util.js";
+import { getFlag } from "./util.js";
 import { FLAGS } from "./const.js";
 import { Ellipse } from "./shapes/Ellipse.js";
 import { RegularPolygon } from "./shapes/RegularPolygon.js";
@@ -46,7 +46,7 @@ export function boundaryPolygon() {
       }
 
     case "star":
-      return new RegularStar(origin, radius, { numPoints: Math.max(5, sides),  rotation });
+      return new RegularStar(origin, radius, { numPoints: Math.max(5, sides), rotation });
 
     case "none": return undefined;
   }

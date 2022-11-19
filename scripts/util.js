@@ -1,4 +1,5 @@
 /* globals
+game
 */
 "use strict";
 
@@ -49,3 +50,11 @@ export function noFlag(doc, name) {
 export async function setFlag(doc, name, value) {
   return doc.setFlag(MODULE_ID, name, value);
 }
+
+/**
+ * Difference (a \ b): create a set that contains those elements of
+ * set a that are not in set b.
+ */
+Set.prototype.diff = function(b) {
+  return new Set([...this].filter(x => !b.has(x)));
+};

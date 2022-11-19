@@ -41,7 +41,7 @@ function configShapeSubmenu(shape) {
   elemStar.style.display = "none";
   elemEllipse.style.display = "none";
 
-  switch ( event.target.value ) {
+  switch ( shape ) {
     case SHAPE.TYPES.POLYGON:
       elemPolygon.style.display = "block";
       break;

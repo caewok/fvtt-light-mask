@@ -52,7 +52,7 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
     // original position)
     // Theoretically possible, but unlikely, that edges cache was modified above
     let edges_cache = new_data?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES]
-      || getFlag(doc,  FLAGS.CUSTOM_WALLS.EDGES) || [];
+      || getFlag(doc, FLAGS.CUSTOM_WALLS.EDGES) || [];
     const new_origin = {
       x: new_data?.x || doc.x,
       y: new_data?.y || doc.y };
@@ -140,11 +140,3 @@ export function lightMaskShiftCustomEdgeCache(edges_cache, delta) {
 
   return edges_cache;
 }
-
-/**
- * Difference (a \ b): create a set that contains those elements of
- * set a that are not in set b.
- */
-Set.prototype.diff = function(b) {
-  return new Set([...this].filter(x => !b.has(x)));
-};

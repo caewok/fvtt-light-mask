@@ -9,7 +9,7 @@ DefaultTokenConfig
 
 "use strict";
 
-import { log } from "./module.js";
+import { log, getFlag } from "./util.js";
 import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
 import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
 
@@ -160,8 +160,8 @@ export async function updateShapeIndicator(event) {
   const shape = event.target.value;
   const newData = {};
 
-  const num_sides = doc.getFlag(MODULE_ID, FLAGS.SIDES);
-  const minor = doc.getFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR);
+  const num_sides = getFlag(doc, FLAGS.SIDES);
+  const minor = getFlag(doc, FLAGS.ELLIPSE.MINOR);
 
   if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
     newData[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;

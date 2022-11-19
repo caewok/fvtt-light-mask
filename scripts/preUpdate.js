@@ -5,7 +5,7 @@ TokenDocument
 
 "use strict";
 
-import { log } from "./module.js";
+import { log, getFlag } from "./util.js";
 import { MODULE_ID, FLAGS } from "./const.js";
 
 /**
@@ -21,7 +21,7 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   const ids_to_add = new_data?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.IDS];
   if (ids_to_add || ids_to_add === "") {
     // Retrieve the existing cache, if any
-    let edges_cache = doc.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES) || [];
+    let edges_cache = getFlag(doc, FLAGS.CUSTOM_WALLS.EDGES) || [];
     edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
     // Add the edges cache
@@ -52,7 +52,7 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
     // original position)
     // Theoretically possible, but unlikely, that edges cache was modified above
     let edges_cache = new_data?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES]
-      || doc.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES) || [];
+      || getFlag(doc,  FLAGS.CUSTOM_WALLS.EDGES) || [];
     const new_origin = {
       x: new_data?.x || doc.x,
       y: new_data?.y || doc.y };
@@ -65,7 +65,7 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
       new_origin.y += offsetY;
     }
 
-    const stored_origin = doc.getFlag(MODULE_ID, FLAGS.ORIGIN) || new_origin;
+    const stored_origin = getFlag(doc, FLAGS.ORIGIN) || new_origin;
     const delta = {
       dx: new_origin.x - stored_origin.x,
       dy: new_origin.y - stored_origin.y };

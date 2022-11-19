@@ -8,6 +8,7 @@ Handlebars
 "use strict";
 
 import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
+import { log, getFlag, noFlag, setFlag } from "./util.js";
 import { registerLightMask } from "./patching.js";
 import { registerPIXIPolygonMethods } from "./shapes/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./shapes/PIXIRectangle.js";
@@ -59,19 +60,20 @@ Hooks.once("canvasInit", async function() {
 
 });
 
-Hooks.once("drawSoundsLayer", async function() {
-  log("Drawing sounds layer...");
-});
+// Use canvasReady instead b/c we are redrawing the lights and sounds anyway
+// Hooks.once("drawSoundsLayer", async function() {
+//   log("Drawing sounds layer...");
+// });
 
-Hooks.once("drawLightingLayer", async function() {
-  log("Drawing lighting layer...");
-
-  const promises = [];
-  for ( const l of canvas.lighting.placeables ) {
-    promises.push(...setDefaultFlags(l));
-  }
-  await Promise.all(promises);
-}
+// Hooks.once("drawLightingLayer", async function() {
+//   log("Drawing lighting layer...");
+//
+//   const promises = [];
+//   for ( const l of canvas.lighting.placeables ) {
+//     promises.push(...setDefaultFlags(l));
+//   }
+//   await Promise.all(promises);
+// }
 
 /**
  * Set the default flags for a light or sound object.
@@ -80,11 +82,13 @@ Hooks.once("drawLightingLayer", async function() {
  */
 async function setDefaultFlags(object) {
   const promises = [];
+  const doc = object.document;
 
-  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.SHAPE) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE));
-  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.SIDES) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.SIDES, 3));
-  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.POINTS) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.POINTS, 5));
-  if ( typeof object.document.getFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR) === "undefined" ) promises.push(object.document.setFlag(MODULE_ID, FLAGS.ELLIPSE.MINOR, 1));
+  if ( noFlag(doc, FLAGS.SHAPE) ) promises.push(setFlag(doc, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE));
+  if ( noFlag(doc, FLAGS.SIDES) ) promises.push(setFlag(doc, FLAGS.SIDES, 3));
+  if ( noFlag(doc, FLAGS.POINTS) ) promises.push(setFlag(doc, FLAGS.POINTS, 5));
+  if ( noFlag(doc, FLAGS.ELLIPSE.MINOR) ) promises.push(setFlag(doc, FLAGS.ELLIPSE.MINOR, 1));
+
   return promises;
 }
 
@@ -105,17 +109,18 @@ async function setDefaultFlags(object) {
  * @param {string} userId                         The ID of the requesting user, always game.user.id
  * @returns {boolean|void}                        Explicitly return false to prevent creation of this Document
  */
-Hooks.on("preCreateAmbientLight", preCreateAmbientLightHook);
+Hooks.on("preCreateAmbientLight", preCreateAmbientSourceHook);
+Hooks.on("preCreateAmbientSound", preCreateAmbientSourceHook);
 
-function preCreateAmbientLightHook(document, data, options, userId) {
+function preCreateAmbientSourceHook(document, data, options, userId) {
   log("Hooking preCreateAmbientLight");
 
   const updates = {}
   const gf = document.getFlag;
-  if ( typeof gf(MODULE_ID, FLAGS.SHAPE) === "undefined" ) updates[`flags.${MODULE_ID}.${FLAGS.SHAPE}`] = SHAPE.TYPES.CIRCLE;
-  if ( typeof gf(MODULE_ID, FLAGS.SIDES) === "undefined" ) updates[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;
-  if ( typeof gf(MODULE_ID, FLAGS.POINTS) === "undefined" ) updates[`flags.${MODULE_ID}.${FLAGS.POINTS}`] = 5;
-  if ( typeof gf(MODULE_ID, FLAGS.ELLIPSE.MINOR) === "undefined" ) updates[`flags.${MODULE_ID}.${ELLIPSE.MINOR}`] = 1;
+  if ( noFlag(document, FLAGS.SHAPE) ) updates[`flags.${MODULE_ID}.${FLAGS.SHAPE}`] = SHAPE.TYPES.CIRCLE;
+  if ( noFlag(document, FLAGS.SIDES) ) updates[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;
+  if ( noFlag(document, FLAGS.POINTS) ) updates[`flags.${MODULE_ID}.${FLAGS.POINTS}`] = 5;
+  if ( noFlag(document, FLAGS.ELLIPSE.MINOR) ) updates[`flags.${MODULE_ID}.${ELLIPSE.MINOR}`] = 1;
 
   if ( !isEmpty(updates) ) document.updateSource(updates);
 }
@@ -143,13 +148,16 @@ Hooks.once("devModeReady", ({ registerPackageDebugFlag }) => {
  */
 Hooks.on("canvasReady", async canvas => {
   log("Refreshing templates on canvasReady.");
-  canvas.lighting.placeables.forEach(l => {
-    l.updateSource();
-  });
 
-  canvas.sounds.placeables.forEach(s => {
+  for ( const l of canvas.lighting.placeables ) {
+    await Promise.all(setDefaultFlags(l));
+    l.updateSource();
+  }
+
+  for ( const s of canvas.lighting.sounds ) {
+    await Promise.all(setDefaultFlags(s));
     s.updateSource();
-  });
+  }
 });
 
 /**

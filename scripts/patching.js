@@ -25,7 +25,7 @@ import {
 
 import { MODULE_ID, FLAGS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
-import { log } from "./module.js";
+import { log, getFlag } from "./util.js";
 
 export function registerLightMask() {
 
@@ -146,7 +146,7 @@ function _getPolygonConfigurationLightSource(wrapper) {
   if ( this instanceof GlobalLightSource ) return cfg;
 
   const doc = this.object.document;
-  const shape = doc.getFlag(MODULE_ID, FLAGS.SHAPE) || "circle";
+  const shape = getFlag(doc, FLAGS.SHAPE) || "circle";
   if ( shape === "circle" ) return cfg;
   if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
   else cfg.radius = undefined; // Don't let CWSweep add a circle boundary.
@@ -167,7 +167,7 @@ function _getPolygonConfigurationLightSource(wrapper) {
 function _getPolygonConfigurationSoundSource(wrapper) {
   const cfg = wrapper();
 
-  const shape = this.object.document.getFlag(MODULE_ID, FLAGS.SHAPE) || "circle";
+  const shape = getFlag(this.object.document, FLAGS.SHAPE) || "circle";
   if ( shape === "circle" ) return cfg;
   if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
   else cfg.radius = undefined; // Don't let CWSweep add a circle boundary.

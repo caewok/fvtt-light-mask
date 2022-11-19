@@ -101,9 +101,6 @@ Hooks.on("canvasReady", async canvas => {
   });
 });
 
-
-Hooks.on("drawAmbientLight", drawAmbientLightHook);
-
 /**
  * A hook event that fires when a {@link PlaceableObject} is initially drawn.
  * The dispatched event name replaces "Object" with the named PlaceableObject subclass, i.e. "drawToken".
@@ -111,8 +108,15 @@ Hooks.on("drawAmbientLight", drawAmbientLightHook);
  * @category PlaceableObject
  * @param {PlaceableObject} object    The object instance being drawn
  */
-function drawAmbientLightHook(object) {
-  log(`Drawing light ${object.id}`);
+Hooks.on("drawAmbientLight", setObjectFlagDefaults);
+Hooks.on("drawAmbientSound", setObjectFlagDefaults);
+
+/**
+ * Helper to set the default flags for a light or sound object.
+ * @param {AmbientLight|AmbientSound} object
+ */
+function setObjectFlagDefaults(object) {
+  log(`Drawing ${object.id}`);
 
   // Set default flags if not set already
   // Probably don't need to await each of these, as we are not using the flags yet.
@@ -130,5 +134,5 @@ Hooks.on("renderTokenConfig", injectTokenLightConfiguration);
 
 /* Update the data for a given source */
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
-// Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
+Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);

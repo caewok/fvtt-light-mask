@@ -1,3 +1,9 @@
+## 0.6.0
+Refactor the configuration settings to use css "display:none," which is simpler than the previous approach for hiding/displaying sub-settings when a specific shape is chosen.
+
+Fix issue #12 (token invisibility gets "stuck").
+
+
 ## 0.5.2
 Add v9 compatible tags (not v9 compatible, just to eliminate errors with module updating).
 Updates for v10 stable.

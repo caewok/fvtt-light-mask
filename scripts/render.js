@@ -1,16 +1,55 @@
 /* globals
 foundry,
 renderTemplate,
-AmbientSoundConfig,
-AmbientLightConfig,
-TokenConfig,
 DefaultTokenConfig
 */
 
 "use strict";
 
-import { log } from "./module.js";
-import { KEYS, MODULE_ID, TEMPLATES, HTML_INJECTION } from "./const.js";
+import { log } from "./util.js";
+import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
+import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
+
+
+/**
+ * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
+ */
+export function lightMaskActivateListeners(wrapped, html) {
+  log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
+
+  html.on("change", "#lightmaskshapes", shapeChanged.bind(this));
+  html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
+  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
+
+  return wrapped(html);
+}
+
+function shapeChanged(event) {
+  log("shapeChanged!", event, this);
+  configShapeSubmenu(event.target.value);
+}
+
+function configShapeSubmenu(shape) {
+  const elemPolygon = document.getElementById(CONFIG_BLOCK_IDS.POLYGON);
+  const elemStar = document.getElementById(CONFIG_BLOCK_IDS.STAR);
+  const elemEllipse = document.getElementById(CONFIG_BLOCK_IDS.ELLIPSE);
+
+  elemPolygon.style.display = "none";
+  elemStar.style.display = "none";
+  elemEllipse.style.display = "none";
+
+  switch ( shape ) {
+    case SHAPE.TYPES.POLYGON:
+      elemPolygon.style.display = "block";
+      break;
+    case SHAPE.TYPES.STAR:
+      elemStar.style.display = "block";
+      break;
+    case SHAPE.TYPES.ELLIPSE:
+      elemEllipse.style.display = "block";
+      break;
+  }
+}
 
 /**
  * Inject new template information into the configuration render
@@ -42,34 +81,27 @@ export async function injectTokenLightConfiguration(app, html, data) {
 async function injectConfiguration(app, html, data, type) {
   log(`injectConfiguration for ${type}`, app, html, data);
 
+  // If default token config, make sure the default flags are set if not already.
+  // Setting flags directly fails, so do manually.
+  const isDefaultConfig = app.isPrototype || app instanceof DefaultTokenConfig; // PrototypeToken or DefaultToken
+  if ( isDefaultConfig ) {
+    data.object.flags ??= {};
+    data.object.flags[MODULE_ID] ??= {};
+    data.object.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
+    data.object.flags[MODULE_ID][FLAGS.SIDES] ??= 3;
+    data.object.flags[MODULE_ID][FLAGS.POINTS] ??= 5;
+    data.object.flags[MODULE_ID][FLAGS.ELLIPSE.MINOR] ??= 1;
+  }
+
   // Do not display wall caching selectors for the token prototype or
   // default token config, because those only function at a per-scene level
-  const displayCached = !app.isPrototype && !(app instanceof DefaultTokenConfig);
 
   // Avoid name collisions by using "lightmask"
   const renderData = {};
   renderData.lightmask = {
-    shapes: {
-      circle: "lightmask.Circle",
-      ellipse: "lightmask.Ellipse",
-      polygon: "lightmask.RegularPolygon",
-      star: "lightmask.RegularStar",
-      none: "lightmask.None"
-    },
-    isStar: false,
-    isPolygon: false,
-    isEllipse: false,
-    displayCached
+    shapes: SHAPE.LABELS,
+    displayCached: !isDefaultConfig
   };
-
-  const d = type === "TOKEN" ? "object" : "data";
-  const shape = data[d]?.flags?.lightmask?.shape;
-  if ( shape ) {
-    log(`injectTokenLightConfiguration ${shape}`);
-    renderData.lightmask.isStar = shape === "star";
-    renderData.lightmask.isPolygon = shape === "polygon";
-    renderData.lightmask.isEllipse = shape === "ellipse";
-  }
 
   foundry.utils.mergeObject(data, renderData, {inplace: true});
 
@@ -78,75 +110,8 @@ async function injectConfiguration(app, html, data, type) {
 
   form.append(snippet);
   app.setPosition(app.position);
-}
 
-/**
- * If the shape rotation has changed, update flags so the UI can be updated accordingly.
- * Only relevant for AmbientSoundConfig and TokenConfig. AmbientLightConfig already
- * changes rotation.
- */
-export async function updateRotation(event) {
-  log("updateRotation", event, this);
-
-  let doc = this.document;
-  if ( this instanceof TokenConfig ) doc = this.token;
-
-  const rotation = parseInt(event.target.value);
-  const newData = {};
-  newData[`flags.${MODULE_ID}.${KEYS.ROTATION}`] = rotation;
-
-  const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(doc, previewData, {inplace: true});
-}
-
-/**
- * If the shape selection has changed, update flags so the UI can be updated with
- * parameters specific to that shape.
- * Polygon: Sides, minimum 3.
- * Star: Points, minimum 5.
- */
-export async function updateShapeIndicator(event) {
-  log("updateShapeIndicator", event, this);
-
-  let doc = this.document;
-
-  if ( this instanceof DefaultTokenConfig ) {
-    log("Default token data update");
-    doc = this.token;
-
-  } else if ( this instanceof TokenConfig ) {
-    log("Token data update");
-    doc = this.token;
-  }
-
-  const shape = event.target.value;
-  const newData = {};
-
-  const num_sides = doc.getFlag(MODULE_ID, KEYS.SIDES);
-  const minor = doc.getFlag(MODULE_ID, KEYS.ELLIPSE.MINOR);
-
-  if ( shape === "polygon" && (!num_sides || num_sides < 3) ) {
-    newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 3;
-  } else if ( shape === "star" && (!num_sides || num_sides < 5) ) {
-    newData[`flags.${MODULE_ID}.${KEYS.SIDES}`] = 5;
-  } else if ( shape === "ellipse" ) {
-
-    let major = 0;
-    if ( this instanceof AmbientSoundConfig ) {
-      major = doc.radius;
-    } else if ( this instanceof AmbientLightConfig ) {
-      major = Math.max(doc.config.dim, doc.config.bright);
-    } else if ( this instanceof TokenConfig ) {
-      major = Math.max(doc.light.dim, doc.light.bright);
-    } else {
-      console.warn("updateShapeIndicator|Config object not recognized.", this);
-    }
-
-    if ( !minor || minor <= 0 || minor > major ) {
-      newData[`flags.${MODULE_ID}.${KEYS.ELLIPSE.MINOR}`] = major;
-    }
-  }
-
-  const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(doc, previewData, {inplace: true});
+  const d = type === "TOKEN" ? "object" : "data";
+  const shape = data[d]?.flags?.lightmask?.shape;
+  if ( shape ) configShapeSubmenu(shape);
 }

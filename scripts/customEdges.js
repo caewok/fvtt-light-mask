@@ -3,12 +3,16 @@ getDocumentClass,
 canvas,
 PolygonEdge,
 PolygonVertex,
-Wall
+Wall,
+foundry,
+ui,
+PointSource,
+duplicate
 */
 "use strict";
 
-import { log } from "./module.js";
-import { KEYS, MODULE_ID } from "./const.js";
+import { log, getFlag, noFlag } from "./util.js";
+import { FLAGS, MODULE_ID } from "./const.js";
 import {
   lightMaskUpdateCustomEdgeCache,
   lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
@@ -28,24 +32,12 @@ Thus, it is assumed that this _customEdgeData function will access this, the sou
 */
 
 /**
- * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
- */
-export function lightMaskActivateListeners(wrapped, html) {
-  log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
-
-  html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
-  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
-
-  return wrapped(html);
-}
-
-/**
  * Listener to handle when a user check/unchecks the "Relative" checkbox.
  * If "Relative" is checked, the edges cache must be updated by a directional vector
  * based on the shift in origin.
  * @param {PointerEvent} event    The originating click event
  */
-function onCheckRelative(event) {
+export function onCheckRelative(event) {
   log("lightMaskOnCheckRelative", event, this);
 
   const current_origin = { x: this.object.x,
@@ -53,19 +45,19 @@ function onCheckRelative(event) {
   const newData = {};
   if (event.target.checked) {
     // Update with the new origin
-    newData[`flags.${MODULE_ID}.${KEYS.ORIGIN}`] = current_origin;
+    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN}`] = current_origin;
 
   } else {
     // Set the wall locations based on the last origin because when the user unchecks
     // relative, we want the walls to stay at the last relative position (not their
     // original position)
-    let edges_cache = this.object.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
-    const stored_origin = this.object.getFlag(MODULE_ID, KEYS.ORIGIN) || current_origin;
+    let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
+    const stored_origin = getFlag(this.object, FLAGS.ORIGIN) || current_origin;
     const delta = { dx: current_origin.x - stored_origin.x,
                     dy: current_origin.y - stored_origin.y }; // eslint-disable-line indent
 
     edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    newData[`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+    newData[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 
   const previewData = this._getSubmitData(newData);
@@ -83,7 +75,7 @@ export function onAddWallIDs(event) {
   log("lightMaskOnAddWallIDs", event, this);
 
   let ids_to_add;
-  if ( event.target.name == "flags.lightmask.customWallIDs" ) {
+  if ( event.target.name === "flags.lightmask.customWallIDs" ) {
     ids_to_add = event.target.value;
   } else {
     ids_to_add = controlledWallIDs();
@@ -93,17 +85,17 @@ export function onAddWallIDs(event) {
   log(`Ids to add: ${ids_to_add}`);
 
   // Change the data and refresh...
-  let edges_cache = this.object.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
+  let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
   edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
   const newData = {
-    [`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.IDS}`]: ids_to_add,
-    [`flags.${MODULE_ID}.${KEYS.CUSTOM_WALLS.EDGES}`]: edges_cache
+    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`]: ids_to_add,
+    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`]: edges_cache
   };
 
-  if ( this.object.getFlag(MODULE_ID, KEYS.RELATIVE) ) {
+  if ( !noFlag(this.object, FLAGS.RELATIVE) ) {
     log("Relative key is true; storing origin");
-    newData[`flags.${MODULE_ID}.${KEYS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
+    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
   }
 
   const previewData = this._getSubmitData(newData);
@@ -149,15 +141,15 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
   // See class LightSource and initialize method
   const doc = src.object.document;
 
-  let edges_cache = doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES);
+  let edges_cache = getFlag(doc, FLAGS.CUSTOM_WALLS.EDGES);
   if (!edges_cache || edges_cache.length === 0) return;
 
   edges_cache = duplicate(edges_cache);  // Avoid modifying the cache below
 
-  const is_relative = doc.getFlag(MODULE_ID, KEYS.RELATIVE);
+  const is_relative = getFlag(doc, FLAGS.RELATIVE);
   const origin = this.origin;
   const stored_origin = is_relative
-    ? (doc.getFlag(MODULE_ID, KEYS.ORIGIN) || origin)
+    ? (getFlag(doc, FLAGS.ORIGIN) || origin)
     : origin;
 
   log(`_addCustomEdges origin ${stored_origin.x}, ${stored_origin.y} --> ${origin.x}, ${origin.y}`);
@@ -177,8 +169,8 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
     e._isTemporary = true;
     return e;
   }).filter(w => {
-    return !this.edges.some(e => e.A.equals(w.A) && e.B.equals(w.B)
-      || e.A.equals(w.B) && e.B.equals(w.A))
+    return !(this.edges.some(e => (e.A.equals(w.A) && e.B.equals(w.B))
+      || (e.A.equals(w.B) && e.B.equals(w.A))));
   });
 
   log(`identifyEdgesClockwiseSweepPolygon ${tmpEdges.length} edges`, tmpEdges);

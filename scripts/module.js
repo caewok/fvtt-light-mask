@@ -54,10 +54,10 @@ Hooks.once("init", async function() {
   };
 });
 
-Hooks.once("canvasInit", async function() {
-  log("Canvas Init...");
-
-});
+// Hooks.once("canvasInit", async function() {
+//   log("Canvas Init...");
+//
+// });
 
 // Use canvasReady instead b/c we are redrawing the lights and sounds anyway
 // Hooks.once("drawSoundsLayer", async function() {
@@ -137,9 +137,9 @@ Hooks.once("setup", async function() {
   loadTemplates(Object.values(TEMPLATES));
 });
 
-Hooks.once("ready", async function() {
-  log("Ready...");
-});
+// Hooks.once("ready", async function() {
+//   log("Ready...");
+// });
 
 /**
  * Tell DevMode that we want a flag for debugging this module.

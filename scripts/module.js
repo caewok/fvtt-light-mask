@@ -9,7 +9,7 @@ isEmpty
 "use strict";
 
 import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
-import { log, noFlag, setFlag } from "./util.js";
+import { log, getFlag, noFlag, setFlag } from "./util.js";
 import { registerLightMask } from "./patching.js";
 import { registerPIXIPolygonMethods } from "./shapes/PIXIPolygon.js";
 import { registerPIXIRectangleMethods } from "./shapes/PIXIRectangle.js";
@@ -83,10 +83,20 @@ function setDefaultFlags(object) {
   const promises = [];
   const doc = object.document;
 
-  if ( noFlag(doc, FLAGS.SHAPE) ) promises.push(setFlag(doc, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE));
-  if ( noFlag(doc, FLAGS.SIDES) ) promises.push(setFlag(doc, FLAGS.SIDES, 3));
-  if ( noFlag(doc, FLAGS.POINTS) ) promises.push(setFlag(doc, FLAGS.POINTS, 5));
-  if ( noFlag(doc, FLAGS.ELLIPSE.MINOR) ) promises.push(setFlag(doc, FLAGS.ELLIPSE.MINOR, 1));
+  const shapeFlag = getFlag(doc, FLAGS.SHAPE);
+  if ( typeof shapeFlag === undefined
+    || !SHAPE.TYPESET.has(shapeFlag) ) promises.push(setFlag(doc, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE));
+
+  const sidesFlag = getFlag(doc, FLAGS.SIDES);
+  if ( !Number.isInteger(sidesFlag)
+    || sidesFlag < 3 ) promises.push(setFlag(doc, FLAGS.SIDES, 3));
+
+  const pointsFlag = getFlag(doc, FLAGS.POINTS);
+  if ( !Number.isInteger(pointsFlag)
+    || pointsFlag < 5 ) promises.push(setFlag(doc, FLAGS.POINTS, 5));
+
+  const minorFlag = getFlag(doc, FLAGS.ELLIPSE.MINOR);
+  if ( !Number.isInteger(minorFlag) ) promises.push(setFlag(doc, FLAGS.ELLIPSE.MINOR, 1));
 
   return promises;
 }
@@ -109,6 +119,7 @@ function setDefaultFlags(object) {
  */
 Hooks.on("preCreateAmbientLight", preCreateAmbientSourceHook);
 Hooks.on("preCreateAmbientSound", preCreateAmbientSourceHook);
+Hooks.on("preCreateToken", preCreateAmbientSourceHook);
 
 function preCreateAmbientSourceHook(document, data, options, userId) { // eslint-disable-line no-unused-vars
   log("Hooking preCreateAmbientLight");

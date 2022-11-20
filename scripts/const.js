@@ -46,8 +46,12 @@ export const SHAPE = {
     polygon: "lightmask.RegularPolygon",
     star: "lightmask.RegularStar",
     none: "lightmask.None"
-  }
+  },
+
+  TYPESET: new Set("circle", "ellipse", "polygon", "star", "none")
 };
+
+SHAPE.TYPESET = new Set(Object.values(SHAPE.TYPES));
 
 // Ids for the submenu blocks for configuring shapes.
 export const CONFIG_BLOCK_IDS = {

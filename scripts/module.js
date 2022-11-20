@@ -79,9 +79,8 @@ Hooks.once("canvasInit", async function() {
  * @param {AmbientLight|AmbientSound}
  * @return {Promise[]}
  */
-function setDefaultFlags(object) {
+function setDefaultFlags(doc) {
   const promises = [];
-  const doc = object.document;
 
   const shapeFlag = getFlag(doc, FLAGS.SHAPE);
   if ( typeof shapeFlag === undefined
@@ -166,11 +165,18 @@ Hooks.on("canvasReady", async canvas => {
   ];
 
   // Set default flags as necessary
-  placeables.forEach(ps => ps.forEach(p => promises.push(...setDefaultFlags(p))));
+  placeables.forEach(ps => ps.forEach(p => promises.push(...setDefaultFlags(p.document))));
   await Promise.all(promises);
 
   // Update the light or sound source
   placeables.forEach(ps => ps.forEach(p => p.updateSource()));
+
+  // Also update the Default token setting flags if not set
+  const settings = game.settings.get("core", DefaultTokenConfig.SETTING);
+
+
+
+
 });
 
 /* Render the parameters for a given selected shape */

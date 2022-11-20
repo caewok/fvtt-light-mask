@@ -9,7 +9,7 @@ DefaultTokenConfig
 
 "use strict";
 
-import { log, getFlag } from "./util.js";
+import { log, getFlag, setFlag, noFlag } from "./util.js";
 import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
 import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
 
@@ -83,6 +83,17 @@ export async function injectTokenLightConfiguration(app, html, data) {
  */
 async function injectConfiguration(app, html, data, type) {
   log(`injectConfiguration for ${type}`, app, html, data);
+
+  // If default token config, make sure the default flags are set if not already.
+  // Setting flags directly fails, so do manually.
+  if ( app instanceof DefaultTokenConfig ) {
+    data.object.flags ??= {};
+    data.object.flags[MODULE_ID] ??= {};
+    data.object.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
+    data.object.flags[MODULE_ID][FLAGS.SIDES] ??= 3;
+    data.object.flags[MODULE_ID][FLAGS.POINTS] ??= 5;
+    data.object.flags[MODULE_ID][FLAGS.ELLIPSE.MINOR] ??= 1;
+  }
 
   // Do not display wall caching selectors for the token prototype or
   // default token config, because those only function at a per-scene level

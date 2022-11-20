@@ -1,15 +1,12 @@
 /* globals
 foundry,
 renderTemplate,
-AmbientSoundConfig,
-AmbientLightConfig,
-TokenConfig,
 DefaultTokenConfig
 */
 
 "use strict";
 
-import { log, getFlag, setFlag, noFlag } from "./util.js";
+import { log } from "./util.js";
 import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
 import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
 

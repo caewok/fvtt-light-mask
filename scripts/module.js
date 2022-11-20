@@ -83,7 +83,7 @@ function setDefaultFlags(doc) {
   const promises = [];
 
   const shapeFlag = getFlag(doc, FLAGS.SHAPE);
-  if ( typeof shapeFlag === undefined
+  if ( typeof shapeFlag === "undefined"
     || !SHAPE.TYPESET.has(shapeFlag) ) promises.push(setFlag(doc, FLAGS.SHAPE, SHAPE.TYPES.CIRCLE));
 
   const sidesFlag = getFlag(doc, FLAGS.SIDES);
@@ -156,7 +156,7 @@ Hooks.once("devModeReady", ({ registerPackageDebugFlag }) => {
 Hooks.on("canvasReady", async canvas => {
   log("Refreshing templates on canvasReady.");
 
-  // forEach with joined array is fairly quick: https://jsbench.me/v7laoj4bo2/1
+  // ForEach with joined array is fairly quick: https://jsbench.me/v7laoj4bo2/1
   const promises = [];
   const placeables = [
     canvas.lighting.placeables,
@@ -170,13 +170,6 @@ Hooks.on("canvasReady", async canvas => {
 
   // Update the light or sound source
   placeables.forEach(ps => ps.forEach(p => p.updateSource()));
-
-  // Also update the Default token setting flags if not set
-  const settings = game.settings.get("core", DefaultTokenConfig.SETTING);
-
-
-
-
 });
 
 /* Render the parameters for a given selected shape */

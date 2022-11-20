@@ -86,7 +86,8 @@ async function injectConfiguration(app, html, data, type) {
 
   // If default token config, make sure the default flags are set if not already.
   // Setting flags directly fails, so do manually.
-  if ( app instanceof DefaultTokenConfig ) {
+  const isDefaultConfig = app.isPrototype || app instanceof DefaultTokenConfig; // PrototypeToken or DefaultToken
+  if ( isDefaultConfig ) {
     data.object.flags ??= {};
     data.object.flags[MODULE_ID] ??= {};
     data.object.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
@@ -102,7 +103,7 @@ async function injectConfiguration(app, html, data, type) {
   const renderData = {};
   renderData.lightmask = {
     shapes: SHAPE.LABELS,
-    displayCached: !app.isPrototype && !(app instanceof DefaultTokenConfig)
+    displayCached: !isDefaultConfig
   };
 
   foundry.utils.mergeObject(data, renderData, {inplace: true});

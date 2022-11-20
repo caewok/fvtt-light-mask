@@ -5,8 +5,8 @@ TokenDocument
 
 "use strict";
 
-import { log } from "./module.js";
-import { MODULE_ID, KEYS } from "./const.js";
+import { log, getFlag } from "./util.js";
+import { MODULE_ID, FLAGS } from "./const.js";
 
 /**
  * Hook for preUpdateAmbientLight
@@ -18,19 +18,19 @@ import { MODULE_ID, KEYS } from "./const.js";
 export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
   log(`Hooking preUpdateAmbientLight ${id}!`, doc, new_data, options);
 
-  const ids_to_add = new_data?.flags?.[MODULE_ID]?.[KEYS.CUSTOM_WALLS.IDS];
+  const ids_to_add = new_data?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.IDS];
   if (ids_to_add || ids_to_add === "") {
     // Retrieve the existing cache, if any
-    let edges_cache = doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
+    let edges_cache = getFlag(doc, FLAGS.CUSTOM_WALLS.EDGES) || [];
     edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
 
     // Add the edges cache
-    new_data.flags[`${MODULE_ID}`][`${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+    new_data.flags[`${MODULE_ID}`][`${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 
   // If relative is being set to true: store origin
   // If x or y is being updated, update the origin if relative is already true
-  const relative_key = new_data?.flags?.[MODULE_ID]?.[KEYS.RELATIVE];
+  const relative_key = new_data?.flags?.[MODULE_ID]?.[FLAGS.RELATIVE];
   if (relative_key) {
     // Prefer the new origin position, if any
     const new_origin = {
@@ -44,15 +44,15 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
       new_origin.x += offsetX;
       new_origin.y += offsetY;
     }
-    new_data.flags[`${MODULE_ID}`][`${KEYS.ORIGIN}`] = new_origin;
+    new_data.flags[`${MODULE_ID}`][`${FLAGS.ORIGIN}`] = new_origin;
 
   } else if (relative_key === false) {
     // Set the wall locations based on the last origin because when the user unchecks
     // relative, we want the walls to stay at the last relative position (not their
     // original position)
     // Theoretically possible, but unlikely, that edges cache was modified above
-    let edges_cache = new_data?.flags?.[MODULE_ID]?.[KEYS.CUSTOM_WALLS.EDGES]
-      || doc.getFlag(MODULE_ID, KEYS.CUSTOM_WALLS.EDGES) || [];
+    let edges_cache = new_data?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES]
+      || getFlag(doc, FLAGS.CUSTOM_WALLS.EDGES) || [];
     const new_origin = {
       x: new_data?.x || doc.x,
       y: new_data?.y || doc.y };
@@ -65,13 +65,13 @@ export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
       new_origin.y += offsetY;
     }
 
-    const stored_origin = doc.getFlag(MODULE_ID, KEYS.ORIGIN) || new_origin;
+    const stored_origin = getFlag(doc, FLAGS.ORIGIN) || new_origin;
     const delta = {
       dx: new_origin.x - stored_origin.x,
       dy: new_origin.y - stored_origin.y };
 
     edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    new_data.flags[`${MODULE_ID}`][`${KEYS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+    new_data.flags[`${MODULE_ID}`][`${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
   }
 }
 
@@ -140,11 +140,3 @@ export function lightMaskShiftCustomEdgeCache(edges_cache, delta) {
 
   return edges_cache;
 }
-
-/**
- * Difference (a \ b): create a set that contains those elements of
- * set a that are not in set b.
- */
-Set.prototype.diff = function(b) {
-  return new Set([...this].filter(x => !b.has(x)));
-};

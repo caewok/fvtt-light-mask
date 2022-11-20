@@ -86,26 +86,13 @@ async function injectConfiguration(app, html, data, type) {
 
   // Do not display wall caching selectors for the token prototype or
   // default token config, because those only function at a per-scene level
-  const displayCached = !app.isPrototype && !(app instanceof DefaultTokenConfig);
 
   // Avoid name collisions by using "lightmask"
   const renderData = {};
   renderData.lightmask = {
     shapes: SHAPE.LABELS,
-    isStar: false,
-    isPolygon: false,
-    isEllipse: false,
-    displayCached
+    displayCached: !app.isPrototype && !(app instanceof DefaultTokenConfig)
   };
-
-  const d = type === "TOKEN" ? "object" : "data";
-  const shape = data[d]?.flags?.lightmask?.shape;
-  if ( shape ) {
-    log(`injectTokenLightConfiguration ${shape}`);
-    renderData.lightmask.isStar = shape === "star";
-    renderData.lightmask.isPolygon = shape === "polygon";
-    renderData.lightmask.isEllipse = shape === "ellipse";
-  }
 
   foundry.utils.mergeObject(data, renderData, {inplace: true});
 
@@ -115,5 +102,7 @@ async function injectConfiguration(app, html, data, type) {
   form.append(snippet);
   app.setPosition(app.position);
 
+  const d = type === "TOKEN" ? "object" : "data";
+  const shape = data[d]?.flags?.lightmask?.shape;
   if ( shape ) configShapeSubmenu(shape);
 }

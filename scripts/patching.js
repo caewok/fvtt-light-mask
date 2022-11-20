@@ -53,6 +53,8 @@ export function registerLightMask() {
 
   // ------ TokenConfig ----- //
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
+  libWrapper.register(MODULE_ID, "TokenConfig.prototype._updateObject", _updateObjectTokenConfig, libWrapper.WRAPPER);
+//   libWrapper.register(MODULE_ID, "TokenConfig.prototype.getData", getDataTokenConfig, libWrapper.WRAPPER);
 
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
@@ -119,4 +121,34 @@ function _getPolygonConfigurationSoundSource(wrapper) {
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
 
   return cfg;
+}
+
+/**
+ * Wrap TokenConfig.prototype.getData.
+ * Use the local data, not the database, for the token information so that
+ * flags on the token update properly. E.g., shape indicator.
+ */
+async function getDataTokenConfig(wrapper, options) {
+  const out = await wrapper(options);
+
+  if ( !out.object ) return;
+
+  const existing = this.object.toObject(false);
+  const flags = existing.flags?.[MODULE_ID];
+  if ( typeof flags !== "undefined" ) out.object.flags[MODULE_ID] = flags;
+
+  return out;
+}
+
+// ----- Token Source ----- //
+/**
+ * Wrap TokenConfig.prototype._updateObject
+ * If the flags are being updated, force those to be updated in advance so the token shape
+ * updates correctly.
+ * See https://ptb.discord.com/channels/170995199584108546/811676497965613117/1043909846526865429
+ */
+async function _updateObjectTokenConfig(wrapper, event, formData) {
+  const out = await wrapper(event, formData);
+  this.token.object.updateLightSource();
+  return out;
 }

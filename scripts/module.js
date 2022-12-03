@@ -11,9 +11,13 @@ isEmpty
 import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
 import { log, getFlag, noFlag, setFlag } from "./util.js";
 import { registerLightMask } from "./patching.js";
-import { registerPIXIPolygonMethods } from "./shapes/PIXIPolygon.js";
-import { registerPIXIRectangleMethods } from "./shapes/PIXIRectangle.js";
-import { registerPIXICircleMethods } from "./shapes/PIXICircle.js";
+
+import {
+  registerPIXI,
+  registerRegularPolygons,
+  registerEllipse,
+  registerWeilerAtherton
+} from "./geometry/registration.js";
 
 import {
   injectAmbientLightConfiguration,
@@ -40,16 +44,19 @@ Hooks.once("init", async function() {
   log("Initializing...");
 
   registerLightMask();
-  registerPIXIPolygonMethods();
-  registerPIXIRectangleMethods();
-  registerPIXICircleMethods();
+
+  register([
+    "PIXIPolygon",
+    "PIXICircle",
+    "PIXIRectangle",
+    "RegularPolygons",
+    "WeilerAtherton"
+  ]);
 
   Handlebars.registerHelper("max2", function(a, b) { return Math.max(a, b); });
 
   game.modules.get(MODULE_ID).api = {
     controlledWallIDs,
-    WeilerAthertonClipper,
-    shapes: { RegularPolygon, EquilateralTriangle, Square, Hexagon, RegularStar, Ellipse },
     TempWall
   };
 });

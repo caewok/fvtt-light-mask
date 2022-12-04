@@ -12,12 +12,7 @@ import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
 import { log, getFlag, noFlag, setFlag } from "./util.js";
 import { registerLightMask } from "./patching.js";
 
-import {
-  registerPIXI,
-  registerRegularPolygons,
-  registerEllipse,
-  registerWeilerAtherton
-} from "./geometry/registration.js";
+import { registerGeometry } from "./geometry/registration.js";
 
 import {
   injectAmbientLightConfiguration,
@@ -25,17 +20,6 @@ import {
   injectTokenLightConfiguration } from "./render.js";
 
 import { lightMaskPreUpdateAmbientLight } from "./preUpdate.js";
-
-// ----- WeilerAtherton ----- //
-import { WeilerAthertonClipper } from "./WeilerAtherton.js";
-
-// ----- Shapes ----- //
-import { RegularPolygon } from "./shapes/RegularPolygon.js";
-import { EquilateralTriangle } from "./shapes/EquilateralTriangle.js";
-import { Square } from "./shapes/Square.js";
-import { Hexagon } from "./shapes/Hexagon.js";
-import { RegularStar } from "./shapes/RegularStar.js";
-import { Ellipse } from "./shapes/Ellipse.js";
 
 // ----- ClockwiseSweep ----- //
 import { controlledWallIDs, TempWall } from "./customEdges.js";
@@ -45,13 +29,7 @@ Hooks.once("init", async function() {
 
   registerLightMask();
 
-  register([
-    "PIXIPolygon",
-    "PIXICircle",
-    "PIXIRectangle",
-    "RegularPolygons",
-    "WeilerAtherton"
-  ]);
+  registerGeometry();
 
   Handlebars.registerHelper("max2", function(a, b) { return Math.max(a, b); });
 

@@ -6,12 +6,12 @@ canvas
 
 import { getFlag } from "./util.js";
 import { FLAGS } from "./const.js";
-import { Ellipse } from "./shapes/Ellipse.js";
-import { RegularPolygon } from "./shapes/RegularPolygon.js";
-import { RegularStar } from "./shapes/RegularStar.js";
-import { EquilateralTriangle } from "./shapes/EquilateralTriangle.js";
-import { Square } from "./shapes/Square.js";
-import { Hexagon } from "./shapes/Hexagon.js";
+import { Ellipse } from "./geometry/Ellipse.js";
+import { RegularPolygon } from "./geometry/RegularPolygon/RegularPolygon.js";
+import { RegularStar } from "./geometry/RegularPolygon/RegularStar.js";
+import { EquilateralTriangle } from "./geometry/RegularPolygon/EquilateralTriangle.js";
+import { Square } from "./geometry/RegularPolygon/Square.js";
+import { Hexagon } from "./geometry/RegularPolygon/Hexagon.js";
 
 /**
  * Method added to the light/sound AmbientLight class to create a custom boundary polygon.

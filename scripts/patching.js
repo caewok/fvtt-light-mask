@@ -53,7 +53,6 @@ export function registerLightMask() {
 
   // ------ TokenConfig ----- //
   libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype._updateObject", _updateObjectTokenConfig, libWrapper.WRAPPER);
 
   // ------ DefaultTokenConfig ----- //
   libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
@@ -120,17 +119,4 @@ function _getPolygonConfigurationSoundSource(wrapper) {
   if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
 
   return cfg;
-}
-
-// ----- Token Source ----- //
-/**
- * Wrap TokenConfig.prototype._updateObject
- * If the flags are being updated, force those to be updated in advance so the token shape
- * updates correctly.
- * See https://ptb.discord.com/channels/170995199584108546/811676497965613117/1043909846526865429
- */
-async function _updateObjectTokenConfig(wrapper, event, formData) {
-  const out = await wrapper(event, formData);
-  this.token.object.updateLightSource();
-  return out;
 }

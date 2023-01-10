@@ -1,3 +1,6 @@
+## 0.6.2
+Update geometry lib to v0.1.1.
+
 ## 0.6.1
 Add a shared geometry git submodule.
 Fix for prototype token error on save (issue #13). (Appears to be caused by a workaround for a Foundry bug that has since been addressed.)

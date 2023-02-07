@@ -1,3 +1,6 @@
+## 0.6.4
+Fix for issue #14 (Drag Ruler pathfinding).
+
 ## 0.6.3
 Update geometry lib to v0.1.3.
 

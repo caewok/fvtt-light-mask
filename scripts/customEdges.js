@@ -141,6 +141,9 @@ export function identifyEdgesClockwiseSweepPolygon(wrapped) {
   // See class LightSource and initialize method
   const doc = src.object.document;
 
+  // Issue #14 (drag ruler pathfinding does not use a proper edge)
+  if ( !doc ) return;
+
   let edges_cache = getFlag(doc, FLAGS.CUSTOM_WALLS.EDGES);
   if (!edges_cache || edges_cache.length === 0) return;
 

@@ -21,7 +21,10 @@ import { controlledWallIDs, TempWall } from "./customEdges.js";
 import {
   renderAmbientLightConfigHook,
   renderAmbientSoundConfigHook,
-  renderTokenConfigHook } from "./render.js";
+  renderTokenConfigHook,
+  updateAmbientLightHook,
+  updateAmbientSoundHook,
+  updateTokenHook } from "./render.js";
 
 Hooks.once("init", async function() {
   log("Initializing...");
@@ -165,3 +168,9 @@ Hooks.on("renderTokenConfig", renderTokenConfigHook);
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);
+
+/* Update whenever the flags change */
+Hooks.on("updateAmbientLight", updateAmbientLightHook);
+Hooks.on("updateAmbientSound", updateAmbientSoundHook);
+Hooks.on("updateToken", updateTokenHook);
+

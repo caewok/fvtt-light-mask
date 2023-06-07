@@ -24,18 +24,6 @@ export function renderAmbientLightConfigHook(app, html, data) {
 export async function renderAmbientSoundConfigHook(app, html, data) {
   injectAmbientSoundConfiguration(app, html, data);
   activateListeners(app, html);
-
-  // Allow sound to be previewed.
-  if ( !app.rendered && !app.closing ) {
-    if ( !app.preview ) {
-      const clone = app.document.object.clone();
-      app.preview = clone.document;
-    }
-    await app.preview.object.draw();
-    app.document.object.visible = false;
-    app.preview.object.layer.objects.addChild(app.preview.object);
-    app._previewChanges();
-  }
 }
 
 export function renderTokenConfigHook(app, html, data) {

@@ -26,7 +26,17 @@ export function defaultOptionsAmbientSoundConfig(wrapper) {
  * Store the original values for this object.
  */
 export async function _renderAmbientSoundConfig(wrapper, force, options) {
-  if ( !this.rendered ) this.original = this.object.toObject();
+  // Allow sound to be previewed.
+  if ( !this.rendered && !this.closing ) {
+    if ( !this.preview ) {
+      const clone = this.document.object.clone();
+      this.preview = clone.document;
+    }
+    await this.preview.object.draw();
+    this.document.object.visible = false;
+    this.preview.object.layer.objects.addChild(this.preview.object);
+    this._previewChanges();
+  }
   return wrapper(force, options);
 }
 
@@ -76,10 +86,36 @@ export function _resetPreviewAmbientSoundConfig() {
 }
 
 /**
+ * Wrap getData to add the preview data for the sound.
+ */
+export function getDataSoundConfig(wrapper, options = {}) {
+  const context = wrapper(options);
+  delete context.document; // Replaced below
+  return foundry.utils.mergeObject(context, {
+    data: this.preview.toObject(false),
+    document: this.preview
+  });
+}
+
+/**
  * Wrap AmbientSoundConfig.prototype._updateObject.
  * Reset the preview when updating the object
  */
 export async function _updateObjectAmbientSoundConfig(wrapper, event, formData) {
   this._resetPreview();
   return wrapper(event, formData);
+}
+
+/**
+ * Add AmbientSoundDocument.prototype._onUpdate to update the preview.
+ * See AmbientLightDocument.prototype._onUpdate.
+ */
+export function _onUpdateAmbientSoundDocument(data, options, userId) {
+  Object.values(this.apps).forEach(app => {
+    if ( !app.closing ) app.preview.updateSource(data, options);
+  });
+  this.parent._onUpdate(data, options, userId);
+  Object.values(this.apps).forEach(app => {
+    if ( !app.closing ) app._previewChanges(data);
+  });
 }

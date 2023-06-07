@@ -3,6 +3,7 @@ libWrapper,
 LightSource,
 SoundSource,
 AmbientSoundConfig,
+AmbientSoundDocument,
 canvas,
 GlobalLightSource
 */
@@ -18,7 +19,9 @@ import {
   _onChangeInputAmbientSoundConfig,
   _previewChangesAmbientSoundConfig,
   _resetPreviewAmbientSoundConfig,
-  _updateObjectAmbientSoundConfig } from "./sound_config.js";
+  _updateObjectAmbientSoundConfig,
+  _onUpdateAmbientSoundDocument,
+  getDataSoundConfig } from "./sound_config.js";
 
 import { MODULE_ID, FLAGS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
@@ -66,9 +69,12 @@ export function registerLightMask() {
   wrap("AmbientSoundConfig.prototype.close", closeAmbientSoundConfig);
   wrap("AmbientSoundConfig.prototype._onChangeInput", _onChangeInputAmbientSoundConfig);
   wrap("AmbientSoundConfig.prototype._updateObject", _updateObjectAmbientSoundConfig);
+  wrap("AmbientSoundConfig.prototype.getData", getDataSoundConfig);
 
   addClassMethod(AmbientSoundConfig.prototype, "_previewChanges", _previewChangesAmbientSoundConfig);
   addClassMethod(AmbientSoundConfig.prototype, "_resetPreview", _resetPreviewAmbientSoundConfig);
+
+  addClassMethod(AmbientSoundDocument.prototype, "_onUpdate", _onUpdateAmbientSoundDocument);
 
   // ------ TokenConfig ----- //
   // wrap("TokenConfig.prototype.activateListeners", lightMaskActivateListeners);
@@ -80,14 +86,13 @@ export function registerLightMask() {
   addClassMethod(LightSource.prototype, "boundaryPolygon", boundaryPolygon);
 
   // ----- Sound Source ----- //
-  //wrap("AmbientSound.prototype._refresh", _refreshAmbientSound);
   addClassMethod(SoundSource.prototype, "boundaryPolygon", boundaryPolygon);
 
   // ----- Sweep ----- //
   wrap("LightSource.prototype._getPolygonConfiguration", _getPolygonConfigurationLightSource);
   wrap("SoundSource.prototype._getPolygonConfiguration", _getPolygonConfigurationSoundSource);
   wrapMixed("ClockwiseSweepPolygon.prototype._identifyEdges", identifyEdgesClockwiseSweepPolygon, { perf_mode: libWrapper.PERF_FAST});
-  wrap("ClockwiseSweepPolygon.prototype._compute", computeClockwiseSweep, { perf_mode: libWrapper.PERF_FAST})
+  wrap("ClockwiseSweepPolygon.prototype._compute", computeClockwiseSweep, { perf_mode: libWrapper.PERF_FAST});
 }
 
 // ----- Light Source ----- //

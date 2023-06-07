@@ -1,6 +1,6 @@
 {
   "name": "lightmask",
-  "minimumCoreVersion": "10",
+  "minimumCoreVersion": "11",
   "id": "lightmask",
   "title": "Light/Sound Mask",
   "description": "Mask Foundry VTT lights and sounds",
@@ -8,8 +8,8 @@
   "library": false,
   "manifestPlusVersion": "1.0.0",
   "compatibility": {
-    "minimum": "10.279",
-    "verified": "10.291"
+    "minimum": "11.299",
+    "verified": "11.300"
   },
   "authors": [
     {

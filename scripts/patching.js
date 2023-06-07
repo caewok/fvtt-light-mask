@@ -83,7 +83,7 @@ export function registerLightMask() {
   addClassMethod(LightSource.prototype, "boundaryPolygon", boundaryPolygon);
 
   // ----- Sound Source ----- //
-  wrap("AmbientSound.prototype._refresh", _refreshAmbientSound);
+  //wrap("AmbientSound.prototype._refresh", _refreshAmbientSound);
   addClassMethod(SoundSource.prototype, "boundaryPolygon", boundaryPolygon);
 
   // ----- Sweep ----- //

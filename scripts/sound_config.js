@@ -1,20 +1,28 @@
 /* globals
-foundry,
-game,
-canvas
+foundry
 */
+/* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
 // Allow sounds to be previewed, equivalent to the light preview approach.
 // See AmbientLightConfig
 
 /**
- * Wrapper for AmbientSound.prototype._refresh
- * Because the sound can be created without drawing, need to catch this.
+ * @param {Application} application     The Application instance being rendered
+ * @param {jQuery} html                 The inner HTML of the document that will be displayed and may be modified
+ * @param {object} data                 The object of data used when rendering the application
  */
-export function _refreshAmbientSound(wrapper, options) {
-  if ( !this.field ) this.draw();
-  wrapper(options);
+export async function renderAmbientSoundConfigHook(application, _html, _data) {
+  if ( !application.rendered && !application.closing ) {
+    if ( !application.preview ) {
+      const clone = application.document.object.clone();
+      application.preview = clone.document;
+    }
+    await application.preview.object.draw();
+    application.document.object.visible = false;
+    application.preview.object.layer.objects.addChild(application.preview.object);
+    application._previewChanges();
+  }
 }
 
 /**
@@ -66,9 +74,11 @@ export async function _onChangeInputAmbientSoundConfig(wrapper, event) {
  * @param {object} change   Data which simulates a document update
  */
 export function _previewChangesAmbientSoundConfig(change) {
-  this.object.updateSource(foundry.utils.mergeObject(this.original, change, {inplace: false}), {recursive: false});
-  this.object._onUpdate(change, {render: false}, game.user.id);
+  if ( change ) this.preview.updateSource(change);
+  this.preview.object.renderFlags.set({refresh: true});
+  this.preview.object.updateSource();
 }
+
 
 /**
  * Restore the true data for the AmbientSound document when the form is submitted or closed
@@ -76,11 +86,11 @@ export function _previewChangesAmbientSoundConfig(change) {
  * the light method.
  */
 export function _resetPreviewAmbientSoundConfig() {
-  this._previewChanges(this.original);
-
-  // If the last placeable is null id, pop it b/c it was a temp for the sound refresh
-  const s = canvas.sounds.placeables[canvas.sounds.placeables.length - 1];
-  if ( !s.id ) canvas.sounds.placeables.pop();
+  this.preview.object.destroy({children: true});
+  this.preview = null;
+  this.document.object.visible = true;
+  this.document.object.renderFlags.set({refresh: true});
+  this.document.object.updateSource();
 }
 
 /**

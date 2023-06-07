@@ -115,3 +115,47 @@ async function injectConfiguration(app, html, data, type) {
   const shape = data[d]?.flags?.lightmask?.shape;
   if ( shape ) configShapeSubmenu(shape);
 }
+
+/**
+ * Hook updateAmbientLight to set render flag based on change to the config.
+ * @param {Document} document                       The existing Document which was updated
+ * @param {object} change                           Differential data that was used to update the document
+ * @param {DocumentModificationContext} options     Additional options which modified the update request
+ * @param {string} userId                           The ID of the User who triggered the update workflow
+ */
+export function updateAmbientLightHook(doc, data, _options, _userId) {
+  const changeFlags = [
+    `flags.${MODULE_ID}.${FLAGS.SHAPE}`,
+    `flags.${MODULE_ID}.${FLAGS.SIDES}`,
+    `flags.${MODULE_ID}.${FLAGS.POINTS}`,
+    `flags.${MODULE_ID}.${FLAGS.RELATIVE}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`,
+    `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
+  ];
+
+  const changed = new Set(Object.keys(flattenObject(data)));
+  if ( changeFlags.some(k => changed.has(k)) ) doc.object.renderFlags.set({
+    refresh: true
+  });
+}
+
+export function updateAmbientSoundHook(doc, data, _options, _userId) {
+  const changeFlags = [
+    `flags.${MODULE_ID}.${FLAGS.SHAPE}`,
+    `flags.${MODULE_ID}.${FLAGS.SIDES}`,
+    `flags.${MODULE_ID}.${FLAGS.POINTS}`,
+    `flags.${MODULE_ID}.${FLAGS.ROTATION}`,
+    `flags.${MODULE_ID}.${FLAGS.RELATIVE}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`,
+    `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
+  ];
+
+  const changed = new Set(Object.keys(flattenObject(data)));
+  if ( changeFlags.some(k => changed.has(k)) ) doc.object.renderFlags.set({
+    refresh: true
+  });
+}
+
+

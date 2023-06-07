@@ -13,7 +13,6 @@ import {
   computeClockwiseSweep } from "./customEdges.js";
 import { lightMaskActivateListeners } from "./render.js";
 import {
-  _refreshAmbientSound,
   defaultOptionsAmbientSoundConfig,
   _renderAmbientSoundConfig,
   closeAmbientSoundConfig,

@@ -14,15 +14,19 @@ import { registerLightMask } from "./patching.js";
 
 import { registerGeometry } from "./geometry/registration.js";
 
-import {
-  injectAmbientLightConfiguration,
-  injectAmbientSoundConfiguration,
-  injectTokenLightConfiguration } from "./render.js";
+
 
 import { lightMaskPreUpdateAmbientLight } from "./preUpdate.js";
 
 // ----- ClockwiseSweep ----- //
 import { controlledWallIDs, TempWall } from "./customEdges.js";
+
+// Hooks
+import { renderAmbientSoundConfigHook } from "./sound_config.js";
+import {
+  injectAmbientLightConfiguration,
+  injectAmbientSoundConfiguration,
+  injectTokenLightConfiguration } from "./render.js";
 
 Hooks.once("init", async function() {
   log("Initializing...");
@@ -84,6 +88,8 @@ function setDefaultFlags(doc) {
 
   return promises;
 }
+
+
 
 /**
  * A hook event that fires for every Document type before execution of a creation workflow. Substitute the
@@ -166,3 +172,6 @@ Hooks.on("renderTokenConfig", injectTokenLightConfiguration);
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);
+
+/* Hook the sound config render to construct a preview for the sound */
+Hooks.on("renderAmbientSoundConfig", renderAmbientSoundConfigHook);

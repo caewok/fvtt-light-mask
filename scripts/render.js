@@ -187,9 +187,9 @@ export function updateTokenHook(doc, data, _options, _userId) {
   ];
 
   const changed = new Set(Object.keys(flattenObject(data)));
-  if ( changeFlags.some(k => changed.has(k)) ) doc.object.renderFlags.set({
-    refresh: true
-  });
+  if ( changeFlags.some(k => changed.has(k)) ) {
+    doc.object.updateLightSource();
+  }
 }
 
 

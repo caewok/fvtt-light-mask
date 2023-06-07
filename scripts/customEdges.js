@@ -61,7 +61,7 @@ export function onCheckRelative(event) {
   }
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.object, previewData, {inplace: true});
+  this._previewChanges(previewData);
   this.render();
 }
 
@@ -99,8 +99,7 @@ export function onAddWallIDs(event) {
   }
 
   const previewData = this._getSubmitData(newData);
-  foundry.utils.mergeObject(this.object, previewData, {inplace: true});
-
+  this._previewChanges(previewData);
   this.render();
 }
 
@@ -280,5 +279,10 @@ export class TempWall {
     other.intersectsWith.set(this, x);
   }
 
-  _removeIntersections = Wall.prototype._removeIntersections;
+  _removeIntersections() {
+    for ( const other of this.intersectsWith.keys() ) {
+      other.intersectsWith.delete(this);
+    }
+    this.intersectsWith.clear();
+  }
 }

@@ -8,24 +8,6 @@ foundry
 // See AmbientLightConfig
 
 /**
- * @param {Application} application     The Application instance being rendered
- * @param {jQuery} html                 The inner HTML of the document that will be displayed and may be modified
- * @param {object} data                 The object of data used when rendering the application
- */
-export async function renderAmbientSoundConfigHook(application, _html, _data) {
-  if ( !application.rendered && !application.closing ) {
-    if ( !application.preview ) {
-      const clone = application.document.object.clone();
-      application.preview = clone.document;
-    }
-    await application.preview.object.draw();
-    application.document.object.visible = false;
-    application.preview.object.layer.objects.addChild(application.preview.object);
-    application._previewChanges();
-  }
-}
-
-/**
  * Wrapper for AmbientSoundConfig.defaultOptions
  * Make the sound config window resize height automatically, to accommodate
  * different shape parameters.

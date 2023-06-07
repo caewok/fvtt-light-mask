@@ -11,22 +11,17 @@ isEmpty
 import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
 import { log, getFlag, noFlag, setFlag } from "./util.js";
 import { registerLightMask } from "./patching.js";
-
 import { registerGeometry } from "./geometry/registration.js";
-
-
-
 import { lightMaskPreUpdateAmbientLight } from "./preUpdate.js";
 
 // ----- ClockwiseSweep ----- //
 import { controlledWallIDs, TempWall } from "./customEdges.js";
 
 // Hooks
-import { renderAmbientSoundConfigHook } from "./sound_config.js";
 import {
-  injectAmbientLightConfiguration,
-  injectAmbientSoundConfiguration,
-  injectTokenLightConfiguration } from "./render.js";
+  renderAmbientLightConfigHook,
+  renderAmbientSoundConfigHook,
+  renderTokenConfigHook } from "./render.js";
 
 Hooks.once("init", async function() {
   log("Initializing...");
@@ -88,8 +83,6 @@ function setDefaultFlags(doc) {
 
   return promises;
 }
-
-
 
 /**
  * A hook event that fires for every Document type before execution of a creation workflow. Substitute the
@@ -164,14 +157,11 @@ Hooks.on("canvasReady", async canvas => {
 });
 
 /* Render the parameters for a given selected shape */
-Hooks.on("renderAmbientLightConfig", injectAmbientLightConfiguration);
-Hooks.on("renderAmbientSoundConfig", injectAmbientSoundConfiguration);
-Hooks.on("renderTokenConfig", injectTokenLightConfiguration);
+Hooks.on("renderAmbientLightConfig", renderAmbientLightConfigHook);
+Hooks.on("renderAmbientSoundConfig", renderAmbientSoundConfigHook);
+Hooks.on("renderTokenConfig", renderTokenConfigHook);
 
 /* Update the data for a given source */
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);
-
-/* Hook the sound config render to construct a preview for the sound */
-Hooks.on("renderAmbientSoundConfig", renderAmbientSoundConfigHook);

@@ -11,7 +11,6 @@ GlobalLightSource
 import {
   identifyEdgesClockwiseSweepPolygon,
   computeClockwiseSweep } from "./customEdges.js";
-import { lightMaskActivateListeners } from "./render.js";
 import {
   defaultOptionsAmbientSoundConfig,
   _renderAmbientSoundConfig,
@@ -59,10 +58,9 @@ function addClassMethod(cl, name, fn) {
 export function registerLightMask() {
 
   // ------ AmbientLightConfig ----- //
-  wrap("AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners);
 
   // ------ AmbientSoundConfig ----- //
-  wrap("AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners);
+  // wrap("AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners);
   wrap("AmbientSoundConfig.defaultOptions", defaultOptionsAmbientSoundConfig);
   wrap("AmbientSoundConfig.prototype._render", _renderAmbientSoundConfig);
   wrap("AmbientSoundConfig.prototype.close", closeAmbientSoundConfig);
@@ -73,10 +71,10 @@ export function registerLightMask() {
   addClassMethod(AmbientSoundConfig.prototype, "_resetPreview", _resetPreviewAmbientSoundConfig);
 
   // ------ TokenConfig ----- //
-  wrap("TokenConfig.prototype.activateListeners", lightMaskActivateListeners);
+  // wrap("TokenConfig.prototype.activateListeners", lightMaskActivateListeners);
 
   // ------ DefaultTokenConfig ----- //
-  wrap("DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners);
+  // wrap("DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners);
 
   // ----- Light Source ----- //
   addClassMethod(LightSource.prototype, "boundaryPolygon", boundaryPolygon);

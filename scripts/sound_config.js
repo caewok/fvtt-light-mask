@@ -1,21 +1,11 @@
 /* globals
-foundry,
-game,
-canvas
+foundry
 */
+/* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
 // Allow sounds to be previewed, equivalent to the light preview approach.
 // See AmbientLightConfig
-
-/**
- * Wrapper for AmbientSound.prototype._refresh
- * Because the sound can be created without drawing, need to catch this.
- */
-export function _refreshAmbientSound(wrapper, options) {
-  if ( !this.field ) this.draw();
-  wrapper(options);
-}
 
 /**
  * Wrapper for AmbientSoundConfig.defaultOptions
@@ -36,7 +26,17 @@ export function defaultOptionsAmbientSoundConfig(wrapper) {
  * Store the original values for this object.
  */
 export async function _renderAmbientSoundConfig(wrapper, force, options) {
-  if ( !this.rendered ) this.original = this.object.toObject();
+  // Allow sound to be previewed.
+  if ( !this.rendered && !this.closing ) {
+    if ( !this.preview ) {
+      const clone = this.document.object.clone();
+      this.preview = clone.document;
+    }
+    await this.preview.object.draw();
+    this.document.object.visible = false;
+    this.preview.object.layer.objects.addChild(this.preview.object);
+    this._previewChanges();
+  }
   return wrapper(force, options);
 }
 
@@ -66,9 +66,11 @@ export async function _onChangeInputAmbientSoundConfig(wrapper, event) {
  * @param {object} change   Data which simulates a document update
  */
 export function _previewChangesAmbientSoundConfig(change) {
-  this.object.updateSource(foundry.utils.mergeObject(this.original, change, {inplace: false}), {recursive: false});
-  this.object._onUpdate(change, {render: false}, game.user.id);
+  if ( change ) this.preview.updateSource(change);
+  this.preview.object.renderFlags.set({refresh: true});
+  this.preview.object.updateSource();
 }
+
 
 /**
  * Restore the true data for the AmbientSound document when the form is submitted or closed
@@ -76,11 +78,23 @@ export function _previewChangesAmbientSoundConfig(change) {
  * the light method.
  */
 export function _resetPreviewAmbientSoundConfig() {
-  this._previewChanges(this.original);
+  this.preview.object.destroy({children: true});
+  this.preview = null;
+  this.document.object.visible = true;
+  this.document.object.renderFlags.set({refresh: true});
+  this.document.object.updateSource();
+}
 
-  // If the last placeable is null id, pop it b/c it was a temp for the sound refresh
-  const s = canvas.sounds.placeables[canvas.sounds.placeables.length - 1];
-  if ( !s.id ) canvas.sounds.placeables.pop();
+/**
+ * Wrap getData to add the preview data for the sound.
+ */
+export function getDataSoundConfig(wrapper, options = {}) {
+  const context = wrapper(options);
+  delete context.document; // Replaced below
+  return foundry.utils.mergeObject(context, {
+    data: this.preview.toObject(false),
+    document: this.preview
+  });
 }
 
 /**
@@ -90,4 +104,18 @@ export function _resetPreviewAmbientSoundConfig() {
 export async function _updateObjectAmbientSoundConfig(wrapper, event, formData) {
   this._resetPreview();
   return wrapper(event, formData);
+}
+
+/**
+ * Add AmbientSoundDocument.prototype._onUpdate to update the preview.
+ * See AmbientLightDocument.prototype._onUpdate.
+ */
+export function _onUpdateAmbientSoundDocument(data, options, userId) {
+  Object.values(this.apps).forEach(app => {
+    if ( !app.closing ) app.preview.updateSource(data, options);
+  });
+  this.parent._onUpdate(data, options, userId);
+  Object.values(this.apps).forEach(app => {
+    if ( !app.closing ) app._previewChanges(data);
+  });
 }

@@ -11,18 +11,20 @@ isEmpty
 import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
 import { log, getFlag, noFlag, setFlag } from "./util.js";
 import { registerLightMask } from "./patching.js";
-
 import { registerGeometry } from "./geometry/registration.js";
-
-import {
-  injectAmbientLightConfiguration,
-  injectAmbientSoundConfiguration,
-  injectTokenLightConfiguration } from "./render.js";
-
 import { lightMaskPreUpdateAmbientLight } from "./preUpdate.js";
 
 // ----- ClockwiseSweep ----- //
 import { controlledWallIDs, TempWall } from "./customEdges.js";
+
+// Hooks
+import {
+  renderAmbientLightConfigHook,
+  renderAmbientSoundConfigHook,
+  renderTokenConfigHook,
+  updateAmbientLightHook,
+  updateAmbientSoundHook,
+  updateTokenHook } from "./render.js";
 
 Hooks.once("init", async function() {
   log("Initializing...");
@@ -158,11 +160,17 @@ Hooks.on("canvasReady", async canvas => {
 });
 
 /* Render the parameters for a given selected shape */
-Hooks.on("renderAmbientLightConfig", injectAmbientLightConfiguration);
-Hooks.on("renderAmbientSoundConfig", injectAmbientSoundConfiguration);
-Hooks.on("renderTokenConfig", injectTokenLightConfiguration);
+Hooks.on("renderAmbientLightConfig", renderAmbientLightConfigHook);
+Hooks.on("renderAmbientSoundConfig", renderAmbientSoundConfigHook);
+Hooks.on("renderTokenConfig", renderTokenConfigHook);
 
 /* Update the data for a given source */
 Hooks.on("preUpdateToken", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientLight", lightMaskPreUpdateAmbientLight);
 Hooks.on("preUpdateAmbientSound", lightMaskPreUpdateAmbientLight);
+
+/* Update whenever the flags change */
+Hooks.on("updateAmbientLight", updateAmbientLightHook);
+Hooks.on("updateAmbientSound", updateAmbientSoundHook);
+Hooks.on("updateToken", updateTokenHook);
+

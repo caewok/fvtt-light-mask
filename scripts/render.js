@@ -1,27 +1,43 @@
 /* globals
+flattenObject,
 foundry,
 renderTemplate,
 DefaultTokenConfig
 */
-
+/* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
 import { log } from "./util.js";
 import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
 import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
 
+/**
+ * @param {Application} application     The Application instance being rendered
+ * @param {jQuery} html                 The inner HTML of the document that will be displayed and may be modified
+ * @param {object} data                 The object of data used when rendering the application
+ */
+export function renderAmbientLightConfigHook(app, html, data) {
+  injectAmbientLightConfiguration(app, html, data);
+  activateListeners(app, html);
+}
+
+export async function renderAmbientSoundConfigHook(app, html, data) {
+  injectAmbientSoundConfiguration(app, html, data);
+  activateListeners(app, html);
+}
+
+export function renderTokenConfigHook(app, html, data) {
+  injectTokenLightConfiguration(app, html, data);
+  activateListeners(app, html);
+}
 
 /**
- * Wrap activateListeners to catch when user clicks the button to add custom wall ids.
+ * Catch when user clicks the button to add custom wall ids, changes the shape, or clicks the checkbox.
  */
-export function lightMaskActivateListeners(wrapped, html) {
-  log(`lightMaskActivateListeners html[0] is length ${html[0].length}`, html, this);
-
-  html.on("change", "#lightmaskshapes", shapeChanged.bind(this));
-  html.on("click", ".saveWallsButton", onAddWallIDs.bind(this));
-  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(this));
-
-  return wrapped(html);
+function activateListeners(app, html) {
+  html.on("change", "#lightmaskshapes", shapeChanged.bind(app));
+  html.on("click", ".saveWallsButton", onAddWallIDs.bind(app));
+  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(app));
 }
 
 function shapeChanged(event) {
@@ -115,3 +131,65 @@ async function injectConfiguration(app, html, data, type) {
   const shape = data[d]?.flags?.lightmask?.shape;
   if ( shape ) configShapeSubmenu(shape);
 }
+
+/**
+ * Hook updateAmbientLight to set render flag based on change to the config.
+ * @param {Document} document                       The existing Document which was updated
+ * @param {object} change                           Differential data that was used to update the document
+ * @param {DocumentModificationContext} options     Additional options which modified the update request
+ * @param {string} userId                           The ID of the User who triggered the update workflow
+ */
+export function updateAmbientLightHook(doc, data, _options, _userId) {
+  const changeFlags = [
+    `flags.${MODULE_ID}.${FLAGS.SHAPE}`,
+    `flags.${MODULE_ID}.${FLAGS.SIDES}`,
+    `flags.${MODULE_ID}.${FLAGS.POINTS}`,
+    `flags.${MODULE_ID}.${FLAGS.RELATIVE}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`,
+    `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
+  ];
+
+  const changed = new Set(Object.keys(flattenObject(data)));
+  if ( changeFlags.some(k => changed.has(k)) ) doc.object.renderFlags.set({
+    refresh: true
+  });
+}
+
+export function updateAmbientSoundHook(doc, data, _options, _userId) {
+  const changeFlags = [
+    `flags.${MODULE_ID}.${FLAGS.SHAPE}`,
+    `flags.${MODULE_ID}.${FLAGS.SIDES}`,
+    `flags.${MODULE_ID}.${FLAGS.POINTS}`,
+    `flags.${MODULE_ID}.${FLAGS.ROTATION}`,
+    `flags.${MODULE_ID}.${FLAGS.RELATIVE}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`,
+    `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
+  ];
+
+  const changed = new Set(Object.keys(flattenObject(data)));
+  if ( changeFlags.some(k => changed.has(k)) ) doc.object.renderFlags.set({
+    refresh: true
+  });
+}
+
+export function updateTokenHook(doc, data, _options, _userId) {
+  const changeFlags = [
+    `flags.${MODULE_ID}.${FLAGS.SHAPE}`,
+    `flags.${MODULE_ID}.${FLAGS.SIDES}`,
+    `flags.${MODULE_ID}.${FLAGS.POINTS}`,
+    `flags.${MODULE_ID}.${FLAGS.ROTATION}`,
+    `flags.${MODULE_ID}.${FLAGS.RELATIVE}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`,
+    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`,
+    `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
+  ];
+
+  const changed = new Set(Object.keys(flattenObject(data)));
+  if ( changeFlags.some(k => changed.has(k)) ) {
+    doc.object.updateLightSource();
+  }
+}
+
+

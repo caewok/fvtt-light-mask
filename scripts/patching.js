@@ -3,6 +3,7 @@ libWrapper,
 LightSource,
 SoundSource,
 AmbientSoundConfig,
+AmbientSoundDocument,
 canvas,
 GlobalLightSource
 */
@@ -11,72 +12,87 @@ GlobalLightSource
 import {
   identifyEdgesClockwiseSweepPolygon,
   computeClockwiseSweep } from "./customEdges.js";
-import { lightMaskActivateListeners } from "./render.js";
 import {
-  _refreshAmbientSound,
   defaultOptionsAmbientSoundConfig,
   _renderAmbientSoundConfig,
   closeAmbientSoundConfig,
   _onChangeInputAmbientSoundConfig,
   _previewChangesAmbientSoundConfig,
   _resetPreviewAmbientSoundConfig,
-  _updateObjectAmbientSoundConfig } from "./sound_config.js";
+  _updateObjectAmbientSoundConfig,
+  _onUpdateAmbientSoundDocument,
+  getDataSoundConfig } from "./sound_config.js";
 
 import { MODULE_ID, FLAGS } from "./const.js";
 import { boundaryPolygon } from "./boundaryPolygon.js";
 import { getFlag } from "./util.js";
 
+/**
+ * Helper to wrap methods.
+ * @param {string} method       Method to wrap
+ * @param {function} fn         Function to use for the wrap
+ * @param {object} [options]    Options passed to libWrapper.register. E.g., { perf_mode: libWrapper.PERF_FAST}
+ */
+function wrap(method, fn, options = {}) { libWrapper.register(MODULE_ID, method, fn, libWrapper.WRAPPER, options); }
+
+/**
+ * Helper to wrap methods using mixed.
+ * @param {string} method       Method to wrap
+ * @param {function} fn         Function to use for the wrap
+ * @param {object} [options]    Options passed to libWrapper.register. E.g., { perf_mode: libWrapper.PERF_FAST}
+ */
+function wrapMixed(method, fn, options = {}) { libWrapper.register(MODULE_ID, method, fn, libWrapper.MIXED, options); }
+
+
+/**
+ * Helper to add a method to a class.
+ * @param {class} cl      Either Class.prototype or Class
+ * @param {string} name   Name of the method
+ * @param {function} fn   Function to use for the method
+ */
+function addClassMethod(cl, name, fn) {
+  Object.defineProperty(cl, name, {
+    value: fn,
+    writable: true,
+    configurable: true
+  });
+}
+
 export function registerLightMask() {
 
   // ------ AmbientLightConfig ----- //
-  libWrapper.register(MODULE_ID, "AmbientLightConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
 
   // ------ AmbientSoundConfig ----- //
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.defaultOptions", defaultOptionsAmbientSoundConfig, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype._render", _renderAmbientSoundConfig, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype.close", closeAmbientSoundConfig, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype._onChangeInput", _onChangeInputAmbientSoundConfig, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "AmbientSoundConfig.prototype._updateObject", _updateObjectAmbientSoundConfig, libWrapper.WRAPPER);
+  // wrap("AmbientSoundConfig.prototype.activateListeners", lightMaskActivateListeners);
+  wrap("AmbientSoundConfig.defaultOptions", defaultOptionsAmbientSoundConfig);
+  wrap("AmbientSoundConfig.prototype._render", _renderAmbientSoundConfig);
+  wrap("AmbientSoundConfig.prototype.close", closeAmbientSoundConfig);
+  wrap("AmbientSoundConfig.prototype._onChangeInput", _onChangeInputAmbientSoundConfig);
+  wrap("AmbientSoundConfig.prototype._updateObject", _updateObjectAmbientSoundConfig);
+  wrap("AmbientSoundConfig.prototype.getData", getDataSoundConfig);
 
-  Object.defineProperty(AmbientSoundConfig.prototype, "_previewChanges", {
-    value: _previewChangesAmbientSoundConfig,
-    writable: true,
-    configurable: true
-  });
+  addClassMethod(AmbientSoundConfig.prototype, "_previewChanges", _previewChangesAmbientSoundConfig);
+  addClassMethod(AmbientSoundConfig.prototype, "_resetPreview", _resetPreviewAmbientSoundConfig);
 
-  Object.defineProperty(AmbientSoundConfig.prototype, "_resetPreview", {
-    value: _resetPreviewAmbientSoundConfig,
-    writable: true,
-    configurable: true
-  });
+  addClassMethod(AmbientSoundDocument.prototype, "_onUpdate", _onUpdateAmbientSoundDocument);
 
   // ------ TokenConfig ----- //
-  libWrapper.register(MODULE_ID, "TokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
+  // wrap("TokenConfig.prototype.activateListeners", lightMaskActivateListeners);
 
   // ------ DefaultTokenConfig ----- //
-  libWrapper.register(MODULE_ID, "DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners, libWrapper.WRAPPER);
+  // wrap("DefaultTokenConfig.prototype.activateListeners", lightMaskActivateListeners);
 
   // ----- Light Source ----- //
-  Object.defineProperty(LightSource.prototype, "boundaryPolygon", {
-    value: boundaryPolygon,
-    writable: true,
-    configurable: true
-  });
+  addClassMethod(LightSource.prototype, "boundaryPolygon", boundaryPolygon);
 
   // ----- Sound Source ----- //
-  libWrapper.register(MODULE_ID, "AmbientSound.prototype._refresh", _refreshAmbientSound, libWrapper.WRAPPER);
-  Object.defineProperty(SoundSource.prototype, "boundaryPolygon", {
-    value: boundaryPolygon,
-    writable: true,
-    configurable: true
-  });
+  addClassMethod(SoundSource.prototype, "boundaryPolygon", boundaryPolygon);
 
   // ----- Sweep ----- //
-  libWrapper.register(MODULE_ID, "LightSource.prototype._getPolygonConfiguration", _getPolygonConfigurationLightSource, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "SoundSource.prototype._getPolygonConfiguration", _getPolygonConfigurationSoundSource, libWrapper.WRAPPER);
-  libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._identifyEdges", identifyEdgesClockwiseSweepPolygon, libWrapper.MIXED, { perf_mode: libWrapper.PERF_FAST});
-  libWrapper.register(MODULE_ID, "ClockwiseSweepPolygon.prototype._compute", computeClockwiseSweep, libWrapper.WRAPPER, { perf_mode: libWrapper.PERF_FAST});
+  wrap("LightSource.prototype._getPolygonConfiguration", _getPolygonConfigurationLightSource);
+  wrap("SoundSource.prototype._getPolygonConfiguration", _getPolygonConfigurationSoundSource);
+  wrapMixed("ClockwiseSweepPolygon.prototype._identifyEdges", identifyEdgesClockwiseSweepPolygon, { perf_mode: libWrapper.PERF_FAST});
+  wrap("ClockwiseSweepPolygon.prototype._compute", computeClockwiseSweep, { perf_mode: libWrapper.PERF_FAST});
 }
 
 // ----- Light Source ----- //

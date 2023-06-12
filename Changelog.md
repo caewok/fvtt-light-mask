@@ -1,3 +1,6 @@
+## 0.7.1
+Update geometry lib to v0.2.1.
+
 ## 0.7.0
 Updated for v11. Update geometry lib to v0.2.0.
 

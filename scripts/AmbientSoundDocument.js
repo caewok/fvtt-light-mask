@@ -19,6 +19,7 @@ function _onUpdate(data, options, userId) {
   Object.values(this.apps).forEach(app => {
     if ( !app.closing ) app._previewChanges(data);
   });
+  if ( this.object ) this.object.updateSource(); // Force the sound placeable to refresh on update. Issue #15.
 }
 
 PATCHES.BASIC.METHODS = { _onUpdate };

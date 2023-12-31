@@ -1,22 +1,35 @@
 /* globals
 canvas,
+isEmpty,
 TokenDocument
 */
-
+/* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-import { log, getFlag } from "./util.js";
-import { MODULE_ID, FLAGS } from "./const.js";
+import { log, getFlag, noFlag } from "./util.js";
+import { MODULE_ID, FLAGS, SHAPE } from "./const.js";
 
 /**
- * Hook for preUpdateAmbientLight
+ * Hook for preCreateAmbientLight, etc.
+ */
+export function preCreateAmbientSourceHook(document, data, options, userId) { // eslint-disable-line no-unused-vars
+  const updates = {};
+  if ( noFlag(document, FLAGS.SHAPE) ) updates[`flags.${MODULE_ID}.${FLAGS.SHAPE}`] = SHAPE.TYPES.CIRCLE;
+  if ( noFlag(document, FLAGS.SIDES) ) updates[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;
+  if ( noFlag(document, FLAGS.POINTS) ) updates[`flags.${MODULE_ID}.${FLAGS.POINTS}`] = 5;
+  if ( noFlag(document, FLAGS.ELLIPSE.MINOR) ) updates[`flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`] = 1;
+  if ( !isEmpty(updates) ) document.updateSource(updates);
+}
+
+
+/**
+ * Hook for preUpdateAmbientLight, etc.
  * @param {AmbientLightDocument} doc
  * @param {Object} data
  * @param {Object} options {diff: true, render: true}
  * @param {string} id
  */
-export function lightMaskPreUpdateAmbientLight(doc, new_data, options, id) {
-  log(`Hooking preUpdateAmbientLight ${id}!`, doc, new_data, options);
+export function preUpdateAmbientSourceHook(doc, new_data, _options, _id) {
 
   const ids_to_add = new_data?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.IDS];
   if (ids_to_add || ids_to_add === "") {

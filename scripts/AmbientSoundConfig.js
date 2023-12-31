@@ -62,8 +62,6 @@ async function _render(wrapper, force, options) {
     this.preview.object.layer.objects.addChild(this.preview.object);
     this._previewChanges();
   }
-  console.log("render");
-
   return wrapper(force, options);
 }
 

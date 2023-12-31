@@ -4,8 +4,28 @@ foundry
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-// Allow sounds to be previewed, equivalent to the light preview approach.
-// See AmbientLightConfig
+import { injectConfiguration, activateListeners } from "./render.js";
+
+// Patches for the AmbientSoundConfig class
+export const PATCHES = {};
+PATCHES.BASIC = {};
+
+// ----- NOTE: Hooks ----- //
+
+/**
+ * @param {Application} application     The Application instance being rendered
+ * @param {jQuery} html                 The inner HTML of the document that will be displayed and may be modified
+ * @param {object} data                 The object of data used when rendering the application
+ */
+function renderAmbientSoundConfig(app, html, data) {
+  injectConfiguration(app, html, data, "SOUND"); // Async
+  activateListeners(app, html);
+}
+
+PATCHES.BASIC.HOOKS = { renderAmbientSoundConfig };
+
+
+// ----- NOTE: Static wraps ----- //
 
 /**
  * Wrapper for AmbientSoundConfig.defaultOptions
@@ -14,18 +34,22 @@ foundry
  * @param {Function} wrapper
  * @return {Object} See AmbientSoundConfig.defaultOptions.
  */
-export function defaultOptionsAmbientSoundConfig(wrapper) {
+function defaultOptions(wrapper) {
   const options = wrapper();
   return foundry.utils.mergeObject(options, {
     height: "auto"
   });
 }
 
+PATCHES.BASIC.STATIC_WRAPS = { defaultOptions };
+
+// ----- NOTE: Wraps ----- //
+
 /**
  * Wrap AmbientSoundConfig.prototype._render.
  * Store the original values for this object.
  */
-export async function _renderAmbientSoundConfig(wrapper, force, options) {
+async function _render(wrapper, force, options) {
   // Allow sound to be previewed.
   if ( !this.rendered && !this.closing ) {
     if ( !this.preview ) {
@@ -44,7 +68,7 @@ export async function _renderAmbientSoundConfig(wrapper, force, options) {
  * Wrap AmbientSoundConfig.prototype.close
  * Reset preview if necessary.
  */
-export async function closeAmbientSoundConfig(wrapper, options={}) {
+async function close(wrapper, options={}) {
   if ( !options.force ) this._resetPreview();
   return wrapper(options);
 }
@@ -53,42 +77,16 @@ export async function closeAmbientSoundConfig(wrapper, options={}) {
  * Wrap AmbientSoundConfig.prototype._onChangeInput
  * Update preview data.
  */
-export async function _onChangeInputAmbientSoundConfig(wrapper, event) {
+async function _onChangeInput(wrapper, event) {
   await wrapper(event);
   const previewData = this._getSubmitData();
   this._previewChanges(previewData);
 }
 
 /**
- * Preview changes to the AmbientSound document as if they were true document updates.
- * Could just copy the light version directly, but don't want to confuse anything wrapping
- * the light method.
- * @param {object} change   Data which simulates a document update
+ * Wrap AmbientSoundConfig.prototype.getData to add the preview data for the sound.
  */
-export function _previewChangesAmbientSoundConfig(change) {
-  if ( change ) this.preview.updateSource(change);
-  this.preview.object.renderFlags.set({refresh: true});
-  this.preview.object.updateSource();
-}
-
-
-/**
- * Restore the true data for the AmbientSound document when the form is submitted or closed
- * Could just copy the light version directly, but don't want to confuse anything wrapping
- * the light method.
- */
-export function _resetPreviewAmbientSoundConfig() {
-  this.preview.object.destroy({children: true});
-  this.preview = null;
-  this.document.object.visible = true;
-  this.document.object.renderFlags.set({refresh: true});
-  this.document.object.updateSource();
-}
-
-/**
- * Wrap getData to add the preview data for the sound.
- */
-export function getDataSoundConfig(wrapper, options = {}) {
+function getData(wrapper, options = {}) {
   const context = wrapper(options);
   delete context.document; // Replaced below
   return foundry.utils.mergeObject(context, {
@@ -101,21 +99,46 @@ export function getDataSoundConfig(wrapper, options = {}) {
  * Wrap AmbientSoundConfig.prototype._updateObject.
  * Reset the preview when updating the object
  */
-export async function _updateObjectAmbientSoundConfig(wrapper, event, formData) {
+async function _updateObject(wrapper, event, formData) {
   this._resetPreview();
   return wrapper(event, formData);
 }
 
+PATCHES.BASIC.WRAPS = {
+  _render,
+  close,
+  _onChangeInput,
+  getData,
+  _updateObject
+};
+
+// ----- NOTE: Methods ----- //
+
 /**
- * Add AmbientSoundDocument.prototype._onUpdate to update the preview.
- * See AmbientLightDocument.prototype._onUpdate.
+ * Wrap AmbientSoundConfig.prototype_previewChanges
+ * Preview changes to the AmbientSound document as if they were true document updates.
+ * Could just copy the light version directly, but don't want to confuse anything wrapping
+ * the light method.
+ * @param {object} change   Data which simulates a document update
  */
-export function _onUpdateAmbientSoundDocument(data, options, userId) {
-  Object.values(this.apps).forEach(app => {
-    if ( !app.closing ) app.preview.updateSource(data, options);
-  });
-  this.parent._onUpdate(data, options, userId);
-  Object.values(this.apps).forEach(app => {
-    if ( !app.closing ) app._previewChanges(data);
-  });
+function _previewChanges(change) {
+  if ( change ) this.preview.updateSource(change);
+  this.preview.object.renderFlags.set({refresh: true});
+  this.preview.object.updateSource();
 }
+
+/**
+ * Wrap AmbientSoundConfig.prototype._resetPreview
+ * Restore the true data for the AmbientSound document when the form is submitted or closed
+ * Could just copy the light version directly, but don't want to confuse anything wrapping
+ * the light method.
+ */
+function _resetPreview() {
+  this.preview.object.destroy({children: true});
+  this.preview = null;
+  this.document.object.visible = true;
+  this.document.object.renderFlags.set({refresh: true});
+  this.document.object.updateSource();
+}
+
+PATCHES.BASIC.METHODS = { _previewChanges, _resetPreview };

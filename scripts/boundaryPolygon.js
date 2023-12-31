@@ -1,6 +1,7 @@
 /* globals
-PIXI,
-canvas
+canvas,
+GlobalLightSource,
+PIXI
 */
 "use strict";
 
@@ -54,4 +55,24 @@ export function boundaryPolygon() {
 
     case "none": return undefined;
   }
+}
+
+/**
+ * Wrapper for LightSource and SoundSource
+ * Pass in the relevant boundary shape in lieu of the default
+ */
+export function _getPolygonConfiguration(wrapper) {
+  const cfg = wrapper();
+  if ( this instanceof GlobalLightSource ) return cfg;
+
+  const doc = this.object.document;
+  const shape = getFlag(doc, FLAGS.SHAPE) || "circle";
+  if ( shape === "circle" ) return cfg;
+  if ( shape === "none" ) cfg.radius = canvas.scene.dimensions.maxR;
+  else cfg.radius = undefined; // Don't let CWSweep add a circle boundary.
+
+  const boundaryShape = this.boundaryPolygon();
+  if ( boundaryShape ) cfg.boundaryShapes = [boundaryShape];
+
+  return cfg;
 }

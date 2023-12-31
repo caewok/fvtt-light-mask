@@ -54,6 +54,7 @@ async function _render(wrapper, force, options) {
   if ( !this.rendered && !this.closing ) {
     if ( !this.preview ) {
       const clone = this.document.object.clone();
+      clone.document.updateSource({ radius: this.document.radius })
       this.preview = clone.document;
     }
     await this.preview.object.draw();
@@ -61,6 +62,8 @@ async function _render(wrapper, force, options) {
     this.preview.object.layer.objects.addChild(this.preview.object);
     this._previewChanges();
   }
+  console.log("render");
+
   return wrapper(force, options);
 }
 

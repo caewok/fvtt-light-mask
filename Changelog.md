@@ -1,3 +1,8 @@
+## 0.7.3
+Force source update so that changes reflect in the placeable without moving the mouse. Force radius update when creating the preview. Closes issue #15.
+Refactor to use Patcher class.
+Update geometry lib to v0.2.12.
+
 ## 0.7.2
 Update geometry lib to v0.2.2.
 

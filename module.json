@@ -1,21 +1,20 @@
 {
   "name": "lightmask",
-  "minimumCoreVersion": "11",
   "id": "lightmask",
   "title": "Light/Sound Mask",
   "description": "Mask Foundry VTT lights and sounds",
-  "version": "This is auto replaced",
+  "version": "#{VERSION}#",
   "library": false,
   "manifestPlusVersion": "1.0.0",
   "compatibility": {
     "minimum": "11.299",
-    "verified": "11.304"
+    "verified": "11.315"
   },
   "authors": [
     {
       "name": "caewok",
       "url": "https://github.com/caewok",
-      "discord": "caewok#9192"
+      "discord": "caewok"
     }
   ],
   "relationships": {
@@ -39,9 +38,9 @@
       "description": "Mask Foundry VTT lights and sounds"
     }
   ],
-  "url": "This is auto replaced",
-  "manifest": "This is auto replaced",
-  "download": "This is auto replaced",
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
   "license": "LICENSE",
   "readme": "README.md"
 }

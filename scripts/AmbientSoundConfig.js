@@ -51,7 +51,7 @@ PATCHES.BASIC.STATIC_WRAPS = { defaultOptions };
  */
 async function _render(wrapper, force, options) {
   // Allow sound to be previewed.
-  if ( !this.rendered && !this.closing ) {
+  if ( !this.rendered && !this.closing && this.document.object ) {
     if ( !this.preview ) {
       const clone = this.document.object.clone();
       clone.document.updateSource({ radius: this.document.radius })
@@ -89,6 +89,7 @@ async function _onChangeInput(wrapper, event) {
  */
 function getData(wrapper, options = {}) {
   const context = wrapper(options);
+  if ( !this.preview ) return context;
   delete context.document; // Replaced below
   return foundry.utils.mergeObject(context, {
     data: this.preview.toObject(false),
@@ -123,6 +124,7 @@ PATCHES.BASIC.WRAPS = {
  * @param {object} change   Data which simulates a document update
  */
 function _previewChanges(change) {
+  if ( !this.preview ) return;
   if ( change ) this.preview.updateSource(change);
   this.preview.object.renderFlags.set({refresh: true});
   this.preview.object.updateSource();
@@ -135,6 +137,7 @@ function _previewChanges(change) {
  * the light method.
  */
 function _resetPreview() {
+  if ( !this.preview ) return;
   this.preview.object.destroy({children: true});
   this.preview = null;
   this.document.object.visible = true;

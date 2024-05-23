@@ -1,10 +1,12 @@
 [![Version (latest)](https://img.shields.io/github/v/release/caewok/fvtt-light-mask)](https://github.com/caewok/fvtt-light-mask/releases/latest)
-[![Foundry Version](https://img.shields.io/badge/dynamic/json.svg?url=https://github.com/caewok/fvtt-light-mask/releases/latest/download/module.json&label=Foundry%20Version&query=$.minimumCoreVersion&colorB=blueviolet)](https://github.com/caewok/fvtt-light-mask/releases/latest)
+[![Foundry Version](https://img.shields.io/badge/dynamic/json.svg?url=https://github.com/caewok/fvtt-light-mask/releases/latest/download/module.json&label=Foundry%20Version&query=$.compatibility.verified&colorB=blueviolet)](https://github.com/caewok/fvtt-light-mask/releases/latest)
 [![License](https://img.shields.io/github/license/caewok/fvtt-light-mask)](LICENSE)
 
 ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https://forge-vtt.com/api/bazaar/package/lightmask&colorB=4aa94a)
 ![Latest Release Download Count](https://img.shields.io/github/downloads/caewok/fvtt-light-mask/latest/module.zip)
 ![All Downloads](https://img.shields.io/github/downloads/caewok/fvtt-light-mask/total)
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H3Y7IJW)
 
 # Light/Sound Mask
 

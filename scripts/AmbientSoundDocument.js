@@ -11,7 +11,9 @@ PATCHES.BASIC = {};
  * Add AmbientSoundDocument.prototype._onUpdate to update the preview.
  * See AmbientLightDocument.prototype._onUpdate.
  */
-function _onUpdate(data, options, userId) {
+function _onUpdate(wrapped, data, options, userId) {
+  wrapped(data, options, userId);
+
   Object.values(this.apps).forEach(app => {
     if ( !app.closing ) app.preview.updateSource(data, options);
   });
@@ -22,4 +24,4 @@ function _onUpdate(data, options, userId) {
   if ( this.object ) this.object.updateSource(); // Force the sound placeable to refresh on update. Issue #15.
 }
 
-PATCHES.BASIC.METHODS = { _onUpdate };
+PATCHES.BASIC.WRAPS = { _onUpdate };

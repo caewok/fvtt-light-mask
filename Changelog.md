@@ -1,3 +1,6 @@
+## 0.7.5
+Fix for sound not following the token when attached until going back to the sound controls layer. Issue #17.
+
 ## 0.7.4
 Fix for incompatibiity with Sound of Token and Token Attacher. Issues #16 and #17.
 

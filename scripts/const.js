@@ -25,6 +25,8 @@ export const TEMPLATES = {
   TOKEN: `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
 };
 
+export const MODULE_ICON = "fa-solid fa-mask";
+
 export const HTML_INJECTION = {
   LIGHT: "div[data-tab='advanced']:last",
   SOUND: ".form-group:last",

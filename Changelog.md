@@ -1,3 +1,6 @@
+## 0.7.4
+Possible fix for incompatibiity with Sound of Token. Issue #16.
+
 ## 0.7.3
 Force source update so that changes reflect in the placeable without moving the mouse. Force radius update when creating the preview. Closes issue #15.
 Refactor to use Patcher class.

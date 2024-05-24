@@ -8,21 +8,30 @@ import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
 import { injectConfiguration, activateListeners } from "./render.js";
 
 // Hook init to update the PARTS of the sound config
-Hooks.once("init", function() {
-  const { footer, ...other } = foundry.applications.sheets.AmbientSoundConfig.PARTS;
+Hooks.once("init", async function() {
+  const { footer, body, ...other } = foundry.applications.sheets.AmbientSoundConfig.PARTS;
   const tabs = {  template: "templates/generic/tab-navigation.hbs" };
 
   // Just in case.
   if ( Object.hasOwn(other, "tabs") ) delete other.tabs;
 
+  // Wrap the body template by registering it as a partial and reusing it.
+  await getTemplate(body.template);
+  // Handlebars.registerPartial("AmbientSoundBody", body.template);
+
+
   // Wrap the sound body template so it is displayed as a tab.
   // Ensure footer is last and the module tab is after the body.
   foundry.applications.sheets.AmbientSoundConfig.PARTS = {
     tabs: {  template: "templates/generic/tab-navigation.hbs" },
+    body: { template: TEMPLATES.SOUND_BODY },
     ...other,
     [MODULE_ID]: { template: TEMPLATES.SOUND },
     footer
   }
+
+  // Add the tab groups; Doesn't apply them to the right place for some reason...
+  // foundry.applications.sheets.AmbientSoundConfig.prototype.tabGroups = { sheet: "body" };
 });
 
 
@@ -40,6 +49,7 @@ PATCHES.BASIC = {};
  */
 async function _prepareContext(wrapped, options) {
   const context = await wrapped(options);
+  context.tabs ??= {};
   context.tabs.body = {
     id: "body",
     group: "sheet",
@@ -50,7 +60,7 @@ async function _prepareContext(wrapped, options) {
   context.tabs[MODULE_ID] =  {
     id: MODULE_ID,
     group: "sheet",
-    icon: MODULE_ICON,
+    icon: ICONS.MODULE,
     label: "lightmask.AmbientConfiguration.LegendTitle" };
 
   // From AmbientLightConfig.#getTabs
@@ -60,6 +70,17 @@ async function _prepareContext(wrapped, options) {
   }
 
   return context;
+}
+
+/**
+ * Wrap to set the initial tab group for sounds.
+ * Modify the provided options passed to a render request.
+ * @param {RenderOptions} options                 Options which configure application rendering behavior
+ * @protected
+ */
+function _configureRenderOptions(wrapped, options) {
+  wrapped(options);
+  this.tabGroups = { sheet: "body" };
 }
 
 /**
@@ -143,7 +164,8 @@ async function _updateObject(wrapper, event, formData) {
 
 PATCHES.BASIC.WRAPS = {
   _prepareContext,
-  _preparePartContext
+  _preparePartContext,
+  _configureRenderOptions
 //   _render,
 //   close,
 //   _onChangeInput,
@@ -188,10 +210,3 @@ PATCHES.BASIC.METHODS = {
   _previewChanges,
   _resetPreview
 };
-
-
-function tabGroups() { return { sheet: "body"}; }
-
-PATCHES.BASIC.GETTERS = {
-  tabGroups
-}

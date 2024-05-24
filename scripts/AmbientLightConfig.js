@@ -16,7 +16,7 @@ PATCHES.BASIC = {};
 Hooks.once("init", function() {
   const { footer, ...other } = foundry.applications.sheets.AmbientLightConfig.PARTS;
   foundry.applications.sheets.AmbientLightConfig.PARTS = {
-    other, // Includes tabs
+    ...other, // Includes tabs
     [MODULE_ID]: { template: TEMPLATES.LIGHT },
     footer
   }

@@ -22,7 +22,8 @@ export const FLAGS = {
 export const TEMPLATES = {
   LIGHT: `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
   SOUND: `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,
-  TOKEN: `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`
+  TOKEN: `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`,
+  SOUND_BODY: `modules/${MODULE_ID}/templates/lightmask-ambient-sound-body-config.html`
 };
 
 // Icons displayed in config tabs.

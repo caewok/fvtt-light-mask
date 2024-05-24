@@ -1,6 +1,5 @@
 /* globals
 duplicate,
-PointSource,
 PolygonEdge
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
@@ -24,7 +23,7 @@ function _identifyEdges(wrapped) {
   wrapped();
 
   const src = this.config.source;
-  if ( !(src instanceof PointSource) ) return;
+  if ( !(src instanceof foundry.canvas.sources.BaseEffectSource) ) return;
 
   // See class LightSource and initialize method
   const doc = src.object.document;
@@ -100,7 +99,7 @@ PATCHES.BASIC.MIXES = { _identifyEdges };
 function compute(wrapper) {
   wrapper();
   const src = this.config.source;
-  if ( !(src instanceof PointSource) ) return;
+  if ( !(src instanceof foundry.canvas.sources.BaseEffectSource) ) return;
 
   this.edges.forEach(e => {
     if ( !e._isTemporary ) return;

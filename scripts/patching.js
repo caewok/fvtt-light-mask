@@ -22,8 +22,8 @@ const PATCHES = {
   "foundry.applications.sheets.AmbientSoundConfig": PATCHES_AmbientSoundConfig,
   AmbientSoundDocument: PATCHES_AmbientSoundDocument,
   ClockwiseSweepPolygon: PATCHES_ClockwiseSweepPolygon,
-  "foundry.canvas.sources.LightSource": PATCHES_LightSource,
-  "foundry.canvas.sources.SoundSource": PATCHES_SoundSource,
+  "foundry.canvas.sources.PointLightSource": PATCHES_LightSource,
+  "foundry.canvas.sources.PointSoundSource": PATCHES_SoundSource,
   Token: PATCHES_Token,
   TokenConfig: PATCHES_TokenConfig
 };

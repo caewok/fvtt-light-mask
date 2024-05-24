@@ -4,47 +4,82 @@ foundry
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
+import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
 import { injectConfiguration, activateListeners } from "./render.js";
+
+// Hook init to update the PARTS of the sound config
+Hooks.once("init", function() {
+  const { footer, ...other } = foundry.applications.sheets.AmbientSoundConfig.PARTS;
+  const tabs = {  template: "templates/generic/tab-navigation.hbs" };
+
+  // Just in case.
+  if ( Object.hasOwn(other, "tabs") ) delete other.tabs;
+
+  // Wrap the sound body template so it is displayed as a tab.
+  // Ensure footer is last and the module tab is after the body.
+  foundry.applications.sheets.AmbientSoundConfig.PARTS = {
+    tabs: {  template: "templates/generic/tab-navigation.hbs" },
+    ...other,
+    [MODULE_ID]: { template: TEMPLATES.SOUND },
+    footer
+  }
+});
+
+
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
 PATCHES.BASIC = {};
 
-// ----- NOTE: Hooks ----- //
-
-/**
- * @param {Application} application     The Application instance being rendered
- * @param {jQuery} html                 The inner HTML of the document that will be displayed and may be modified
- * @param {object} data                 The object of data used when rendering the application
- */
-function renderAmbientSoundConfig(app, html, data) {
-  injectConfiguration(app, html, data, "SOUND"); // Async
-  activateListeners(app, html);
-}
-
-PATCHES.BASIC.HOOKS = { renderAmbientSoundConfig };
-
-
-// ----- NOTE: Static wraps ----- //
-
-/**
- * Wrapper for AmbientSoundConfig.defaultOptions
- * Make the sound config window resize height automatically, to accommodate
- * different shape parameters.
- * @param {Function} wrapper
- * @return {Object} See AmbientSoundConfig.defaultOptions.
- */
-function defaultOptions(wrapper) {
-  const options = wrapper();
-  return foundry.utils.mergeObject(options, {
-    height: "auto"
-  });
-}
-
-PATCHES.BASIC.STATIC_WRAPS = { defaultOptions };
 
 // ----- NOTE: Wraps ----- //
 
+/**
+ * Add additional module tab to the config.
+ * Sound config currently has no tabs, so add "body" as the other.
+ */
+async function _prepareContext(wrapped, options) {
+  const context = await wrapped(options);
+  context.tabs.body = {
+    id: "body",
+    group: "sheet",
+    icon: ICONS.SOUND,
+    label: "AMBIENT_LIGHT.SECTIONS.BASIC" // Borrow the Ambient Light phrase
+  }
+
+  context.tabs[MODULE_ID] =  {
+    id: MODULE_ID,
+    group: "sheet",
+    icon: MODULE_ICON,
+    label: "lightmask.AmbientConfiguration.LegendTitle" };
+
+  // From AmbientLightConfig.#getTabs
+  for ( const v of Object.values(context.tabs) ) {
+    v.active = this.tabGroups[v.group] === v.id;
+    v.cssClass = v.active ? "active" : "";
+  }
+
+  return context;
+}
+
+/**
+ * Add in lightmask specific data to the lightmask tab.
+ * @param {string} partId                         The part being rendered
+ * @param {ApplicationRenderContext} context      Shared context provided by _prepareContext
+ * @param {HandlebarsRenderOptions} options       Options which configure application rendering behavior
+ * @returns {Promise<ApplicationRenderContext>}   Context data for a specific part
+ */
+async function _preparePartContext(wrapped, partId, context, options) {
+  context = await wrapped(partId, context, options);
+  if ( partId !== MODULE_ID ) return context;
+  // Add in shapes
+  context[MODULE_ID] = {
+    shapes: SHAPE.LABELS
+  }
+  return context;
+}
+
+// TODO: Keep/modify/delete?
 /**
  * Wrap AmbientSoundConfig.prototype._render.
  * Store the original values for this object.
@@ -107,11 +142,13 @@ async function _updateObject(wrapper, event, formData) {
 }
 
 PATCHES.BASIC.WRAPS = {
-  _render,
-  close,
-  _onChangeInput,
-  getData,
-  _updateObject
+  _prepareContext,
+  _preparePartContext
+//   _render,
+//   close,
+//   _onChangeInput,
+//   getData,
+//   _updateObject
 };
 
 // ----- NOTE: Methods ----- //
@@ -145,4 +182,16 @@ function _resetPreview() {
   this.document.object.updateSource();
 }
 
-PATCHES.BASIC.METHODS = { _previewChanges, _resetPreview };
+
+
+PATCHES.BASIC.METHODS = {
+  _previewChanges,
+  _resetPreview
+};
+
+
+function tabGroups() { return { sheet: "body"}; }
+
+PATCHES.BASIC.GETTERS = {
+  tabGroups
+}

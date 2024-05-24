@@ -64,9 +64,9 @@ Hooks.on("canvasReady", async canvas => {
   await Promise.all(promises);
 
   // Update the light or sound source
-  canvas.lighting.placeables.forEach(ps => ps.forEach(p => p.initializeLightSource()));
-  canvas.sounds.placeables.forEach(ps => ps.forEach(p => p.initializeSoundSource()));
-  canvas.tokens.placeables.forEach(ps => ps.forEach(p => p.initializeSources()));
+  canvas.lighting.placeables.forEach(p => p.initializeLightSource());
+  canvas.sounds.placeables.forEach(p => p.initializeSoundSource());
+  canvas.tokens.placeables.forEach(p => p.initializeSources());
 });
 
 /**

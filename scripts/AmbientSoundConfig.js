@@ -98,17 +98,17 @@ async function _preparePartContext(wrapper, partId, context, options) {
   context = await wrapper(partId, context, options);
 
   // Create the preview on first render.
-  if ( options.isFirstRender && this.document.object ) {
-    const clone = this.document.object.clone();
-    this.preview = clone.document;
-  }
+//   if ( options.isFirstRender && this.document.object ) {
+//     const clone = this.document.object.clone();
+//     this.preview = clone.document;
+//   }
 
   // Redo the document in context to point to preview.
-  const document = this.preview ?? this.document;
-  context.sound = document;
-  context.source = document.toObject();
-  context.fields = document.schema.fields;
-  context.gridUnits = document.parent.grid.units || game.i18n.localize("GridUnits");
+//   const document = this.preview ?? this.document;
+//   context.sound = document;
+//   context.source = document.toObject();
+//   context.fields = document.schema.fields;
+//   context.gridUnits = document.parent.grid.units || game.i18n.localize("GridUnits");
   if ( partId !== MODULE_ID ) return context;
 
   // Add in shapes
@@ -172,9 +172,9 @@ PATCHES.BASIC.WRAPS = {
   _preparePartContext,
   _configureRenderOptions,
   _attachPartListeners,
-  _preRender
-  _onClose,
-  _onChangeForm
+//   _preRender,
+//   _onClose,
+//   _onChangeForm
 };
 
 // ----- NOTE: Methods ----- //
@@ -215,7 +215,7 @@ function _resetPreview() {
   }
 }
 
-PATCHES.BASIC.METHODS = {
-  _previewChanges,
-  _resetPreview
-};
+// PATCHES.BASIC.METHODS = {
+//   _previewChanges,
+//   _resetPreview
+// };

@@ -1,5 +1,4 @@
 /* globals
-duplicate,
 foundry,
 PolygonEdge
 */
@@ -8,7 +7,6 @@ PolygonEdge
 
 import { FLAGS } from "./const.js";
 import { getFlag } from "./util.js";
-import { TempWall } from "./customEdges.js";
 
 // Patches for the ClockwiseSweepPolygon class
 export const PATCHES = {};
@@ -35,7 +33,7 @@ function _identifyEdges(wrapper) {
   let edges_cache = getFlag(doc, FLAGS.CUSTOM_WALLS.EDGES);
   if (!edges_cache || edges_cache.length === 0) return;
 
-  edges_cache = duplicate(edges_cache);  // Avoid modifying the cache below
+  edges_cache = foundry.utils.duplicate(edges_cache);  // Avoid modifying the cache below
 
   const is_relative = getFlag(doc, FLAGS.RELATIVE);
   const origin = this.origin;
@@ -51,9 +49,15 @@ function _identifyEdges(wrapper) {
     obj.c[1] += delta.dy;
     obj.c[2] += delta.dx;
     obj.c[3] += delta.dy;
+    obj.type = this.config.type;
 
-    const w = TempWall.fromCacheData(obj);
-    const e = PolygonEdge.fromWall(w, this.config.type);
+    const e = new foundry.canvas.edges.Edge(
+      { x: obj.c[0], y: obj.c[1] },
+      { x: obj.c[2], y: obj.c[3] },
+      obj)
+
+    // const w = TempWall.fromCacheData(obj);
+//     const e = PolygonEdge.fromWall(w, this.config.type);
     e._isTemporary = true;
     return e;
   }).filter(w => {

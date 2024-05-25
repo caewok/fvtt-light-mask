@@ -2,7 +2,6 @@
 canvas,
 getDocumentClass,
 foundry,
-PolygonVertex,
 ui
 */
 "use strict";
@@ -21,21 +20,6 @@ Here, it can store custom edges and whether the edges are relative or absolute.
 Thus, it is assumed that this _customEdgeData function will access this, the source object.
 */
 
-/**
- * Retrieve a comma-separated list of wall ids currently controlled on the canvas.
- * @return {string}
- */
-export function controlledWallIDs() {
-  const walls = canvas.walls.controlled;
-  if (walls.length === 0) {
-    console.warn("Please select one or more walls on the canvas.");
-    ui.notifications.warn("Please select one or more walls on the canvas.");
-    return;
-  }
-
-  const id = walls.map(w => w.id);
-  return id.join(",");
-}
 
 export class TempWall {
   /**
@@ -68,8 +52,8 @@ export class TempWall {
    */
   #initializeVertices() {
     this.#vertices = {
-      a: new PolygonVertex(...this.document.c.slice(0, 2)),
-      b: new PolygonVertex(...this.document.c.slice(2, 4))
+      a: new foundry.canvas.edges.PolygonVertex(...this.document.c.slice(0, 2)),
+      b: new foundry.canvas.edges.PolygonVertex(...this.document.c.slice(2, 4))
     };
     this.#wallKeys = new Set([this.#vertices.a.key, this.#vertices.b.key]);
   }

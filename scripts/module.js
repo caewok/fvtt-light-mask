@@ -12,9 +12,6 @@ import { log, getFlag, setFlag } from "./util.js";
 import { registerGeometry } from "./geometry/registration.js";
 import { initializePatching, PATCHER } from "./patching.js";
 
-// ----- ClockwiseSweep ----- //
-import { controlledWallIDs, TempWall } from "./customEdges.js";
-
 // Hooks
 Hooks.once("init", async function() {
   log("Initializing...");
@@ -25,8 +22,6 @@ Hooks.once("init", async function() {
   Handlebars.registerHelper("max2", function(a, b) { return Math.max(a, b); });
 
   game.modules.get(MODULE_ID).api = {
-    controlledWallIDs,
-    TempWall,
     PATCHER
   };
 });

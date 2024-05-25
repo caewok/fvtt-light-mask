@@ -1,4 +1,5 @@
 /* globals
+FormDataExtended,
 foundry,
 renderTemplate,
 DefaultTokenConfig
@@ -11,7 +12,6 @@ import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } 
 import {
   lightMaskUpdateCustomEdgeCache,
   lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
-import { controlledWallIDs } from "./customEdges.js";
 
 /**
  * Catch when user clicks the button to add custom wall ids, changes the shape, or clicks the checkbox.
@@ -29,8 +29,8 @@ export function activateListenersV2(app, html) {
   const saveWallsButton = html.querySelector(".saveWallsButton");
   saveWallsButton.addEventListener("click", onAddWallIDsV2.bind(app));
 
-  const relativeCheckbox = html.querySelector(".lightmaskRelativeCheckbox");
-  relativeCheckbox.addEventListener("click", onCheckRelativeV2.bind(app));
+  const wallIdsTextbox = html.querySelector(".lightmaskCachedWallIDs");
+  wallIdsTextbox.addEventListener("change", onAddWallIDsV2.bind(app));
 }
 
 function shapeChanged(event) {
@@ -136,35 +136,6 @@ function onCheckRelative(event) {
   this.render();
 }
 
-function onCheckRelativeV2(event) {
-  log("lightMaskOnCheckRelative", event, this);
-
-  const current_origin = { x: this.object.x,
-                           y: this.object.y };
-  const newData = {};
-  if (event.target.checked) {
-    // Update with the new origin
-    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN}`] = current_origin;
-
-  } else {
-    // Set the wall locations based on the last origin because when the user unchecks
-    // relative, we want the walls to stay at the last relative position (not their
-    // original position)
-    let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
-    const stored_origin = getFlag(this.object, FLAGS.ORIGIN) || current_origin;
-    const delta = { dx: current_origin.x - stored_origin.x,
-                    dy: current_origin.y - stored_origin.y };
-
-    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    newData[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
-  }
-
-  const previewData = this._getSubmitData(newData);
-  this._previewChanges(previewData);
-  this.render();
-}
-
-
 
 /**
  * Add a method to the AmbientLightConfiguration to handle when user
@@ -176,7 +147,7 @@ function onAddWallIDs(event) {
 
   let ids_to_add;
   if ( event.target.name === "flags.lightmask.customWallIDs" ) {
-    ids_to_add = event.target.value;
+    ids_to_add = cleanWallIds(event.target.value);
   } else {
     ids_to_add = controlledWallIDs();
     if (!ids_to_add) return;
@@ -206,32 +177,71 @@ function onAddWallIDs(event) {
 function onAddWallIDsV2(event) {
   log("lightMaskOnAddWallIDs", event, this);
 
-  let ids_to_add;
+  // Confirm the walls are valid.
+  let ids;
   if ( event.target.name === "flags.lightmask.customWallIDs" ) {
-    ids_to_add = event.target.value;
+    ids = cleanWallIds(event.target.value);
   } else {
-    ids_to_add = controlledWallIDs();
-    if (!ids_to_add) return;
+    ids = controlledWallIDs();
+    if (!ids) return;
   }
 
-  log(`Ids to add: ${ids_to_add}`);
-
-  // Change the data and refresh...
-  let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
-  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
-
-  const newData = {
-    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`]: ids_to_add,
-    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`]: edges_cache
-  };
-
-  if ( !noFlag(this.object, FLAGS.RELATIVE) ) {
-    log("Relative key is true; storing origin");
-    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
+  // Update the form with the ids string.
+  const elem = document.getElementsByClassName("lightmaskCachedWallIDs");
+  elem["flags.lightmask.customWallIDs"].value = ids;
+  if ( !this.preview ) {
+    this.render();
+    return;
   }
 
-  const previewData = this._getSubmitData(newData);
-  this._previewChanges(previewData);
+  // If we are previewing the data, need to change flags on the preview object.
+//   const object = (new FormDataExtended(this.element)).object;
+//   let edgesCache = object[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] || [];
+//   edgesCache = lightMaskUpdateCustomEdgeCache(edgesCache, ids);
+//   const newData = {
+//     [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`]: ids,
+//     [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`]: edgesCache
+//   };
+//   foundry.utils.mergeObject(object, newData);
+//   this._previewChanges(object);
   this.render();
+}
+
+/**
+ * Clean wall ids provided by a user.
+ * Strip out invalid ids; change uuids to ids
+ * @param {string} ids    Comma-separate string of ids or uuids, corresponding to walls
+ * @returns {string} String of comma-separate ids or "" if none.
+ */
+function cleanWallIds(ids) {
+  ids = ids.split(",");
+  ids = ids
+    .map(id => {
+      id = id.trim();
+      const wall = id.includes("Scene") ? fromUuidSync(id) : canvas.walls.placeables.find(w => w.id === id);
+      if ( !wall ) {
+        ui.notifications.warn(`${MODULE_ID}|Wall ${id} not found.`);
+        return null;
+      }
+      return wall.id;
+    })
+    .filter(id => Boolean(id));
+  return ids.join(",");
+}
+
+/**
+ * Retrieve a comma-separated list of wall ids currently controlled on the canvas.
+ * @return {string}
+ */
+function controlledWallIDs() {
+  const walls = canvas.walls.controlled;
+  if (walls.length === 0) {
+    console.warn("Please select one or more walls on the canvas.");
+    ui.notifications.warn("Please select one or more walls on the canvas.");
+    return;
+  }
+
+  const id = walls.map(w => w.id);
+  return id.join(",");
 }
 

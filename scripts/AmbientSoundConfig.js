@@ -133,6 +133,20 @@ function _attachPartListeners(wrapped, partId, htmlElement, options) {
 // ----- Create preview as with lights ---- //
 
 /**
+ * Add AmbientSoundConfig.prototype._preRender
+ * Draw the preview object.
+ */
+async function _preRender(wrapper, context, options) {
+  await wrapper(context, options);
+  if ( this.preview ) {
+    await this.preview.object.draw();
+    this.document.object.initializeSoundSource({deleted: true});
+    this.preview.object.layer.preview.addChild(this.preview.object);
+    this._previewChanges();
+  }
+}
+
+/**
  * Wrap AmbientSoundConfig.prototype._onClose
  * Reset preview if necessary.
  */
@@ -158,6 +172,7 @@ PATCHES.BASIC.WRAPS = {
   _preparePartContext,
   _configureRenderOptions,
   _attachPartListeners,
+  _preRender
   _onClose,
   _onChangeForm
 };
@@ -166,19 +181,7 @@ PATCHES.BASIC.WRAPS = {
 
 // ----- Create preview as with lights ---- //
 
-/**
- * Add AmbientSoundConfig.prototype._preRender
- * Draw the preview object.
- */
-async function _preRender(_context, _options) {
-  // The super class does nothing, so we can skip to make our lives easier.
-  if ( this.preview ) {
-    await this.preview.object.draw();
-    this.document.object.initializeSoundSource({deleted: true});
-    this.preview.object.layer.preview.addChild(this.preview.object);
-    this._previewChanges();
-  }
-}
+
 
 /**
  * Wrap AmbientSoundConfig.prototype_previewChanges
@@ -213,7 +216,6 @@ function _resetPreview() {
 }
 
 PATCHES.BASIC.METHODS = {
-  _preRender,
   _previewChanges,
   _resetPreview
 };

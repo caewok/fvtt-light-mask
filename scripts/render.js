@@ -6,9 +6,12 @@ DefaultTokenConfig
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-import { log } from "./util.js";
+import { log, getFlag, noFlag } from "./util.js";
 import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
-import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
+import {
+  lightMaskUpdateCustomEdgeCache,
+  lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
+import { controlledWallIDs } from "./customEdges.js";
 
 /**
  * Catch when user clicks the button to add custom wall ids, changes the shape, or clicks the checkbox.
@@ -24,10 +27,10 @@ export function activateListenersV2(app, html) {
   shapeSelector.addEventListener("change", shapeChanged.bind(app));
 
   const saveWallsButton = html.querySelector(".saveWallsButton");
-  saveWallsButton.addEventListener("click", onAddWallIDs.bind(app));
+  saveWallsButton.addEventListener("click", onAddWallIDsV2.bind(app));
 
   const relativeCheckbox = html.querySelector(".lightmaskRelativeCheckbox");
-  relativeCheckbox.addEventListener("click", onCheckRelative.bind(app));
+  relativeCheckbox.addEventListener("click", onCheckRelativeV2.bind(app));
 }
 
 function shapeChanged(event) {
@@ -97,3 +100,138 @@ export async function injectConfiguration(app, html, data, type) {
   const shape = data[d]?.flags?.lightmask?.shape;
   if ( shape ) configShapeSubmenu(shape);
 }
+
+
+/**
+ * Listener to handle when a user check/unchecks the "Relative" checkbox.
+ * If "Relative" is checked, the edges cache must be updated by a directional vector
+ * based on the shift in origin.
+ * @param {PointerEvent} event    The originating click event
+ */
+function onCheckRelative(event) {
+  log("lightMaskOnCheckRelative", event, this);
+
+  const current_origin = { x: this.object.x,
+                           y: this.object.y };
+  const newData = {};
+  if (event.target.checked) {
+    // Update with the new origin
+    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN}`] = current_origin;
+
+  } else {
+    // Set the wall locations based on the last origin because when the user unchecks
+    // relative, we want the walls to stay at the last relative position (not their
+    // original position)
+    let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
+    const stored_origin = getFlag(this.object, FLAGS.ORIGIN) || current_origin;
+    const delta = { dx: current_origin.x - stored_origin.x,
+                    dy: current_origin.y - stored_origin.y };
+
+    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
+    newData[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+  }
+
+  const previewData = this._getSubmitData(newData);
+  this._previewChanges(previewData);
+  this.render();
+}
+
+function onCheckRelativeV2(event) {
+  log("lightMaskOnCheckRelative", event, this);
+
+  const current_origin = { x: this.object.x,
+                           y: this.object.y };
+  const newData = {};
+  if (event.target.checked) {
+    // Update with the new origin
+    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN}`] = current_origin;
+
+  } else {
+    // Set the wall locations based on the last origin because when the user unchecks
+    // relative, we want the walls to stay at the last relative position (not their
+    // original position)
+    let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
+    const stored_origin = getFlag(this.object, FLAGS.ORIGIN) || current_origin;
+    const delta = { dx: current_origin.x - stored_origin.x,
+                    dy: current_origin.y - stored_origin.y };
+
+    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
+    newData[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
+  }
+
+  const previewData = this._getSubmitData(newData);
+  this._previewChanges(previewData);
+  this.render();
+}
+
+
+
+/**
+ * Add a method to the AmbientLightConfiguration to handle when user
+ * clicks the button to add custom wall ids.
+ * @param {PointerEvent} event    The originating click event
+ */
+function onAddWallIDs(event) {
+  log("lightMaskOnAddWallIDs", event, this);
+
+  let ids_to_add;
+  if ( event.target.name === "flags.lightmask.customWallIDs" ) {
+    ids_to_add = event.target.value;
+  } else {
+    ids_to_add = controlledWallIDs();
+    if (!ids_to_add) return;
+  }
+
+  log(`Ids to add: ${ids_to_add}`);
+
+  // Change the data and refresh...
+  let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
+  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
+
+  const newData = {
+    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`]: ids_to_add,
+    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`]: edges_cache
+  };
+
+  if ( !noFlag(this.object, FLAGS.RELATIVE) ) {
+    log("Relative key is true; storing origin");
+    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
+  }
+
+  const previewData = this._getSubmitData(newData);
+  this._previewChanges(previewData);
+  this.render();
+}
+
+function onAddWallIDsV2(event) {
+  log("lightMaskOnAddWallIDs", event, this);
+
+  let ids_to_add;
+  if ( event.target.name === "flags.lightmask.customWallIDs" ) {
+    ids_to_add = event.target.value;
+  } else {
+    ids_to_add = controlledWallIDs();
+    if (!ids_to_add) return;
+  }
+
+  log(`Ids to add: ${ids_to_add}`);
+
+  // Change the data and refresh...
+  let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
+  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
+
+  const newData = {
+    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`]: ids_to_add,
+    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`]: edges_cache
+  };
+
+  if ( !noFlag(this.object, FLAGS.RELATIVE) ) {
+    log("Relative key is true; storing origin");
+    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
+  }
+
+  const previewData = this._getSubmitData(newData);
+  this._previewChanges(previewData);
+  this.render();
+}
+

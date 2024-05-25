@@ -7,12 +7,6 @@ ui
 */
 "use strict";
 
-import { log, getFlag, noFlag } from "./util.js";
-import { FLAGS, MODULE_ID } from "./const.js";
-import {
-  lightMaskUpdateCustomEdgeCache,
-  lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
-
 /*
 Likely easiest if ClockwiseSweep checks the source object for a method to get a
 boundaryPolygon and customEdgeData. Otherwise, need access to the config object passed
@@ -26,78 +20,6 @@ Here, it can store custom edges and whether the edges are relative or absolute.
 
 Thus, it is assumed that this _customEdgeData function will access this, the source object.
 */
-
-/**
- * Listener to handle when a user check/unchecks the "Relative" checkbox.
- * If "Relative" is checked, the edges cache must be updated by a directional vector
- * based on the shift in origin.
- * @param {PointerEvent} event    The originating click event
- */
-export function onCheckRelative(event) {
-  log("lightMaskOnCheckRelative", event, this);
-
-  const current_origin = { x: this.object.x,
-                           y: this.object.y };
-  const newData = {};
-  if (event.target.checked) {
-    // Update with the new origin
-    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN}`] = current_origin;
-
-  } else {
-    // Set the wall locations based on the last origin because when the user unchecks
-    // relative, we want the walls to stay at the last relative position (not their
-    // original position)
-    let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
-    const stored_origin = getFlag(this.object, FLAGS.ORIGIN) || current_origin;
-    const delta = { dx: current_origin.x - stored_origin.x,
-                    dy: current_origin.y - stored_origin.y };
-
-    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    newData[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
-  }
-
-  const previewData = this._getSubmitData(newData);
-  this._previewChanges(previewData);
-  this.render();
-}
-
-
-/**
- * Add a method to the AmbientLightConfiguration to handle when user
- * clicks the button to add custom wall ids.
- * @param {PointerEvent} event    The originating click event
- */
-export function onAddWallIDs(event) {
-  log("lightMaskOnAddWallIDs", event, this);
-
-  let ids_to_add;
-  if ( event.target.name === "flags.lightmask.customWallIDs" ) {
-    ids_to_add = event.target.value;
-  } else {
-    ids_to_add = controlledWallIDs();
-    if (!ids_to_add) return;
-  }
-
-  log(`Ids to add: ${ids_to_add}`);
-
-  // Change the data and refresh...
-  let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
-  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
-
-  const newData = {
-    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`]: ids_to_add,
-    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`]: edges_cache
-  };
-
-  if ( !noFlag(this.object, FLAGS.RELATIVE) ) {
-    log("Relative key is true; storing origin");
-    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
-  }
-
-  const previewData = this._getSubmitData(newData);
-  this._previewChanges(previewData);
-  this.render();
-}
 
 /**
  * Retrieve a comma-separated list of wall ids currently controlled on the canvas.

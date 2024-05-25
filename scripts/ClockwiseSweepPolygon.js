@@ -1,5 +1,6 @@
 /* globals
 duplicate,
+foundry,
 PolygonEdge
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
@@ -43,7 +44,7 @@ function _identifyEdges(wrapped) {
     : origin;
 
   const delta = { dx: origin.x - stored_origin.x,
-                  dy: origin.y - stored_origin.y }; // eslint-disable-line indent
+                  dy: origin.y - stored_origin.y };
 
   const tmpEdges = edges_cache.map(obj => {
     obj.c[0] += delta.dx;

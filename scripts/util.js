@@ -1,6 +1,7 @@
 /* globals
 game
 */
+/* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
 import { MODULE_ID } from "./const.js";
@@ -15,7 +16,7 @@ export function log(...args) {
     if (isDebugging) {
       console.log(MODULE_ID, "|", ...args);
     }
-  } catch(e) {
+  } catch(_e) {  // eslint-disable-line no-unused-vars
     // Empty
   }
 }

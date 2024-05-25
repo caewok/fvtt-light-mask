@@ -6,7 +6,7 @@ Hooks
 "use strict";
 
 import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
-import { injectConfiguration, activateListenersV2 } from "./render.js";
+import { activateListenersV2 } from "./render.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};

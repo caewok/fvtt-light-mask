@@ -1,16 +1,17 @@
 /* globals
-foundry
+foundry,
+getTemplate,
+Hooks
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
 import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
-import { injectConfiguration, activateListeners, activateListenersV2 } from "./render.js";
+import { activateListenersV2 } from "./render.js";
 
 // Hook init to update the PARTS of the sound config
 Hooks.once("init", async function() {
   const { footer, body, ...other } = foundry.applications.sheets.AmbientSoundConfig.PARTS;
-  const tabs = {  template: "templates/generic/tab-navigation.hbs" };
 
   // Just in case.
   if ( Object.hasOwn(other, "tabs") ) delete other.tabs;

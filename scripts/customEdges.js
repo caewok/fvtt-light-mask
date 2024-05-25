@@ -37,7 +37,7 @@ export function onCheckRelative(event) {
   log("lightMaskOnCheckRelative", event, this);
 
   const current_origin = { x: this.object.x,
-                           y: this.object.y }; // eslint-disable-line indent
+                           y: this.object.y };
   const newData = {};
   if (event.target.checked) {
     // Update with the new origin
@@ -50,7 +50,7 @@ export function onCheckRelative(event) {
     let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
     const stored_origin = getFlag(this.object, FLAGS.ORIGIN) || current_origin;
     const delta = { dx: current_origin.x - stored_origin.x,
-                    dy: current_origin.y - stored_origin.y }; // eslint-disable-line indent
+                    dy: current_origin.y - stored_origin.y };
 
     edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
     newData[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;

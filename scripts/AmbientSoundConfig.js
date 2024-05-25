@@ -1,5 +1,8 @@
 /* globals
+CONFIG,
+FormDataExtended,
 foundry,
+game,
 getTemplate,
 Hooks
 */
@@ -93,11 +96,23 @@ function _configureRenderOptions(wrapped, options) {
  */
 async function _preparePartContext(wrapped, partId, context, options) {
   context = await wrapped(partId, context, options);
-  if ( partId !== MODULE_ID ) return context;
-  // Add in shapes
-  context[MODULE_ID] = {
-    shapes: SHAPE.LABELS
+
+  // Create the preview on first render.
+  if ( options.isFirstRender && this.document.object ) {
+    const clone = this.document.object.clone();
+    this.preview = clone.document;
   }
+
+  // Redo the document in context to point to preview.
+  const document = this.preview ?? this.document;
+  context.sound = document;
+  context.source = document.toObject();
+  context.fields = document.schema.fields;
+  context.gridUnits = document.parent.grid.units || game.i18n.localize("GridUnits");
+  if ( partId !== MODULE_ID ) return context;
+
+  // Add in shapes
+  context[MODULE_ID] = { shapes: SHAPE.LABELS };
   return context;
 }
 
@@ -115,114 +130,90 @@ function _attachPartListeners(wrapped, partId, htmlElement, options) {
   activateListenersV2(this, htmlElement);
 }
 
-// TODO: Keep/modify/delete?
-/**
- * Wrap AmbientSoundConfig.prototype._render.
- * Store the original values for this object.
- */
-async function _render(wrapper, force, options) {
-  // Allow sound to be previewed.
-  if ( !this.rendered && !this.closing && this.document.object ) {
-    if ( !this.preview ) {
-      const clone = this.document.object.clone();
-      clone.document.updateSource({ radius: this.document.radius })
-      this.preview = clone.document;
-    }
-    await this.preview.object.draw();
-    this.document.object.visible = false;
-    this.preview.object.layer.objects.addChild(this.preview.object);
-    this._previewChanges();
-  }
-  return wrapper(force, options);
-}
+// ----- Create preview as with lights ---- //
 
 /**
- * Wrap AmbientSoundConfig.prototype.close
+ * Wrap AmbientSoundConfig.prototype._onClose
  * Reset preview if necessary.
  */
-async function close(wrapper, options={}) {
-  if ( !options.force ) this._resetPreview();
-  return wrapper(options);
+function _onClose(wrapper, options) {
+  if ( this.preview ) this._resetPreview();
+  if ( this.document.object ) this.document.object.initializeSoundSource();
+  wrapper(options);
 }
 
 /**
- * Wrap AmbientSoundConfig.prototype._onChangeInput
+ * Wrap AmbientSoundConfig.prototype._onChangeForm
  * Update preview data.
  */
-async function _onChangeInput(wrapper, event) {
-  await wrapper(event);
-  const previewData = this._getSubmitData();
-  this._previewChanges(previewData);
+async function _onChangeForm(wrapper, formConfig, event) {
+  await wrapper(formConfig, event);
+  const formData = new FormDataExtended(this.element);
+  this._previewChanges(formData.object);
 }
 
-/**
- * Wrap AmbientSoundConfig.prototype.getData to add the preview data for the sound.
- */
-function getData(wrapper, options = {}) {
-  const context = wrapper(options);
-  if ( !this.preview ) return context;
-  delete context.document; // Replaced below
-  return foundry.utils.mergeObject(context, {
-    data: this.preview.toObject(false),
-    document: this.preview
-  });
-}
-
-/**
- * Wrap AmbientSoundConfig.prototype._updateObject.
- * Reset the preview when updating the object
- */
-async function _updateObject(wrapper, event, formData) {
-  this._resetPreview();
-  return wrapper(event, formData);
-}
 
 PATCHES.BASIC.WRAPS = {
   _prepareContext,
   _preparePartContext,
   _configureRenderOptions,
-  _attachPartListeners
-//   _render,
-//   close,
-//   _onChangeInput,
-//   getData,
-//   _updateObject
+  _attachPartListeners,
+  _onClose,
+  _onChangeForm
 };
 
 // ----- NOTE: Methods ----- //
 
+// ----- Create preview as with lights ---- //
+
+/**
+ * Add AmbientSoundConfig.prototype._preRender
+ * Draw the preview object.
+ */
+async function _preRender(_context, _options) {
+  // The super class does nothing, so we can skip to make our lives easier.
+  if ( this.preview ) {
+    await this.preview.object.draw();
+    this.document.object.initializeSoundSource({deleted: true});
+    this.preview.object.layer.preview.addChild(this.preview.object);
+    this._previewChanges();
+  }
+}
+
 /**
  * Wrap AmbientSoundConfig.prototype_previewChanges
  * Preview changes to the AmbientSound document as if they were true document updates.
- * Could just copy the light version directly, but don't want to confuse anything wrapping
- * the light method.
  * @param {object} change   Data which simulates a document update
  */
 function _previewChanges(change) {
   if ( !this.preview ) return;
   if ( change ) this.preview.updateSource(change);
-  this.preview.object.renderFlags.set({refresh: true});
-  this.preview.object.updateSource();
+  if ( this.preview.object?.destroyed === false ) {
+    this.preview.object.renderFlags.set({refresh: true});
+    this.preview.object.initializeSoundSource();
+  }
 }
 
 /**
  * Wrap AmbientSoundConfig.prototype._resetPreview
  * Restore the true data for the AmbientSound document when the form is submitted or closed
- * Could just copy the light version directly, but don't want to confuse anything wrapping
- * the light method.
  */
 function _resetPreview() {
   if ( !this.preview ) return;
-  this.preview.object.destroy({children: true});
+  if ( this.preview.object?.destroyed === false ) {
+    this.preview.object.destroy({children: true});
+  }
   this.preview = null;
-  this.document.object.visible = true;
-  this.document.object.renderFlags.set({refresh: true});
-  this.document.object.updateSource();
+  const object = this.document.object;
+  if ( object?.destroyed === false ) {
+    object.renderable = true;
+    object.initializeSoundSource();
+    object.renderFlags.set({refresh: true});
+  }
 }
 
-
-
 PATCHES.BASIC.METHODS = {
+  _preRender,
   _previewChanges,
   _resetPreview
 };

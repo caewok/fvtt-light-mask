@@ -19,6 +19,17 @@ export function activateListeners(app, html) {
   html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(app));
 }
 
+export function activateListenersV2(app, html) {
+  const shapeSelector = html.querySelector("#lightmaskshapes");
+  shapeSelector.addEventListener("change", shapeChanged.bind(app));
+
+  const saveWallsButton = html.querySelector(".saveWallsButton");
+  saveWallsButton.addEventListener("click", onAddWallIDs.bind(app));
+
+  const relativeCheckbox = html.querySelector(".lightmaskRelativeCheckbox");
+  relativeCheckbox.addEventListener("click", onCheckRelative.bind(app));
+}
+
 function shapeChanged(event) {
   log("shapeChanged!", event, this);
   configShapeSubmenu(event.target.value);

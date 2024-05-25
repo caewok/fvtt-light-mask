@@ -6,7 +6,7 @@ Hooks
 "use strict";
 
 import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
-import { injectConfiguration, activateListeners } from "./render.js";
+import { injectConfiguration, activateListenersV2 } from "./render.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -61,5 +61,22 @@ async function _preparePartContext(wrapped, partId, context, options) {
   return context;
 }
 
-PATCHES.BASIC.WRAPS = { _prepareContext, _preparePartContext };
+/**
+ * Monitor for shape selection changing, which changes how the value is set.
+ * Attach event listeners to rendered template parts.
+ * @param {string} partId                       The id of the part being rendered
+ * @param {HTMLElement} htmlElement             The rendered HTML element for the part
+ * @param {ApplicationRenderOptions} options    Rendering options passed to the render method
+ * @protected
+ */
+function _attachPartListeners(wrapped, partId, htmlElement, options) {
+  wrapped(partId, htmlElement, options);
+  if ( partId !== MODULE_ID ) return;
+  activateListenersV2(this, htmlElement);
+}
+
+PATCHES.BASIC.WRAPS = {
+  _prepareContext,
+  _preparePartContext,
+  _attachPartListeners };
 

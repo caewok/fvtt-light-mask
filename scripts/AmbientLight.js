@@ -1,5 +1,5 @@
 /* globals
-flattenObject
+foundry
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
@@ -29,7 +29,7 @@ export function updateAmbientLight(doc, data, _options, _userId) {
     `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
   ];
 
-  const changed = new Set(Object.keys(flattenObject(data)));
+  const changed = new Set(Object.keys(foundry.utils.flattenObject(data)));
   if ( changeFlags.some(k => changed.has(k)) ) doc.object.renderFlags.set({
     refresh: true
   });

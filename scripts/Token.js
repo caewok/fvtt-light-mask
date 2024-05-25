@@ -31,7 +31,7 @@ const CHANGE_FLAGS = [
 
 export function updateToken(doc, data, _options, _userId) {
   const changed = new Set(Object.keys(foundry.utils.flattenObject(data)));
-  if ( CHANGE_FLAGS.some(k => changed.has(k)) ) doc.object.updateLightSource();
+  if ( CHANGE_FLAGS.some(k => changed.has(k)) ) doc.object.initializeLightSource();
 }
 
 PATCHES.BASIC.HOOKS = {

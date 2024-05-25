@@ -5,7 +5,7 @@ foundry
 "use strict";
 
 import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
-import { injectConfiguration, activateListeners } from "./render.js";
+import { injectConfiguration, activateListeners, activateListenersV2 } from "./render.js";
 
 // Hook init to update the PARTS of the sound config
 Hooks.once("init", async function() {
@@ -100,6 +100,20 @@ async function _preparePartContext(wrapped, partId, context, options) {
   return context;
 }
 
+/**
+ * Monitor for shape selection changing, which changes how the value is set.
+ * Attach event listeners to rendered template parts.
+ * @param {string} partId                       The id of the part being rendered
+ * @param {HTMLElement} htmlElement             The rendered HTML element for the part
+ * @param {ApplicationRenderOptions} options    Rendering options passed to the render method
+ * @protected
+ */
+function _attachPartListeners(wrapped, partId, htmlElement, options) {
+  wrapped(partId, htmlElement, options);
+  if ( partId !== MODULE_ID ) return;
+  activateListenersV2(this, htmlElement);
+}
+
 // TODO: Keep/modify/delete?
 /**
  * Wrap AmbientSoundConfig.prototype._render.
@@ -165,7 +179,8 @@ async function _updateObject(wrapper, event, formData) {
 PATCHES.BASIC.WRAPS = {
   _prepareContext,
   _preparePartContext,
-  _configureRenderOptions
+  _configureRenderOptions,
+  _attachPartListeners
 //   _render,
 //   close,
 //   _onChangeInput,

@@ -51,8 +51,8 @@ PATCHES.BASIC = {};
  * Add additional module tab to the config.
  * Sound config currently has no tabs, so add "body" as the other.
  */
-async function _prepareContext(wrapped, options) {
-  const context = await wrapped(options);
+async function _prepareContext(wrapper, options) {
+  const context = await wrapper(options);
   context.tabs ??= {};
   context.tabs.body = {
     id: "body",
@@ -82,8 +82,8 @@ async function _prepareContext(wrapped, options) {
  * @param {RenderOptions} options                 Options which configure application rendering behavior
  * @protected
  */
-function _configureRenderOptions(wrapped, options) {
-  wrapped(options);
+function _configureRenderOptions(wrapper, options) {
+  wrapper(options);
   this.tabGroups = { sheet: "body" };
 }
 
@@ -94,8 +94,8 @@ function _configureRenderOptions(wrapped, options) {
  * @param {HandlebarsRenderOptions} options       Options which configure application rendering behavior
  * @returns {Promise<ApplicationRenderContext>}   Context data for a specific part
  */
-async function _preparePartContext(wrapped, partId, context, options) {
-  context = await wrapped(partId, context, options);
+async function _preparePartContext(wrapper, partId, context, options) {
+  context = await wrapper(partId, context, options);
 
   // Create the preview on first render.
   if ( options.isFirstRender && this.document.object ) {
@@ -124,8 +124,8 @@ async function _preparePartContext(wrapped, partId, context, options) {
  * @param {ApplicationRenderOptions} options    Rendering options passed to the render method
  * @protected
  */
-function _attachPartListeners(wrapped, partId, htmlElement, options) {
-  wrapped(partId, htmlElement, options);
+function _attachPartListeners(wrapper, partId, htmlElement, options) {
+  wrapper(partId, htmlElement, options);
   if ( partId !== MODULE_ID ) return;
   activateListenersV2(this, htmlElement);
 }

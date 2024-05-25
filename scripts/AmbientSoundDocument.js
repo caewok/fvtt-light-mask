@@ -11,7 +11,7 @@ PATCHES.BASIC = {};
  * Add AmbientSoundDocument.prototype._onUpdate to update the preview.
  * See AmbientLightDocument.prototype._onUpdate.
  */
-function _onUpdate(wrapped, changed, options, userId) {
+function _onUpdate(wrapper, changed, options, userId) {
   const configs = Object.values(this.apps).filter(app => {
     return app instanceof foundry.applications.sheets.AmbientSoundConfig;
   });
@@ -19,7 +19,7 @@ function _onUpdate(wrapped, changed, options, userId) {
     if ( app.preview ) options.animate = false;
     app._previewChanges(changed);
   });
-  wrapped(changed, options, userId);
+  wrapper(changed, options, userId);
   configs.forEach(app => app._previewChanges());
 }
 

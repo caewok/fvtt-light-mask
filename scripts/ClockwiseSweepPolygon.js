@@ -20,8 +20,8 @@ PATCHES.BASIC = {};
  * Wrap ClockwiseSweep.prototype._identifyEdges
  * Adds custom edges.
  */
-function _identifyEdges(wrapped) {
-  wrapped();
+function _identifyEdges(wrapper) {
+  wrapper();
 
   const src = this.config.source;
   if ( !(src instanceof foundry.canvas.sources.BaseEffectSource) ) return;

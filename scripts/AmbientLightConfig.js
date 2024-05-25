@@ -27,8 +27,8 @@ Hooks.once("init", function() {
 /**
  * Add additional module tab to the config.
  */
-async function _prepareContext(wrapped, options) {
-  const context = await wrapped(options);
+async function _prepareContext(wrapper, options) {
+  const context = await wrapper(options);
   context.tabs[MODULE_ID] =  {
     id: MODULE_ID,
     group: "sheet",
@@ -51,8 +51,8 @@ async function _prepareContext(wrapped, options) {
  * @param {HandlebarsRenderOptions} options       Options which configure application rendering behavior
  * @returns {Promise<ApplicationRenderContext>}   Context data for a specific part
  */
-async function _preparePartContext(wrapped, partId, context, options) {
-  context = await wrapped(partId, context, options);
+async function _preparePartContext(wrapper, partId, context, options) {
+  context = await wrapper(partId, context, options);
   if ( partId !== MODULE_ID ) return context;
   // Add in shapes
   context[MODULE_ID] = {
@@ -69,8 +69,8 @@ async function _preparePartContext(wrapped, partId, context, options) {
  * @param {ApplicationRenderOptions} options    Rendering options passed to the render method
  * @protected
  */
-function _attachPartListeners(wrapped, partId, htmlElement, options) {
-  wrapped(partId, htmlElement, options);
+function _attachPartListeners(wrapper, partId, htmlElement, options) {
+  wrapper(partId, htmlElement, options);
   if ( partId !== MODULE_ID ) return;
   activateListenersV2(this, htmlElement);
 }

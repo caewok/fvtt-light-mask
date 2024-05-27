@@ -24,6 +24,13 @@ Hooks.once("init", async function() {
   game.modules.get(MODULE_ID).api = {
     PATCHER
   };
+
+  CONFIG[MODULE_ID] = {
+    /**
+     * Turn on debug logging.
+     */
+    debug: false,
+  };
 });
 
 Hooks.once("setup", async function() {

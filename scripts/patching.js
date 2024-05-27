@@ -14,10 +14,12 @@ import { PATCHES as PATCHES_AmbientSound } from "./AmbientSound.js";
 import { PATCHES as PATCHES_AmbientLight } from "./AmbientLight.js";
 import { PATCHES as PATCHES_Token } from "./Token.js";
 import { PATCHES as PATCHES_TokenConfig } from "./TokenConfig.js";
+import { PATCHES as PATCHES_CanvasEdges } from "./customEdges.js";
 
 const PATCHES = {
   AmbientLight: PATCHES_AmbientLight,
   AmbientSound: PATCHES_AmbientSound,
+  "foundry.canvas.edges.CanvasEdges": PATCHES_CanvasEdges,
   "foundry.applications.sheets.AmbientLightConfig": PATCHES_AmbientLightConfig,
   "foundry.applications.sheets.AmbientSoundConfig": PATCHES_AmbientSoundConfig,
 //   AmbientSoundDocument: PATCHES_AmbientSoundDocument,

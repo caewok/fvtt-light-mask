@@ -19,6 +19,18 @@ export const FLAGS = {
   ORIGIN: "origin"
 };
 
+// Flags that, if changed, indicate the source must be refreshed.
+export const CHANGE_FLAGS = [
+  `flags.${MODULE_ID}.${FLAGS.SHAPE}`,
+  `flags.${MODULE_ID}.${FLAGS.SIDES}`,
+  `flags.${MODULE_ID}.${FLAGS.POINTS}`,
+  `flags.${MODULE_ID}.${FLAGS.ROTATION}`,
+  `flags.${MODULE_ID}.${FLAGS.RELATIVE}`,
+  `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`,
+  `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`,
+  `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
+];
+
 export const TEMPLATES = {
   LIGHT: `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
   SOUND: `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,

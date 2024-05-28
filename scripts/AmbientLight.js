@@ -10,7 +10,8 @@ import {
   preUpdateAmbientSourceHook,
   updateAmbientSourceHook,
   destroyAmbientSourceHook,
-  refreshAmbientSourceHook } from "./updateSource.js";
+  refreshAmbientSourceHook,
+  drawAmbientSourceHook } from "./updateSource.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -34,5 +35,6 @@ PATCHES.BASIC.HOOKS = {
   preCreateAmbientLight: preCreateAmbientSourceHook,
   preUpdateAmbientLight: preUpdateAmbientSourceHook,
   destroyAmbientLight: destroyAmbientSourceHook,
-  refreshAmbientLight: refreshAmbientSourceHook
+  refreshAmbientLight: refreshAmbientSourceHook,
+  drawAmbientLight: drawAmbientSourceHook
 };

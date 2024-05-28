@@ -14,6 +14,16 @@ import {
   updateEdgesForPlaceable,
   removeCachedWallEdgeData } from "./customEdges.js";
 
+
+/**
+ * Hook for drawAmbientLight
+ * A hook event that fires when a {@link PlaceableObject} is initially drawn.
+ * @param {PlaceableObject} object    The object instance being drawn
+ */
+export function drawAmbientSourceHook(object) {
+  object.document.setFlag(MODULE_ID, FLAGS.ORIGIN, { x: object.document.x, y: object.document.y }); // Async
+}
+
 /**
  * Hook for refreshAmbientLight
  * @param {PlaceableObject} object    The object instance being refreshed
@@ -35,7 +45,7 @@ export function refreshAmbientSourceHook(object, flags) {
     object.document.updateSource({ flags: { [MODULE_ID]: { [FLAGS.ORIGIN]: currOrigin } } });
     return;
   }
-  if ( prevOrigin.equals(currOrigin) ) return;
+  if ( currOrigin.equals(prevOrigin) ) return;
 
   // Update the local source only.
   // Will get the document in preCreate.
@@ -147,6 +157,8 @@ export function updateAmbientSourceHook(doc, changed, _options, _userId) {
   if ( !edgesCache || !object ) return;
   log(`updateAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}`);
   updateEdgesForPlaceable(object);
+
+  object.document.setFlag(MODULE_ID, FLAGS.ORIGIN, { x: doc.x, y: doc.y }); // Async
 
   // Refresh the source shape.
   log(`updateAmbientSourceHook|Refreshing source ${object.constructor.name} ${object.id}`);

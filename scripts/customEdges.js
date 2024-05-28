@@ -67,8 +67,8 @@ export function updateEdgesForPlaceable(placeable) {
   const clName = placeable.constructor.name;
   for ( const cacheData of edgesCache ) {
     const edgeConfig = {...cacheData};
-    const id = `${MODULE_ID}.${clName}.${placeable.id}.wall.${cacheData.id}`;
-    edgeConfig.type = `${MODULE_ID}.cachedWall.${placeable.id}`;
+    const id = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}.wall.${cacheData.id}`;
+    edgeConfig.type = `${MODULE_ID}.cachedWall.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
     edgeConfig.object = placeable;
     const edge = new Edge(
       { x: edgeConfig.c[0], y: edgeConfig.c[1] },
@@ -114,7 +114,7 @@ export function getCachedWallEdgeData(idString) {
  */
 export function removeCachedWallEdgeData(placeable) {
   const clName = placeable.constructor.name;
-  const keys = [...canvas.edges.keys()].filter(edge => edge.id?.includes(`${MODULE_ID}.${clName}.${placeable.id}`))
+  const keys = [...canvas.edges.keys()].filter(edge => edge.id?.includes(`${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`))
   keys.forEach(key => canvas.edges.delete(key));
 }
 

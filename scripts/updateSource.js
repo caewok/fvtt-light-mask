@@ -1,8 +1,7 @@
 /* globals
-canvas,
-foundry,
 isEmpty,
-TokenDocument
+PIXI,
+Token
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
@@ -12,7 +11,67 @@ import { MODULE_ID, FLAGS, SHAPE } from "./const.js";
 import {
   getCachedWallEdgeData,
   shiftCustomEdgeCache,
-  updateEdgesForPlaceable } from "./customEdges.js";
+  updateEdgesForPlaceable,
+  removeCachedWallEdgeData } from "./customEdges.js";
+
+/**
+ * Hook for refreshAmbientLight
+ * @param {PlaceableObject} object    The object instance being refreshed
+ * @param {object} flags              Render flags for the object
+ */
+export function refreshAmbientSourceHook(object, flags) {
+  if ( !flags.refreshPosition || !object.isPreview ) return;
+
+  // If relative, update the edges cache and the edges.
+  const isRelative = object.document.getFlag(MODULE_ID, FLAGS.RELATIVE);
+  if ( !isRelative ) return;
+
+  // Check if the previous origin differs from the current position.
+  log(`\nrefreshAmbientSourceHook|${object.isPreview ? "preview" : "original"} ${object.id}`);
+  const currOrigin = newOrigin(object);
+  const prevOrigin = object.document.getFlag(MODULE_ID, FLAGS.ORIGIN);
+  if ( !prevOrigin ) {
+    log(`\tSetting origin to ${currOrigin.x},${currOrigin.y}`);
+    object.document.updateSource({ flags: { [MODULE_ID]: { [FLAGS.ORIGIN]: currOrigin } } });
+    return;
+  }
+  if ( prevOrigin.equals(currOrigin) ) return;
+
+  // Update the local source only.
+  // Will get the document in preCreate.
+  const edgesCache = object.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
+  const delta = currOrigin.subtract(prevOrigin);
+  const updates = {
+    flags: {
+      [MODULE_ID]: {
+        [FLAGS.ORIGIN]: currOrigin,
+        [FLAGS.CUSTOM_WALLS.EDGES]: shiftCustomEdgeCache(edgesCache, delta)
+      }
+    }
+  };
+  log(`\t${prevOrigin.x},${prevOrigin.y} -> ${currOrigin.x},${currOrigin.y}. Delta ${delta.x},${delta.y}`);
+  object.document.updateSource(updates);
+  updateEdgesForPlaceable(object);
+}
+
+/**
+ * Hook for destroyAmbientLight.
+ * Remove the edges associated with the object.
+ * @param {PlaceableObject} object    The object instance being refreshed
+ */
+export function destroyAmbientSourceHook(object) {
+  removeCachedWallEdgeData(object)
+}
+
+/**
+ * Get the current origin of the placeable.
+ * @param {PlaceableObject} object
+ */
+function newOrigin(object) {
+  if ( object instanceof Token ) object = object.center;
+  return PIXI.Point.fromObject(object)
+}
+
 
 /**
  * Hook for preCreateAmbientLight, etc.

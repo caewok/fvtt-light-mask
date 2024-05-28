@@ -8,7 +8,9 @@ import { CHANGE_FLAGS } from "./const.js";
 import {
   preCreateAmbientSourceHook,
   preUpdateAmbientSourceHook,
-  updateAmbientSourceHook } from "./updateSource.js";
+  updateAmbientSourceHook,
+  destroyAmbientSourceHook,
+  refreshAmbientSourceHook } from "./updateSource.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -31,4 +33,6 @@ PATCHES.BASIC.HOOKS = {
   updateAmbientSound,
   preCreateAmbientSound: preCreateAmbientSourceHook,
   preUpdateAmbientSound: preUpdateAmbientSourceHook,
+  destroyAmbientSound: destroyAmbientSourceHook,
+  refreshAmbientSource: refreshAmbientSourceHook
 };

@@ -1,8 +1,6 @@
 /* globals
 canvas,
-getDocumentClass,
-foundry,
-ui
+foundry
 */
 "use strict";
 
@@ -29,7 +27,7 @@ function initializeEdges() {
     ...canvas.sounds.placeables,
     ...canvas.tokens.placeables // For lights in tokens
   ];
-  placeables.forEach(p => updateEdgesForPlaceable(p));
+  placeables.forEach(p => updateCachedEdges(p));
 }
 
 PATCHES.BASIC.HOOKS = { initializeEdges };
@@ -58,16 +56,18 @@ PATCHES.BASIC.HOOKS = { initializeEdges };
  * Add canvas edges for a given source wall cache.
  * @param {PlaceableObject} placeable     Placeable that may contain CachedWallEdges.
  */
-export function updateEdgesForPlaceable(placeable) {
-  const edgesCache = placeable.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
-  if ( !edgesCache || !edgesCache.length ) return removeCachedWallEdgeData(placeable);
+export function updateCachedEdges(placeable, edgesCache) {
+  edgesCache ??= placeable.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
+  if ( !edgesCache || !edgesCache.length ) return removeCachedEdges(placeable);
 
   // Edge cache
   const Edge = foundry.canvas.edges.Edge;
   const clName = placeable.constructor.name;
   for ( const cacheData of edgesCache ) {
-    const edgeConfig = {...cacheData};
+    const edgeConfig = foundry.utils.duplicate(cacheData);
     const id = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}.wall.${cacheData.id}`;
+    log(`updateCachedEdges|updating cached edge ${id}`);
+
     edgeConfig.type = `${MODULE_ID}.cachedWall.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
     edgeConfig.object = placeable;
     const edge = new Edge(
@@ -112,10 +112,13 @@ export function getCachedWallEdgeData(idString) {
  * Remove cached wall data from the scene
  * @param {PlaceableObject} placeable
  */
-export function removeCachedWallEdgeData(placeable) {
+export function removeCachedEdges(placeable) {
   const clName = placeable.constructor.name;
-  const keys = [...canvas.edges.keys()].filter(edge => edge.id?.includes(`${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`))
-  keys.forEach(key => canvas.edges.delete(key));
+  const keyString = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
+  log(`removeCachedEdges|removing cached edges ${keyString}`);
+  [...canvas.edges.keys()]
+    .filter(key => key.includes(keyString))
+    .forEach(key => canvas.edges.delete(key));
 }
 
 /**
@@ -126,6 +129,7 @@ export function removeCachedWallEdgeData(placeable) {
  */
 export function shiftCustomEdgeCache(edgesCache, delta) {
   log(`shiftCustomEdgeCache delta is ${delta.x}, ${delta.y}`, edgesCache);
+  edgesCache = foundry.utils.duplicate(edgesCache);
   edgesCache.forEach(e => {
     e.c[0] = e.c[0] + delta.x;
     e.c[1] = e.c[1] + delta.y;

@@ -7,10 +7,12 @@ foundry
 import { CHANGE_FLAGS } from "./const.js";
 import {
   preCreateAmbientSourceHook,
+  createAmbientSourceHook,
   preUpdateAmbientSourceHook,
   updateAmbientSourceHook,
-  destroyAmbientSourceHook,
-  refreshAmbientSourceHook } from "./updateSource.js";
+  deleteAmbientSourceHook,
+  drawAmbientSourceHook,
+  destroyAmbientSourceHook } from "./updateSource.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -30,9 +32,11 @@ export function updateToken(doc, data, options, userId) {
 }
 
 PATCHES.BASIC.HOOKS = {
-  updateToken,
   preCreateToken: preCreateAmbientSourceHook,
+  createToken: createAmbientSourceHook,
   preUpdateToken: preUpdateAmbientSourceHook,
-  destroyToken: destroyAmbientSourceHook,
-  refreshAmbientSource: refreshAmbientSourceHook
+  updateToken,
+  deleteToken: deleteAmbientSourceHook,
+  drawToken: drawAmbientSourceHook,
+  destroyToken: destroyAmbientSourceHook
 };

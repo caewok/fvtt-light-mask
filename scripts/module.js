@@ -15,6 +15,7 @@ import { initializePatching, PATCHER } from "./patching.js";
 // Hooks
 Hooks.once("init", async function() {
   log("Initializing...");
+  // CONFIG.debug.hooks = true;
 
   registerGeometry();
   initializePatching();
@@ -66,9 +67,9 @@ Hooks.on("canvasReady", async canvas => {
   await Promise.all(promises);
 
   // Update the light or sound source
-  canvas.lighting.placeables.forEach(p => p.initializeLightSource());
-  canvas.sounds.placeables.forEach(p => p.initializeSoundSource());
-  canvas.tokens.placeables.forEach(p => p.initializeSources());
+//   canvas.lighting.placeables.forEach(p => p.initializeLightSource());
+//   canvas.sounds.placeables.forEach(p => p.initializeSoundSource());
+//   canvas.tokens.placeables.forEach(p => p.initializeSources());
 });
 
 /**

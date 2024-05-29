@@ -75,8 +75,33 @@ function _attachPartListeners(wrapper, partId, htmlElement, options) {
   activateListenersV2(this, htmlElement);
 }
 
+/**
+ * Changes to preview in the lighting config.
+ * TODO: Do something here if the wall is selected?
+ * @param {object} [change]  A change to preview.
+ */
+function _previewChanges(wrapper, change) {
+  wrapper(change);
+}
+
+/**
+ * Prepare data used to update the Item upon form submission.
+ * TODO: Does this need an update for cached edges? Or is this captured in the hooks?
+ * @param {SubmitEvent} event                   The originating form submission event
+ * @param {HTMLFormElement} form                The form element that was submitted
+ * @param {FormDataExtended} formData           Processed data for the submitted form
+ * @returns {object}                            Prepared submission data as an object
+ * @throws {Error}                              Subclasses may throw validation errors here to prevent form submission
+ */
+function _prepareSubmitData(wrapper, event, form, formData) {
+  return wrapper(event, form, formData);
+}
+
 PATCHES.BASIC.WRAPS = {
   _prepareContext,
   _preparePartContext,
-  _attachPartListeners };
+  _attachPartListeners,
+  _previewChanges,
+  _prepareSubmitData
+};
 

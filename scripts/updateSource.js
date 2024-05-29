@@ -1,6 +1,5 @@
 /* globals
 isEmpty,
-PIXI,
 Token
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
@@ -11,93 +10,122 @@ import { MODULE_ID, FLAGS, SHAPE } from "./const.js";
 import {
   getCachedWallEdgeData,
   shiftCustomEdgeCache,
-  updateEdgesForPlaceable,
-  removeCachedWallEdgeData } from "./customEdges.js";
+  updateCachedEdges,
+  removeCachedEdges } from "./customEdges.js";
 
+/* Update workflow
+
+On canvas start:
+drawAmbientLight hook
+drawLightingLayer hook
+initializeEdges hook
+canvasReady hook
+refreshAmbientLight hook
+initializeLightSources hook
+lightingRefresh hook
+
+On light creation:
+drawAmbientLight hook (preview)
+...
+refreshAmbientLight hook (preview) (repeated)
+lightingRefresh hook (repeated, alternated with refresh)
+...
+preCreateAmbientLight hook (doc)
+createAmbientLight hook (doc)
+drawAmbientLight hook (preview)
+refreshAmbientLight hook (original) (possibly 2x or more)
+
+On light drag:
+drawAmbientLight hook (preview)
+...
+refreshAmbientLight hook (preview) (repeated)
+lightingRefresh hook (repeated)
+...
+preUpdateAmbientLight hook (doc)
+updateAmbientLight hook (doc)
+destroyAmbientLight hook (preview)
+refreshAmbientLight hook (original) (possibly 2x or more)
+
+On light deletion:
+preDeleteAmbientLight hook (doc)
+destroyAmbientLight hook
+deleteAmbientLight hook (doc)
+
+Expected Flow:
+preCreateDoc
+- Add flags, build edges cache (likely empty array)
+
+createDoc
+- Add edges from edges cache
+
+preUpdateDoc
+- Update flags, build edges cache
+
+updateDoc
+- Locally update edges from edges cache
+
+preDelete doc
+- nothing?
+
+delete doc
+- remove edges cache
+
+drawObject
+- Locally add flags, edges cache
+
+refreshObject
+- Locally update edges cache? No, prefer updatePosition wrap.
+
+deleteObject
+- Locally delete edges cache
+
+updatePosition wrap
+- Locally update edges and cache
+
+
+*/
+
+
+// ----- NOTE: Placeable document hooks ----- //
 
 /**
- * Hook for drawAmbientLight
- * A hook event that fires when a {@link PlaceableObject} is initially drawn.
- * @param {PlaceableObject} object    The object instance being drawn
- */
-export function drawAmbientSourceHook(object) {
-  object.document.setFlag(MODULE_ID, FLAGS.ORIGIN, { x: object.document.x, y: object.document.y }); // Async
-}
-
-/**
- * Hook for refreshAmbientLight
- * @param {PlaceableObject} object    The object instance being refreshed
- * @param {object} flags              Render flags for the object
- */
-export function refreshAmbientSourceHook(object, flags) {
-  if ( !flags.refreshPosition || !object.isPreview ) return;
-
-  // If relative, update the edges cache and the edges.
-  const isRelative = object.document.getFlag(MODULE_ID, FLAGS.RELATIVE);
-  if ( !isRelative ) return;
-
-  // Check if the previous origin differs from the current position.
-  log(`\nrefreshAmbientSourceHook|${object.isPreview ? "preview" : "original"} ${object.id}`);
-  const currOrigin = newOrigin(object);
-  const prevOrigin = object.document.getFlag(MODULE_ID, FLAGS.ORIGIN);
-  if ( !prevOrigin ) {
-    log(`\tSetting origin to ${currOrigin.x},${currOrigin.y}`);
-    object.document.updateSource({ flags: { [MODULE_ID]: { [FLAGS.ORIGIN]: currOrigin } } });
-    return;
-  }
-  if ( currOrigin.equals(prevOrigin) ) return;
-
-  // Update the local source only.
-  // Will get the document in preCreate.
-  const edgesCache = object.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
-  const delta = currOrigin.subtract(prevOrigin);
-  const updates = {
-    flags: {
-      [MODULE_ID]: {
-        [FLAGS.ORIGIN]: currOrigin,
-        [FLAGS.CUSTOM_WALLS.EDGES]: shiftCustomEdgeCache(edgesCache, delta)
-      }
-    }
-  };
-  log(`\t${prevOrigin.x},${prevOrigin.y} -> ${currOrigin.x},${currOrigin.y}. Delta ${delta.x},${delta.y}`);
-  object.document.updateSource(updates);
-  updateEdgesForPlaceable(object);
-}
-
-/**
- * Hook for destroyAmbientLight.
- * Remove the edges associated with the object.
- * @param {PlaceableObject} object    The object instance being refreshed
- */
-export function destroyAmbientSourceHook(object) {
-  removeCachedWallEdgeData(object)
-}
-
-/**
- * Get the current origin of the placeable.
- * @param {PlaceableObject} object
- */
-function newOrigin(object) {
-  if ( object instanceof Token ) object = object.center;
-  return PIXI.Point.fromObject(object)
-}
-
-
-/**
- * Hook for preCreateAmbientLight, etc.
+ * Hook for preCreateDocument
+ * Set default flag values, build edge cache.
+ * @param {Document} document                     The pending document which is requested for creation
+ * @param {object} data                           The initial data object provided to the document creation request
+ * @param {Partial<DatabaseCreateOperation>} options Additional options which modify the creation request
+ * @param {string} userId                         The ID of the requesting user, always game.user.id
+ * @returns {boolean|void}                        Explicitly return false to prevent creation of this Document
  */
 export function preCreateAmbientSourceHook(document, data, options, userId) { // eslint-disable-line no-unused-vars
-  const updates = {};
-  if ( noFlag(document, FLAGS.SHAPE) ) updates[`flags.${MODULE_ID}.${FLAGS.SHAPE}`] = SHAPE.TYPES.CIRCLE;
-  if ( noFlag(document, FLAGS.SIDES) ) updates[`flags.${MODULE_ID}.${FLAGS.SIDES}`] = 3;
-  if ( noFlag(document, FLAGS.POINTS) ) updates[`flags.${MODULE_ID}.${FLAGS.POINTS}`] = 5;
-  if ( noFlag(document, FLAGS.ELLIPSE.MINOR) ) updates[`flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`] = 1;
-  if ( !isEmpty(updates) ) document.updateSource(updates);
+  data.flags ??= {};
+  data.flags[MODULE_ID] ??= {};
+  data.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
+  data.flags[MODULE_ID][FLAGS.SIDES] ??= 3;
+  data.flags[MODULE_ID][FLAGS.POINTS] ??= 5;
+  data.flags[MODULE_ID][FLAGS.ELLIPSE.MINOR] ??= 1;
+  data.flags[MODULE_ID][FLAGS.RELATIVE] ??= false;
+  const idString = data.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.IDS] ??= "";
+  data.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idString);
 }
 
+/**
+ * Hook for createDocument
+ * Add the edges
+ * @param {Document} document                       The new Document instance which has been created
+ * @param {Partial<DatabaseCreateOperation>} options Additional options which modified the creation request
+ * @param {string} userId                           The ID of the User who triggered the creation workflow
+ */
+export function createAmbientSourceHook(document, options, userId) {
+  const edgesCache = document?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES];
+  const object = document.object;
+  if ( !edgesCache || !object ) return;
+  log(`createAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}`);
+  updateCachedEdges(object);
+}
 
 /**
- * Hook for preUpdateAmbientLight, etc.
+ * Hook for preUpdateObject
  * @param {Document} document                       The Document instance being updated
  * @param {object} changed                          Differential data that will be used to update the document
  * @param {Partial<DatabaseUpdateOperation>} options Additional options which modify the update request
@@ -111,14 +139,13 @@ export function preUpdateAmbientSourceHook(doc, changes, _options, _userId) {
   const idStringD = doc.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.IDS);
   const idStringChanged = (typeof idStringC !== "undefined") && (idStringC !== idStringD);
 
+  // Update the edge cache if the edge ids changed.
+  if ( idStringChanged ) changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idStringC);
+
   // Relative flag
   const relativeC = changes?.flags?.[MODULE_ID]?.[FLAGS.RELATIVE];
   const relativeD = doc.getFlag(MODULE_ID, FLAGS.RELATIVE);
   const relativeChanged = (typeof relativeC !== "undefined") && relativeC !== relativeD;
-
-  // Update the edge cache if the edge ids changed.
-  if ( idStringChanged ) changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idStringC);
-  if ( relativeChanged ) return;
 
   // If the document uses relative placement and relative is not changing, update the edge positions.
   if ( relativeChanged || !relativeD ) return;
@@ -156,12 +183,52 @@ export function updateAmbientSourceHook(doc, changed, _options, _userId) {
   const object = doc.object;
   if ( !edgesCache || !object ) return;
   log(`updateAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}`);
-  updateEdgesForPlaceable(object);
-
-  object.document.setFlag(MODULE_ID, FLAGS.ORIGIN, { x: doc.x, y: doc.y }); // Async
+  updateCachedEdges(object);
 
   // Refresh the source shape.
   log(`updateAmbientSourceHook|Refreshing source ${object.constructor.name} ${object.id}`);
   if ( object instanceof Token ) object.initializeLightSource();
   else object.renderFlags.set({ refreshField: true });
 }
+
+/**
+ * Hook preDelete the placeable document.
+ * Currently not used.
+ * @param {Document} document                       The Document instance being deleted
+ * @param {Partial<DatabaseDeleteOperation>} options Additional options which modify the deletion request
+ * @param {string} userId                           The ID of the requesting user, always game.user.id
+ * @returns {boolean|void}                          Explicitly return false to prevent deletion of this Document
+ */
+// export function preDeleteAmbientSourceHook(doc, options, userId) {}
+
+/**
+ * Hook delete the placeable document.
+ * @param {Document} document                       The existing Document which was deleted
+ * @param {Partial<DatabaseDeleteOperation>} options Additional options which modified the deletion request
+ * @param {string} userId                           The ID of the User who triggered the deletion workflow
+ */
+export function deleteAmbientSourceHook(doc, options, userId) { } // removeCachedEdges(doc.object);
+
+
+// ----- NOTE: Placeable object hooks ----- //
+
+/**
+ * Hook for drawObject
+ * Add cached edges to the canvas edges map.
+ * @param {PlaceableObject} object
+ */
+export function drawAmbientSourceHook(object) { updateCachedEdges(object); }
+
+/**
+ * Hook for refreshPlaceableObject.
+ * Currently unused in favor of wrapping _refreshPosition.
+ * @param {PlaceableObject} object    The object instance being refreshed
+ */
+// export function refreshAmbientSourceHook(object) {}
+
+/**
+ * Hook for destroyPlaceableObject.
+ * Remove the edges associated with the object.
+ * @param {PlaceableObject} object    The object instance being refreshed
+ */
+export function destroyAmbientSourceHook(object) { removeCachedEdges(object); }

@@ -4,6 +4,7 @@
 "use strict";
 
 import { MODULE_ID } from "./const.js";
+import { log } from "./util.js";
 
 // Patches for the ClockwiseSweepPolygon class
 export const PATCHES = {};
@@ -20,7 +21,10 @@ PATCHES.BASIC = {};
  */
 function _testEdgeInclusion(wrapped, edge, edgeTypes, bounds) {
   const obj = this.config.source?.object;
-  if ( obj ) edgeTypes[`${MODULE_ID}.cachedWall.${obj.id}${obj.isPreview ? ".preview" : ""}`] = 1;
+  if ( obj ) {
+    log(`Sweep of ${obj.id} ${obj.isPreview ? ".preview" : ""}`);
+    edgeTypes[`${MODULE_ID}.cachedWall.${obj.id}${obj.isPreview ? ".preview" : ""}`] = 1;
+  }
   return wrapped(edge, edgeTypes, bounds);
 }
 

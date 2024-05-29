@@ -52,6 +52,7 @@ PATCHES.BASIC.HOOKS = { initializeEdges };
  * @prop {number} bottomE     In grid units
  */
 
+
 /**
  * Add canvas edges for a given source wall cache.
  * @param {PlaceableObject} placeable     Placeable that may contain CachedWallEdges.
@@ -78,13 +79,24 @@ export function updateCachedEdges(placeable, edgesCache) {
     // Will probably want the elevation at some point.
     edge.topE = edgeConfig.topE;
     edge.bottomE = edgeConfig.bottomE;
+
+    // Debugging.
+    if ( CONFIG[MODULE_ID].debug ) {
+      const oldEdge = canvas.edges.get(id)
+      console.table({
+        old: oldEdge ? [oldEdge.a.x, oldEdge.a.y, oldEdge.b.x, oldEdge.b.y] : [null, null, null, null],
+        updated: [edge.a.x, edge.a.y, edge.b.x, edge.b.y]
+      });
+    }
+
     canvas.edges.set(id, edge);
   }
+  canvas.perception.renderFlags.set({ refreshEdges: true });
 }
 
 /**
  * Set wall data for cached walls and add the cached edges to the scene.
- * @param {string} idString     String of cached wall ids
+ * @param {string} idString         String of cached wall ids
  * @returns {CachedWallEdge[]}
  */
 export function getCachedWallEdgeData(idString) {
@@ -116,9 +128,18 @@ export function removeCachedEdges(placeable) {
   const clName = placeable.constructor.name;
   const keyString = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
   log(`removeCachedEdges|removing cached edges ${keyString}`);
-  [...canvas.edges.keys()]
-    .filter(key => key.includes(keyString))
-    .forEach(key => canvas.edges.delete(key));
+  getCachedEdgeKeys(placeable).forEach(key => canvas.edges.delete(key));
+}
+
+/**
+ * Get all the cached wall edge keys for a given placeable.
+ * @param {PlaceableObject} placeable
+ * @returns {string[]}
+ */
+export function getCachedEdgeKeys(placeable) {
+  const clName = placeable.constructor.name;
+  const keyString = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
+  return [...canvas.edges.keys()].filter(key => key.includes(keyString))
 }
 
 /**
@@ -131,10 +152,12 @@ export function shiftCustomEdgeCache(edgesCache, delta) {
   log(`shiftCustomEdgeCache delta is ${delta.x}, ${delta.y}`, edgesCache);
   edgesCache = foundry.utils.duplicate(edgesCache);
   edgesCache.forEach(e => {
+    const old = foundry.utils.duplicate(e.c); // Debugging.
     e.c[0] = e.c[0] + delta.x;
     e.c[1] = e.c[1] + delta.y;
     e.c[2] = e.c[2] + delta.x;
     e.c[3] = e.c[3] + delta.y;
+    if ( CONFIG[MODULE_ID].debug ) console.table({ old, updated: e.c });
   });
   return edgesCache;
 }

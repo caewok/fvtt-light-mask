@@ -16,7 +16,8 @@ export const FLAGS = {
   ELLIPSE: { MINOR: "ellipseMinor", MAJOR: "ellipseMajor" },
   ROTATION: "rotation",
   RELATIVE: "relative",
-  ORIGIN: "origin"
+  ORIGIN: "origin",
+  ORIGIN_PREVIEW: "previewOrigin"
 };
 
 // Flags that, if changed, indicate the source must be refreshed.

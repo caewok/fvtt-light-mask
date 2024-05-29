@@ -98,15 +98,22 @@ updatePosition wrap
  * @returns {boolean|void}                        Explicitly return false to prevent creation of this Document
  */
 export function preCreateAmbientSourceHook(document, data, options, userId) { // eslint-disable-line no-unused-vars
-  data.flags ??= {};
-  data.flags[MODULE_ID] ??= {};
-  data.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
-  data.flags[MODULE_ID][FLAGS.SIDES] ??= 3;
-  data.flags[MODULE_ID][FLAGS.POINTS] ??= 5;
-  data.flags[MODULE_ID][FLAGS.ELLIPSE.MINOR] ??= 1;
-  data.flags[MODULE_ID][FLAGS.RELATIVE] ??= false;
-  const idString = data.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.IDS] ??= "";
-  data.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idString);
+  const changes = {
+    flags: {
+      [MODULE_ID]: {
+        [FLAGS.SHAPE]: SHAPE.TYPES.CIRCLE,
+        [FLAGS.SIDES]: 3,
+        [FLAGS.POINTS]: 5,
+        [FLAGS.ELLIPSE.MINOR]: 1,
+        [FLAGS.RELATIVE]: false,
+        //[FLAGS.ORIGIN]: { x: data.x, y: data.y },
+        //[FLAGS.ORIGIN_PREVIEW]: { x: data.x, y: data.y },
+        [FLAGS.CUSTOM_WALLS.IDS]: "",
+        [FLAGS.CUSTOM_WALLS.EDGES]: []
+      }
+    }
+  };
+  document.updateSource(changes);
 }
 
 /**
@@ -120,7 +127,7 @@ export function createAmbientSourceHook(document, options, userId) {
   const edgesCache = document?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES];
   const object = document.object;
   if ( !edgesCache || !object ) return;
-  log(`createAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}`);
+  log(`createAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
   updateCachedEdges(object);
 }
 
@@ -139,33 +146,41 @@ export function preUpdateAmbientSourceHook(doc, changes, _options, _userId) {
   const idStringD = doc.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.IDS);
   const idStringChanged = (typeof idStringC !== "undefined") && (idStringC !== idStringD);
 
-  // Update the edge cache if the edge ids changed.
-  if ( idStringChanged ) changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idStringC);
-
-  // Relative flag
   const relativeC = changes?.flags?.[MODULE_ID]?.[FLAGS.RELATIVE];
   const relativeD = doc.getFlag(MODULE_ID, FLAGS.RELATIVE);
   const relativeChanged = (typeof relativeC !== "undefined") && relativeC !== relativeD;
 
-  // If the document uses relative placement and relative is not changing, update the edge positions.
-  if ( relativeChanged || !relativeD ) return;
+  const positionChanged = Object.hasOwn(changes, "x") || Object.hasOwn(changes, "y");
+  if ( !(idStringChanged || relativeChanged || positionChanged) ) return;
 
-  // Only shift if there are cached edges to change.
-  const edgesCache = changes?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES] || doc.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
-  if ( !(edgesCache || edgesCache.length) ) return;
-
-  // Confirm actual movement change.
-  const delta = {
-    x: (changes.x ?? doc.x) - doc.x,
-    y: (changes.y ?? doc.y) - doc.y
+  // Update the edge cache if the edge ids changed.
+  // TODO: Does the cached wall data need to be updated with changes.x, changes.y?
+  log(`preUpdateAmbientSourceHook|Source ${doc.object?.constructor?.name} ${doc.object?.id}${doc.object.isPreview ? ".preview" : ""}`)
+  let edgesCache = doc.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES];
+  if ( idStringChanged ) {
+    log(`\tNew wall cache`);
+    changes.flags ??= {};
+    changes.flags[MODULE_ID] ??= {};
+    edgesCache = changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idStringC);
   }
-  if ( !(delta.x || delta.y) ) return;
+  if ( !positionChanged ) return;
 
-  // Shift the cached edges but don't yet update the canvas.edges. That will be done in updateHook.
-  log(`preUpdateAmbientSourceHook|Shifting edge by ${delta.x},${delta.y} for source ${doc.object?.constructor?.name} ${doc.object?.id}`);
-  changes.flags ??= {};
-  changes.flags[MODULE_ID] ??= {};
-  changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = shiftCustomEdgeCache(edgesCache, delta);
+  // Relative flag
+  const isRelative = relativeC ?? relativeD ?? false;
+  const newPosition = { x: changes.x ?? doc.x, y: changes.y ?? doc.y };
+  if ( isRelative ) {
+    const delta = {
+      x: newPosition.x - doc.x,
+      y: newPosition.y - doc.y
+    }
+    log(`\tShifting cached edge data by ${delta.x},${delta.y}`);
+    edgesCache = shiftCustomEdgeCache(edgesCache, delta);
+    changes.flags ??= {};
+    changes.flags[MODULE_ID] ??= {};
+    changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = edgesCache
+  }
+
+  log(`\tNew position ${newPosition.x},${newPosition.y}`);
 }
 
 /**
@@ -182,13 +197,13 @@ export function updateAmbientSourceHook(doc, changed, _options, _userId) {
   const edgesCache = changed?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES];
   const object = doc.object;
   if ( !edgesCache || !object ) return;
-  log(`updateAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}`);
+  log(`updateAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
+  log(`\tUpdating cached edges `);
   updateCachedEdges(object);
 
   // Refresh the source shape.
-  log(`updateAmbientSourceHook|Refreshing source ${object.constructor.name} ${object.id}`);
-  if ( object instanceof Token ) object.initializeLightSource();
-  else object.renderFlags.set({ refreshField: true });
+  log(`\tRefreshing source`);
+  object.initializeLightSource();
 }
 
 /**
@@ -217,18 +232,39 @@ export function deleteAmbientSourceHook(doc, options, userId) { } // removeCache
  * Add cached edges to the canvas edges map.
  * @param {PlaceableObject} object
  */
-export function drawAmbientSourceHook(object) { updateCachedEdges(object); }
+export function drawAmbientSourceHook(object) {
+  log(`drawAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
+  //updateCachedEdges(object);
+}
 
 /**
  * Hook for refreshPlaceableObject.
  * Currently unused in favor of wrapping _refreshPosition.
  * @param {PlaceableObject} object    The object instance being refreshed
  */
-// export function refreshAmbientSourceHook(object) {}
+export function refreshAmbientSourceHook(object, flags) {
+  log(`refreshAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""} @${object.document.x},${object.document.y}`);
+  if ( !object.isPreview || !flags.refreshPosition ) return;
+
+  object[MODULE_ID] ??= {};
+  const currPosition = PIXI.Point.fromObject(object.document);
+  const prevPosition = object[MODULE_ID].prevPosition ?? PIXI.Point.fromObject(object.document);
+  const isRelative = object.document.getFlag(MODULE_ID, FLAGS.RELATIVE);
+  if ( isRelative && !currPosition.equals(prevPosition) ) {
+    let edgesCache = object.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
+    edgesCache = shiftCustomEdgeCache(edgesCache, currPosition.subtract(prevPosition));
+    object.document.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = edgesCache;
+    updateCachedEdges(object, edgesCache);
+  }
+  object[MODULE_ID].prevPosition = currPosition;
+}
 
 /**
  * Hook for destroyPlaceableObject.
  * Remove the edges associated with the object.
  * @param {PlaceableObject} object    The object instance being refreshed
  */
-export function destroyAmbientSourceHook(object) { removeCachedEdges(object); }
+export function destroyAmbientSourceHook(object) {
+  log(`destroyAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
+  removeCachedEdges(object);
+}

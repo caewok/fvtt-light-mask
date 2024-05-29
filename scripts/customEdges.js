@@ -1,5 +1,6 @@
 /* globals
 canvas,
+CONFIG,
 foundry
 */
 "use strict";

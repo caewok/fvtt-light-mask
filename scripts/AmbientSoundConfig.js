@@ -1,8 +1,6 @@
 /* globals
-CONFIG,
 FormDataExtended,
 foundry,
-game,
 getTemplate,
 Hooks
 */

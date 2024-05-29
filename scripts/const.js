@@ -33,10 +33,11 @@ export const CHANGE_FLAGS = [
 ];
 
 export const TEMPLATES = {
-  LIGHT: `modules/${MODULE_ID}/templates/lightmask-ambient-light-config.html`,
-  SOUND: `modules/${MODULE_ID}/templates/lightmask-ambient-sound-config.html`,
-  TOKEN: `modules/${MODULE_ID}/templates/lightmask-token-light-config.html`,
-  SOUND_BODY: `modules/${MODULE_ID}/templates/lightmask-ambient-sound-body-config.html`
+  LIGHT: `modules/${MODULE_ID}/templates/${MODULE_ID}-ambient-light-config.html`,
+  SOUND: `modules/${MODULE_ID}/templates/${MODULE_ID}-ambient-sound-config.html`,
+  TOKEN: `modules/${MODULE_ID}/templates/${MODULE_ID}-token-light-config.html`,
+  SOUND_BODY: `modules/${MODULE_ID}/templates/${MODULE_ID}-ambient-sound-body-config.html`,
+  SOURCE_PARTIAL: `modules/${MODULE_ID}/templates/${MODULE_ID}-source-config-partial.html`
 };
 
 // Icons displayed in config tabs.

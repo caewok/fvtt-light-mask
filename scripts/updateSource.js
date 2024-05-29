@@ -245,18 +245,22 @@ export function drawAmbientSourceHook(object) {
 export function refreshAmbientSourceHook(object, flags) {
   log(`refreshAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""} @${object.document.x},${object.document.y}`);
   if ( !object.isPreview || !flags.refreshPosition ) return;
-
-  object[MODULE_ID] ??= {};
-  const currPosition = PIXI.Point.fromObject(object.document);
-  const prevPosition = object[MODULE_ID].prevPosition ?? PIXI.Point.fromObject(object.document);
   const isRelative = object.document.getFlag(MODULE_ID, FLAGS.RELATIVE);
-  if ( isRelative && !currPosition.equals(prevPosition) ) {
-    let edgesCache = object.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
-    edgesCache = shiftCustomEdgeCache(edgesCache, currPosition.subtract(prevPosition));
-    object.document.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = edgesCache;
-    updateCachedEdges(object, edgesCache);
-  }
-  object[MODULE_ID].prevPosition = currPosition;
+  if ( !isRelative ) return;
+  const origEdgesCache = object._original.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
+
+  // If the preview hasn't moved from the last refresh, we can stop early.
+  object[MODULE_ID] ??= {};
+  const currPreviewPosition = PIXI.Point.fromObject(object.document);
+  const prevPreviewPosition = object[MODULE_ID].prevPosition ?? currPreviewPosition;
+  object[MODULE_ID].prevPosition = currPreviewPosition;
+  if ( currPreviewPosition.equals(prevPreviewPosition) ) return;
+
+  // Set the preview edges based on the underlying document, with a position offset.
+  const originalPosition = PIXI.Point.fromObject(object._original.document);
+  const delta = currPreviewPosition.subtract(originalPosition);
+  const edgesCache = shiftCustomEdgeCache(origEdgesCache, delta);
+  updateCachedEdges(object, edgesCache);
 }
 
 /**

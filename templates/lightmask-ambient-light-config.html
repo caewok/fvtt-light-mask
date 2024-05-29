@@ -1,58 +1,6 @@
-<fieldset>
-  <legend>{{ localize "lightmask.AmbientConfiguration.LegendTitle" }}</legend>
+<section class="tab standard-form scrollable {{tabs.lightmask.cssClass}}"
+         data-tab="lightmask" data-group="{{tabs.lightmask.group}}">
 
-    <div class="form-group">
-      <label for="lightmask.shapes">{{ localize "lightmask.AmbientConfiguration.Shapes.Name" }}</label>
-      <div class="form-fields">
-        <select id="lightmaskshapes" name="flags.lightmask.shape" class="lightmask">
-          {{ selectOptions lightmask.shapes selected=data.flags.lightmask.shape localize=true }}
-        </select>
-      </div>
-    </div>
+{{> "modules/lightmask/templates/lightmask-source-config-partial.html"}}
 
-    <div class="form-group" style="display:none;" id="lightmask-config-polygon-sides">
-      <label>{{ localize "lightmask.AmbientConfiguration.NumSides.Name" }}</label>
-      <div class="form-fields">
-        <input type="number" id="lightmasksides" name="flags.lightmask.sides" class="lightmask" step="1" min="3" value={{ data.flags.lightmask.sides }}>
-      </div>
-      <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumSides.Hint" }}</p>
-    </div>
-
-    <div class="form-group" style="display:none;" id="lightmask-config-star-points">
-      <label>{{ localize "lightmask.AmbientConfiguration.NumPoints.Name" }}</label>
-      <div class="form-fields">
-        <input type="number" id="lightmaskpoints" name="flags.lightmask.points" class="lightmask" step="1" min="5" value={{ data.flags.lightmask.points }}>
-      </div>
-      <p class="hint">{{ localize "lightmask.AmbientConfiguration.NumPoints.Hint" }}</p>
-    </div>
-
-    <div class="form-group" style="display:none;" id="lightmask-config-ellipse-minor">
-      <label>{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Name" }}</label>
-      <div class="form-fields">
-        <input type="number" placeholder="{{gridUnits}}" id="lightmaskEllipseMinor" class="lightmask" name="flags.lightmask.ellipseMinor" step="any" value={{ data.flags.lightmask.ellipseMinor }}>
-      </div>
-      <p class="hint">{{ localize "lightmask.AmbientConfiguration.Ellipse.MinorAxis.Hint" }}</p>
-    </div>
-
-    <div class="form-group">
-      <label>{{ localize "lightmask.AmbientConfiguration.CachedWallID.Name" }}</label>
-      <div class="form-fields">
-        <input name="flags.lightmask.customWallIDs" class="lightmask" type="text" data-dtype="text" value={{ data.flags.lightmask.customWallIDs }}>
-      </div>
-      <p class="hint">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Hint.Light" }}</p>
-    </div>
-
-    <div class="form-group">
-      <label>{{localize "lightmask.AmbientConfiguration.Relative.Name"}}
-      <input type="checkbox" class="lightmaskRelativeCheckbox" name="flags.lightmask.relative" {{ checked data.flags.lightmask.relative }}/>
-      <p class="hint">{{ localize "lightmask.AmbientConfiguration.Relative.Hint.Light" }}</p>
-    </div>
-
-
-    <div class="form-group">
-      <button type="button" class="saveWallsButton">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Name" }}</button>
-      <p class="hint">{{ localize "lightmask.AmbientConfiguration.CachedWallID.Button.Hint" }}</p>
-    </div>
-
-  </legend>
-</fieldset>
+</section>

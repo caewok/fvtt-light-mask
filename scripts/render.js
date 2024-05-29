@@ -1,4 +1,5 @@
 /* globals
+FormDataExtended,
 foundry,
 renderTemplate,
 DefaultTokenConfig
@@ -6,9 +7,11 @@ DefaultTokenConfig
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-import { log } from "./util.js";
+import { log, getFlag, noFlag } from "./util.js";
 import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
-import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
+// import {
+//   lightMaskUpdateCustomEdgeCache,
+//   lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
 
 /**
  * Catch when user clicks the button to add custom wall ids, changes the shape, or clicks the checkbox.
@@ -16,7 +19,18 @@ import { onAddWallIDs, onCheckRelative } from "./customEdges.js";
 export function activateListeners(app, html) {
   html.on("change", "#lightmaskshapes", shapeChanged.bind(app));
   html.on("click", ".saveWallsButton", onAddWallIDs.bind(app));
-  html.on("click", ".lightmaskRelativeCheckbox", onCheckRelative.bind(app));
+  html.on("change", ".lightmaskCachedWallIDs", onAddWallIDs.bind(app));
+}
+
+export function activateListenersV2(app, html) {
+  const shapeSelector = html.querySelector("#lightmaskshapes");
+  shapeSelector.addEventListener("change", shapeChanged.bind(app));
+
+  const saveWallsButton = html.querySelector(".saveWallsButton");
+  saveWallsButton.addEventListener("click", onAddWallIDs.bind(app));
+
+  const wallIdsTextbox = html.querySelector(".lightmaskCachedWallIDs");
+  wallIdsTextbox.addEventListener("change", onAddWallIDs.bind(app));
 }
 
 function shapeChanged(event) {
@@ -86,3 +100,65 @@ export async function injectConfiguration(app, html, data, type) {
   const shape = data[d]?.flags?.lightmask?.shape;
   if ( shape ) configShapeSubmenu(shape);
 }
+
+/**
+ * Add a method to the AmbientLightConfiguration to handle when user
+ * clicks the button to add custom wall ids.
+ * @param {PointerEvent} event    The originating click event
+ */
+function onAddWallIDs(event) {
+  log("lightMaskOnAddWallIDs", event, this);
+
+  // Confirm the walls are valid.
+  let idString;
+  if ( event.target.name === "flags.lightmask.customWallIDs" ) {
+    idString = cleanWallIds(event.target.value);
+  } else {
+    idString = controlledWallIDs();
+    if (!idString) return;
+  }
+
+  // Update the form with the ids string.
+  const elem = document.getElementsByClassName("lightmaskCachedWallIDs")[0];
+  elem?.setAttribute("value", idString);
+}
+
+/**
+ * Clean wall ids provided by a user.
+ * Strip out invalid ids; change uuids to ids
+ * @param {string} ids    Comma-separate string of ids or uuids, corresponding to walls
+ * @returns {string} String of comma-separate ids or "" if none.
+ */
+function cleanWallIds(ids) {
+  if ( ids === "" ) return "";
+  ids = ids.split(",");
+  ids = ids
+    .map(id => {
+      id = id.trim();
+      const wall = id.includes("Scene") ? fromUuidSync(id) : canvas.walls.placeables.find(w => w.id === id);
+      if ( !wall ) {
+        ui.notifications.warn(`${MODULE_ID}|Wall ${id} not found.`);
+        return null;
+      }
+      return wall.id;
+    })
+    .filter(id => Boolean(id));
+  return ids.join(",");
+}
+
+/**
+ * Retrieve a comma-separated list of wall ids currently controlled on the canvas.
+ * @return {string}
+ */
+function controlledWallIDs() {
+  const walls = canvas.walls.controlled;
+  if (walls.length === 0) {
+    console.warn("Please select one or more walls on the canvas.");
+    ui.notifications.warn("Please select one or more walls on the canvas.");
+    return;
+  }
+
+  const id = walls.map(w => w.id);
+  return id.join(",");
+}
+

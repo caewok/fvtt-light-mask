@@ -1,11 +1,21 @@
 /* globals
-flattenObject
+foundry
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-import { MODULE_ID, FLAGS } from "./const.js";
-import { preCreateAmbientSourceHook, preUpdateAmbientSourceHook } from "./preUpdate.js";
+import { CHANGE_FLAGS } from "./const.js";
+import {
+  preCreateAmbientSourceHook,
+  createAmbientSourceHook,
+  preUpdateAmbientSourceHook,
+  updateAmbientSourceHook,
+  // preDeleteAmbientSourceHook,
+  // deleteAmbientSourceHook,
+  // drawAmbientSourceHook,
+  refreshAmbientSourceHook,
+  destroyAmbientSourceHook,
+  initializeSource  } from "./updateSource.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -18,26 +28,22 @@ PATCHES.BASIC = {};
  * @param {DocumentModificationContext} options     Additional options which modified the update request
  * @param {string} userId                           The ID of the User who triggered the update workflow
  */
-export function updateAmbientSound(doc, data, _options, _userId) {
-  const changeFlags = [
-    `flags.${MODULE_ID}.${FLAGS.SHAPE}`,
-    `flags.${MODULE_ID}.${FLAGS.SIDES}`,
-    `flags.${MODULE_ID}.${FLAGS.POINTS}`,
-    `flags.${MODULE_ID}.${FLAGS.ROTATION}`,
-    `flags.${MODULE_ID}.${FLAGS.RELATIVE}`,
-    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`,
-    `flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`,
-    `flags.${MODULE_ID}.${FLAGS.ELLIPSE.MINOR}`
-  ];
-
-  const changed = new Set(Object.keys(flattenObject(data)));
-  if ( changeFlags.some(k => changed.has(k)) ) doc.object.renderFlags.set({
-    refresh: true
-  });
+export function updateAmbientSound(doc, data, options, userId) {
+  const changed = new Set(Object.keys(foundry.utils.flattenObject(data)));
+  if ( CHANGE_FLAGS.some(k => changed.has(k)) ) doc.object.renderFlags.set({ refresh: true });
+  updateAmbientSourceHook(doc, data, options, userId);
 }
 
 PATCHES.BASIC.HOOKS = {
-  updateAmbientSound,
   preCreateAmbientSound: preCreateAmbientSourceHook,
-  preUpdateAmbientSound: preUpdateAmbientSourceHook
+  createAmbientSound: createAmbientSourceHook,
+  preUpdateAmbientSound: preUpdateAmbientSourceHook,
+  updateAmbientSound,
+  // preDeleteAmbientSound: preDeleteAmbientSourceHook,
+  // deleteAmbientSound: deleteAmbientSourceHook,
+  // drawAmbientSound: drawAmbientSourceHook,
+  refreshAmbientSound: refreshAmbientSourceHook,
+  destroyAmbientSound: destroyAmbientSourceHook
 };
+
+PATCHES.BASIC.WRAPS = { initializeSoundSource: initializeSource }

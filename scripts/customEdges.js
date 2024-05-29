@@ -1,186 +1,181 @@
 /* globals
 canvas,
-getDocumentClass,
-foundry,
-PolygonVertex,
-ui
+CONFIG,
+foundry
 */
 "use strict";
 
-import { log, getFlag, noFlag } from "./util.js";
-import { FLAGS, MODULE_ID } from "./const.js";
-import {
-  lightMaskUpdateCustomEdgeCache,
-  lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
+import { MODULE_ID, FLAGS } from "./const.js";
+import { log } from "./util.js";
 
 /*
-Likely easiest if ClockwiseSweep checks the source object for a method to get a
-boundaryPolygon and customEdgeData. Otherwise, need access to the config object passed
-to ClockwiseSweep, which is basically impossible.
-
-This also makes it easier to deal with the callback, because the source object can
-define the parameters internally. For example, the source object can store the number
-of points or sides for a RegularStar or RegularPolygon to use as boundaryPolygon.
-
-Here, it can store custom edges and whether the edges are relative or absolute.
-
-Thus, it is assumed that this _customEdgeData function will access this, the source object.
+Store cached edges in canvas.edges corresponding to different cached walls per light.
+Each edge has id: "lightmask.source.[sourceid].wall[wallid]"
+Each edge has type = "lightmask.cachedWalls"
 */
 
-/**
- * Listener to handle when a user check/unchecks the "Relative" checkbox.
- * If "Relative" is checked, the edges cache must be updated by a directional vector
- * based on the shift in origin.
- * @param {PointerEvent} event    The originating click event
- */
-export function onCheckRelative(event) {
-  log("lightMaskOnCheckRelative", event, this);
-
-  const current_origin = { x: this.object.x,
-                           y: this.object.y }; // eslint-disable-line indent
-  const newData = {};
-  if (event.target.checked) {
-    // Update with the new origin
-    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN}`] = current_origin;
-
-  } else {
-    // Set the wall locations based on the last origin because when the user unchecks
-    // relative, we want the walls to stay at the last relative position (not their
-    // original position)
-    let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
-    const stored_origin = getFlag(this.object, FLAGS.ORIGIN) || current_origin;
-    const delta = { dx: current_origin.x - stored_origin.x,
-                    dy: current_origin.y - stored_origin.y }; // eslint-disable-line indent
-
-    edges_cache = lightMaskShiftCustomEdgeCache(edges_cache, delta);
-    newData[`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`] = edges_cache;
-  }
-
-  const previewData = this._getSubmitData(newData);
-  this._previewChanges(previewData);
-  this.render();
-}
+export const PATCHES = {};
+PATCHES.BASIC = {};
 
 
 /**
- * Add a method to the AmbientLightConfiguration to handle when user
- * clicks the button to add custom wall ids.
- * @param {PointerEvent} event    The originating click event
+ * Hook initializeEdges
+ * Initialize all the cached edges from the light/sound sources.
  */
-export function onAddWallIDs(event) {
-  log("lightMaskOnAddWallIDs", event, this);
-
-  let ids_to_add;
-  if ( event.target.name === "flags.lightmask.customWallIDs" ) {
-    ids_to_add = event.target.value;
-  } else {
-    ids_to_add = controlledWallIDs();
-    if (!ids_to_add) return;
-  }
-
-  log(`Ids to add: ${ids_to_add}`);
-
-  // Change the data and refresh...
-  let edges_cache = getFlag(this.object, FLAGS.CUSTOM_WALLS.EDGES) || [];
-  edges_cache = lightMaskUpdateCustomEdgeCache(edges_cache, ids_to_add);
-
-  const newData = {
-    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.IDS}`]: ids_to_add,
-    [`flags.${MODULE_ID}.${FLAGS.CUSTOM_WALLS.EDGES}`]: edges_cache
-  };
-
-  if ( !noFlag(this.object, FLAGS.RELATIVE) ) {
-    log("Relative key is true; storing origin");
-    newData[`flags.${MODULE_ID}.${FLAGS.ORIGIN.EDGES}`] = { x: this.object.x, y: this.object.y };
-  }
-
-  const previewData = this._getSubmitData(newData);
-  this._previewChanges(previewData);
-  this.render();
+function initializeEdges() {
+  const placeables = [
+    ...canvas.lighting.placeables,
+    ...canvas.sounds.placeables,
+    ...canvas.tokens.placeables // For lights in tokens
+  ];
+  placeables.forEach(p => updateCachedEdges(p));
 }
+
+PATCHES.BASIC.HOOKS = { initializeEdges };
 
 /**
- * Retrieve a comma-separated list of wall ids currently controlled on the canvas.
- * @return {string}
+ * @typedef {object} CachedWallEdge
+ * Cached data stored in the lightmask customEdges flag for a given wall.
+ * @prop {number[4]} c                Wall endpoints: A.x, A.y, B.x, B.y
+ * @prop {WALL_SENSE_TYPES} light     Wall light restriction
+ * @prop {WALL_SENSE_TYPES} move      Wall move restriction
+ * @prop {WALL_SENSE_TYPES} sight     Wall sight restriction
+ * @prop {WALL_SENSE_TYPES} sound     Wall sound restriction
+ * @prop {object} threshold
+ *   - @prop {boolean} attenuation
+ *   - @prop {number} light
+ *   - @prop {number} move
+ *   - @prop {number} sight
+ *   - @prop {number} sound
+ * @prop {WALL_DIRECTIONS} direction
+ * @prop {string} id
+ * @prop {number} topE        In grid units
+ * @prop {number} bottomE     In grid units
  */
-export function controlledWallIDs() {
-  const walls = canvas.walls.controlled;
-  if (walls.length === 0) {
-    console.warn("Please select one or more walls on the canvas.");
-    ui.notifications.warn("Please select one or more walls on the canvas.");
-    return;
-  }
 
-  const id = walls.map(w => w.id);
-  return id.join(",");
-}
 
-export class TempWall {
-  /**
-   * Cache data: c, id
-   */
-  constructor(_id, c, light, move, sight, sound) {
-    // See WallsLayer.prototype.#defineBoundaries
-    const cls = getDocumentClass("Wall");
-    const ctx = { parent: canvas.scene };
-    this.document = new cls({_id, c, light, move, sight, sound }, ctx);
-    this.intersectsWith = new Map();
-    this.#initializeVertices();
-    this.id = _id;
-  }
+/**
+ * Add canvas edges for a given source wall cache.
+ * @param {PlaceableObject} placeable     Placeable that may contain CachedWallEdges.
+ */
+export function updateCachedEdges(placeable, edgesCache) {
+  edgesCache ??= placeable.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
+  if ( !edgesCache || !edgesCache.length ) return removeCachedEdges(placeable);
 
-  #wallKeys;
+  // Edge cache
+  const Edge = foundry.canvas.edges.Edge;
+  const clName = placeable.constructor.name;
+  for ( const cacheData of edgesCache ) {
+    const edgeConfig = foundry.utils.duplicate(cacheData);
+    const id = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}.wall.${cacheData.id}`;
+    log(`updateCachedEdges|updating cached edge ${id}`);
 
-  #vertices;
+    edgeConfig.type = `${MODULE_ID}.cachedWall.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
+    edgeConfig.object = placeable;
+    const edge = new Edge(
+      { x: edgeConfig.c[0], y: edgeConfig.c[1] },
+      { x: edgeConfig.c[2], y: edgeConfig.c[3] },
+      edgeConfig);
 
-  get vertices() {
-    return this.#vertices;
-  }
+    // Will probably want the elevation at some point.
+    edge.topE = edgeConfig.topE;
+    edge.bottomE = edgeConfig.bottomE;
 
-  get wallKeys() {
-    return this.#wallKeys;
-  }
-
-  /**
-   * Create PolygonVertex instances for the Wall endpoints and register the set of vertex keys.
-   */
-  #initializeVertices() {
-    this.#vertices = {
-      a: new PolygonVertex(...this.document.c.slice(0, 2)),
-      b: new PolygonVertex(...this.document.c.slice(2, 4))
-    };
-    this.#wallKeys = new Set([this.#vertices.a.key, this.#vertices.b.key]);
-  }
-
-  static fromCacheData(obj) {
-    const { id, c, light, move, sight, sound } = obj;
-    const _id = `LMtmp${id.substring(0, 11)}`;
-    return new this(_id, c, light, move, sight, sound);
-  }
-
-  /**
-   * Copy of Wall.prototype._identifyIntersectionsWith but without the calls to private objects.
-   */
-  _identifyIntersectionsWith(other) {
-    if ( this === other ) return;
-    const {a: wa, b: wb} = this.vertices;
-    const {a: oa, b: ob} = other.vertices;
-
-    // Ignore walls which share an endpoint
-    if ( this.wallKeys.intersects(other.wallKeys) ) return;
-
-    // Record any intersections
-    if ( !foundry.utils.lineSegmentIntersects(wa, wb, oa, ob) ) return;
-    const x = foundry.utils.lineLineIntersection(wa, wb, oa, ob);
-    if ( !x ) return;  // This eliminates co-linear lines, should not be necessary
-    this.intersectsWith.set(other, x);
-    other.intersectsWith.set(this, x);
-  }
-
-  _removeIntersections() {
-    for ( const other of this.intersectsWith.keys() ) {
-      other.intersectsWith.delete(this);
+    // Debugging.
+    if ( CONFIG[MODULE_ID].debug ) {
+      const oldEdge = canvas.edges.get(id)
+      console.table({
+        old: oldEdge ? [oldEdge.a.x, oldEdge.a.y, oldEdge.b.x, oldEdge.b.y] : [null, null, null, null],
+        updated: [edge.a.x, edge.a.y, edge.b.x, edge.b.y]
+      });
     }
-    this.intersectsWith.clear();
+
+    canvas.edges.set(id, edge);
   }
+  // canvas.perception.renderFlags.set({ refreshEdges: true, initializeLighting: true });
+  canvas.perception.update({ refreshEdges: true, initializeLighting: true })
+}
+
+/**
+ * Set wall data for cached walls and add the cached edges to the scene.
+ * @param {string} idString         String of cached wall ids
+ * @returns {CachedWallEdge[]}
+ */
+export function getCachedWallEdgeData(idString) {
+  const walls = getWallsForIDString(idString)
+  if ( !walls.length ) return [];
+  const cacheData = walls.map(wall => {
+    const wallD = wall.document;
+    return {
+      c: foundry.utils.duplicate(wallD.c),
+      light: wallD.light,
+      move: wallD.move,
+      sight: wallD.sight,
+      sound: wallD.sound,
+      threshold: foundry.utils.duplicate(wallD.threshold),
+      direction: wallD.dir,
+      id: wall.id,
+      topE: wall.topE,
+      bottomE: wall.bottomE
+    };
+  });
+  return cacheData;
+}
+
+/**
+ * Remove cached wall data from the scene
+ * @param {PlaceableObject} placeable
+ */
+export function removeCachedEdges(placeable) {
+  const clName = placeable.constructor.name;
+  const keyString = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
+  log(`removeCachedEdges|removing cached edges ${keyString}`);
+  getCachedEdgeKeys(placeable).forEach(key => canvas.edges.delete(key));
+  // canvas.perception.renderFlags.set({ refreshEdges: true });
+  canvas.perception.update({ refreshEdges: true, initializeLighting: true });
+}
+
+/**
+ * Get all the cached wall edge keys for a given placeable.
+ * @param {PlaceableObject} placeable
+ * @returns {string[]}
+ */
+export function getCachedEdgeKeys(placeable) {
+  const clName = placeable.constructor.name;
+  const keyString = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
+  return [...canvas.edges.keys()].filter(key => key.includes(keyString))
+}
+
+/**
+ * Shift all edges in the cacche by a provided vector, delta.
+ * @param {CachedWallEdge[]} edgesCache    Cache of select wall data.
+ * @param {Object} delta            Object with x, y properties representing a vector
+ * @return {Object[]} edges_cache
+ */
+export function shiftCustomEdgeCache(edgesCache, delta) {
+  log(`shiftCustomEdgeCache delta is ${delta.x}, ${delta.y}`, edgesCache);
+  edgesCache = foundry.utils.duplicate(edgesCache);
+  edgesCache.forEach(e => {
+    const old = foundry.utils.duplicate(e.c); // Debugging.
+    e.c[0] = e.c[0] + delta.x;
+    e.c[1] = e.c[1] + delta.y;
+    e.c[2] = e.c[2] + delta.x;
+    e.c[3] = e.c[3] + delta.y;
+    if ( CONFIG[MODULE_ID].debug ) console.table({ old, updated: e.c });
+  });
+  return edgesCache;
+}
+
+/**
+ * Retrieve walls in the scene for given ids.
+ * It is possible that some walls do not exist; ignore if not found.
+ * @param {string} idString    Comma-separated string of ids.
+ * @returns {Wall[]}
+ */
+function getWallsForIDString(idString) {
+  if ( !idString || idString === "" ) return [];
+  return idString
+    .split(",")
+    .map(id => canvas.walls.placeables.find(w => w.id === id))
+    .filter(wall => Boolean(wall))
 }

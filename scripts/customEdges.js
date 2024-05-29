@@ -91,8 +91,8 @@ export function updateCachedEdges(placeable, edgesCache) {
 
     canvas.edges.set(id, edge);
   }
-  // canvas.perception.renderFlags.set({ refreshEdges: true });
-  canvas.perception.update({ refreshEdges: true })
+  // canvas.perception.renderFlags.set({ refreshEdges: true, initializeLighting: true });
+  canvas.perception.update({ refreshEdges: true, initializeLighting: true })
 }
 
 /**
@@ -131,7 +131,7 @@ export function removeCachedEdges(placeable) {
   log(`removeCachedEdges|removing cached edges ${keyString}`);
   getCachedEdgeKeys(placeable).forEach(key => canvas.edges.delete(key));
   // canvas.perception.renderFlags.set({ refreshEdges: true });
-  canvas.perception.update({ refreshEdges: true })
+  canvas.perception.update({ refreshEdges: true, initializeLighting: true });
 }
 
 /**

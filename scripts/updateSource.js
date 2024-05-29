@@ -1,17 +1,17 @@
 /* globals
-isEmpty,
-Token
+PIXI
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-import { log, noFlag } from "./util.js";
+import { log } from "./util.js";
 import { MODULE_ID, FLAGS, SHAPE } from "./const.js";
 import {
   getCachedWallEdgeData,
   shiftCustomEdgeCache,
   updateCachedEdges,
-  removeCachedEdges } from "./customEdges.js";
+  removeCachedEdges,
+  getCachedEdgeKeys } from "./customEdges.js";
 
 /* Update workflow
 
@@ -123,7 +123,7 @@ export function preCreateAmbientSourceHook(document, data, options, userId) { //
  * @param {Partial<DatabaseCreateOperation>} options Additional options which modified the creation request
  * @param {string} userId                           The ID of the User who triggered the creation workflow
  */
-export function createAmbientSourceHook(document, options, userId) {
+export function createAmbientSourceHook(document, _options, _userId) {
   const edgesCache = document?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES];
   const object = document.object;
   if ( !edgesCache || !object ) return;
@@ -222,7 +222,7 @@ export function updateAmbientSourceHook(doc, changed, _options, _userId) {
  * @param {Partial<DatabaseDeleteOperation>} options Additional options which modified the deletion request
  * @param {string} userId                           The ID of the User who triggered the deletion workflow
  */
-export function deleteAmbientSourceHook(doc, options, userId) { } // removeCachedEdges(doc.object);
+// export function deleteAmbientSourceHook(doc, options, userId) { } // removeCachedEdges(doc.object);
 
 
 // ----- NOTE: Placeable object hooks ----- //
@@ -232,10 +232,14 @@ export function deleteAmbientSourceHook(doc, options, userId) { } // removeCache
  * Add cached edges to the canvas edges map.
  * @param {PlaceableObject} object
  */
-export function drawAmbientSourceHook(object) {
-  log(`drawAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
-  //updateCachedEdges(object);
-}
+// export function drawAmbientSourceHook(object) {
+//   log(`drawAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
+//   let edgesCache = object.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
+//   if ( edgesCache && edgesCache.length && !getCachedEdgeKeys(object).length ) {
+//     log(`\tUpdating edges cache.`);
+//     updateCachedEdges(object, edgesCache);
+//   }
+// }
 
 /**
  * Hook for refreshPlaceableObject.
@@ -271,4 +275,24 @@ export function refreshAmbientSourceHook(object, flags) {
 export function destroyAmbientSourceHook(object) {
   log(`destroyAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
   removeCachedEdges(object);
+}
+
+// ----- NOTE: Placeable wraps ---- //
+
+/**
+ * Update the ambient source associated with this Placeable object.
+ * @param {object} [options={}]               Options which modify how the source is updated
+ * @param {boolean} [options.deleted=false]   Indicate that this light source has been deleted
+ */
+export function initializeSource(wrapped, {deleted=false}={}) {
+  log(`initializeSource|Source ${this.constructor.name} ${this.id}${this.isPreview ? ".preview" : ""} @${this.document.x},${this.document.y}`);
+
+  // If no edges defined for this (likely preview) source, update the edges.
+  // Need to do that here b/c no way to hook the preview object creation before it is drawn.
+  let edgesCache = this.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
+  if ( !deleted && edgesCache && edgesCache.length && !getCachedEdgeKeys(this).length ) {
+    log(`\tUpdating edges cache.`);
+    updateCachedEdges(this, edgesCache);
+  }
+  wrapped({ deleted });
 }

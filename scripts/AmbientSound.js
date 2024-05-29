@@ -10,9 +10,12 @@ import {
   createAmbientSourceHook,
   preUpdateAmbientSourceHook,
   updateAmbientSourceHook,
-  deleteAmbientSourceHook,
-  drawAmbientSourceHook,
-  destroyAmbientSourceHook } from "./updateSource.js";
+  // preDeleteAmbientSourceHook,
+  // deleteAmbientSourceHook,
+  // drawAmbientSourceHook,
+  refreshAmbientSourceHook,
+  destroyAmbientSourceHook,
+  initializeSource  } from "./updateSource.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -36,7 +39,11 @@ PATCHES.BASIC.HOOKS = {
   createAmbientSound: createAmbientSourceHook,
   preUpdateAmbientSound: preUpdateAmbientSourceHook,
   updateAmbientSound,
-  deleteAmbientSound: deleteAmbientSourceHook,
-  drawAmbientSound: drawAmbientSourceHook,
+  // preDeleteAmbientSound: preDeleteAmbientSourceHook,
+  // deleteAmbientSound: deleteAmbientSourceHook,
+  // drawAmbientSound: drawAmbientSourceHook,
+  refreshAmbientSound: refreshAmbientSourceHook,
   destroyAmbientSound: destroyAmbientSourceHook
 };
+
+PATCHES.BASIC.WRAPS = { initializeSoundSource: initializeSource }

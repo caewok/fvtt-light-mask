@@ -252,9 +252,9 @@ export function refreshAmbientSourceHook(object, flags) {
   // If the preview hasn't moved from the last refresh, we can stop early.
   object[MODULE_ID] ??= {};
   const currPreviewPosition = PIXI.Point.fromObject(object.document);
-  const prevPreviewPosition = object[MODULE_ID].prevPosition ?? currPreviewPosition;
+  const prevPreviewPosition = object[MODULE_ID].prevPosition;
   object[MODULE_ID].prevPosition = currPreviewPosition;
-  if ( currPreviewPosition.equals(prevPreviewPosition) ) return;
+  if ( prevPreviewPosition && currPreviewPosition.equals(prevPreviewPosition) ) return;
 
   // Set the preview edges based on the underlying document, with a position offset.
   const originalPosition = PIXI.Point.fromObject(object._original.document);

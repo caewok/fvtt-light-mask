@@ -26,6 +26,8 @@ The 0.4 versions are the last to be compatible with Foundry v9.
 
 The 0.5 versions requires Foundry v10.
 
+Starting with version 0.8, Foundry v12 is required.
+
 # Installation
 
 Add this [Manifest URL](https://github.com/caewok/fvtt-light-mask/releases/latest/download/module.json) in Foundry to install.
@@ -36,6 +38,11 @@ Add this [Manifest URL](https://github.com/caewok/fvtt-light-mask/releases/lates
 ## Known conflicts
 
 None.
+
+## Known issues (Foundry v12, Light/Sound Mask v0.8)
+- Token lighting shapes are getting applied but are overridden by the token circle lighting.
+- Sound configuration no longer previews the sound. (Previewing was not a core Foundry feature in v11 nor v12 but was added by this module in v11.)
+- When using relative walls, dragging the light can result in what seems to be temporary glitches in the lighting shape. Usually this resolves when the drag ends, but it can be fixed by reopening the ambient light config, reloading the scene, or possibly otherwise causing a lighting refresh.
 
 # Usage
 

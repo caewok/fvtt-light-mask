@@ -14,23 +14,25 @@ import { PATCHES as PATCHES_AmbientSound } from "./AmbientSound.js";
 import { PATCHES as PATCHES_AmbientLight } from "./AmbientLight.js";
 import { PATCHES as PATCHES_Token } from "./Token.js";
 import { PATCHES as PATCHES_TokenConfig } from "./TokenConfig.js";
+import { PATCHES as PATCHES_CanvasEdges } from "./customEdges.js";
 
 const PATCHES = {
   AmbientLight: PATCHES_AmbientLight,
   AmbientSound: PATCHES_AmbientSound,
-  AmbientLightConfig: PATCHES_AmbientLightConfig,
-  AmbientSoundConfig: PATCHES_AmbientSoundConfig,
-  AmbientSoundDocument: PATCHES_AmbientSoundDocument,
+  "foundry.canvas.edges.CanvasEdges": PATCHES_CanvasEdges,
+  "foundry.applications.sheets.AmbientLightConfig": PATCHES_AmbientLightConfig,
+  "foundry.applications.sheets.AmbientSoundConfig": PATCHES_AmbientSoundConfig,
+//   AmbientSoundDocument: PATCHES_AmbientSoundDocument,
   ClockwiseSweepPolygon: PATCHES_ClockwiseSweepPolygon,
-  LightSource: PATCHES_LightSource,
-  SoundSource: PATCHES_SoundSource,
+  "foundry.canvas.sources.PointLightSource": PATCHES_LightSource,
+  "foundry.canvas.sources.PointSoundSource": PATCHES_SoundSource,
   Token: PATCHES_Token,
   TokenConfig: PATCHES_TokenConfig
 };
 
 export const PATCHER = new Patcher();
-PATCHER.addPatchesFromRegistrationObject(PATCHES);
 
 export function initializePatching() {
+  PATCHER.addPatchesFromRegistrationObject(PATCHES);
   PATCHER.registerGroup("BASIC");
 }

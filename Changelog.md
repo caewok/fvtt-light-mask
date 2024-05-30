@@ -1,3 +1,11 @@
+## 0.8.0
+Update to FoundryVTT v12 compatibility. Adds a tab dedicated to Light/Mask in the new v12 App v2 windows for lighting and sound configuration. Uses v12's new canvas edges feature to implement wall caching.
+
+### KNOWN ISSUES
+- Token lighting shapes are getting applied but are overridden by the token circle lighting.
+- Sound configuration no longer previews the sound. (Previewing was not a core Foundry feature in v11 nor v12 but was added by this module in v11.)
+- When using relative walls, dragging the light can result in what seems to be temporary glitches in the lighting shape. Usually this resolves when the drag ends, but it can be fixed by reopening the ambient light config, reloading the scene, or possibly otherwise causing a lighting refresh.
+
 ## 0.7.5
 Fix for sound not following the token when attached until going back to the sound controls layer. Issue #17.
 

@@ -1,3 +1,6 @@
+## 0.8.1
+Fix for scene not loading due to errors with rendering cached walls when Elevation Ruler v0.10.12 is active.
+
 ## 0.8.0
 Update to FoundryVTT v12 compatibility. Adds a tab dedicated to Light/Mask in the new v12 App v2 windows for lighting and sound configuration. Uses v12's new canvas edges feature to implement wall caching.
 

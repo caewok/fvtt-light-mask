@@ -93,7 +93,7 @@ export function updateCachedEdges(placeable, edgesCache) {
     canvas.edges.set(id, edge);
   }
   // canvas.perception.renderFlags.set({ refreshEdges: true, initializeLighting: true });
-  canvas.perception.update({ refreshEdges: true, initializeLighting: true })
+  if ( canvas.ready ) canvas.perception.update({ refreshEdges: true, initializeLighting: true })
 }
 
 /**

@@ -127,7 +127,7 @@ export function createAmbientSourceHook(document, _options, _userId) {
   const edgesCache = document?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES];
   const object = document.object;
   if ( !edgesCache || !object ) return;
-  log(`createAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
+  // log(`createAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
   updateCachedEdges(object);
 }
 
@@ -155,10 +155,10 @@ export function preUpdateAmbientSourceHook(doc, changes, _options, _userId) {
 
   // Update the edge cache if the edge ids changed.
   // TODO: Does the cached wall data need to be updated with changes.x, changes.y?
-  log(`preUpdateAmbientSourceHook|Source ${doc.object?.constructor?.name} ${doc.object?.id}${doc.object.isPreview ? ".preview" : ""}`)
+  // log(`preUpdateAmbientSourceHook|Source ${doc.object?.constructor?.name} ${doc.object?.id}${doc.object.isPreview ? ".preview" : ""}`)
   let edgesCache = doc.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES];
   if ( idStringChanged ) {
-    log(`\tNew wall cache`);
+    // log(`\tNew wall cache`);
     changes.flags ??= {};
     changes.flags[MODULE_ID] ??= {};
     edgesCache = changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idStringC);
@@ -173,14 +173,14 @@ export function preUpdateAmbientSourceHook(doc, changes, _options, _userId) {
       x: newPosition.x - doc.x,
       y: newPosition.y - doc.y
     }
-    log(`\tShifting cached edge data by ${delta.x},${delta.y}`);
+    // log(`\tShifting cached edge data by ${delta.x},${delta.y}`);
     edgesCache = shiftCustomEdgeCache(edgesCache, delta);
     changes.flags ??= {};
     changes.flags[MODULE_ID] ??= {};
     changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = edgesCache
   }
 
-  log(`\tNew position ${newPosition.x},${newPosition.y}`);
+  // log(`\tNew position ${newPosition.x},${newPosition.y}`);
 }
 
 /**
@@ -197,12 +197,12 @@ export function updateAmbientSourceHook(doc, changed, _options, _userId) {
   const edgesCache = changed?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES];
   const object = doc.object;
   if ( !edgesCache || !object ) return;
-  log(`updateAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
-  log(`\tUpdating cached edges `);
+  // log(`updateAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
+  // log(`\tUpdating cached edges `);
   updateCachedEdges(object);
 
   // Refresh the source shape.
-  log(`\tRefreshing source`);
+  // log(`\tRefreshing source`);
   object.initializeLightSource();
 }
 
@@ -247,7 +247,7 @@ export function updateAmbientSourceHook(doc, changed, _options, _userId) {
  * @param {PlaceableObject} object    The object instance being refreshed
  */
 export function refreshAmbientSourceHook(object, flags) {
-  log(`refreshAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""} @${object.document.x},${object.document.y}`);
+  // log(`refreshAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""} @${object.document.x},${object.document.y}`);
   if ( !object.isPreview || !flags.refreshPosition ) return;
   const isRelative = object.document.getFlag(MODULE_ID, FLAGS.RELATIVE);
   if ( !isRelative ) return;
@@ -273,7 +273,7 @@ export function refreshAmbientSourceHook(object, flags) {
  * @param {PlaceableObject} object    The object instance being refreshed
  */
 export function destroyAmbientSourceHook(object) {
-  log(`destroyAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
+  // log(`destroyAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
   removeCachedEdges(object);
 }
 
@@ -285,13 +285,13 @@ export function destroyAmbientSourceHook(object) {
  * @param {boolean} [options.deleted=false]   Indicate that this light source has been deleted
  */
 export function initializeSource(wrapped, {deleted=false}={}) {
-  log(`initializeSource|Source ${this.constructor.name} ${this.id}${this.isPreview ? ".preview" : ""} @${this.document.x},${this.document.y}`);
+  // log(`initializeSource|Source ${this.constructor.name} ${this.id}${this.isPreview ? ".preview" : ""} @${this.document.x},${this.document.y}`);
 
   // If no edges defined for this (likely preview) source, update the edges.
   // Need to do that here b/c no way to hook the preview object creation before it is drawn.
   let edgesCache = this.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
   if ( !deleted && edgesCache && edgesCache.length && !getCachedEdgeKeys(this).length ) {
-    log(`\tUpdating edges cache.`);
+    // log(`\tUpdating edges cache.`);
     updateCachedEdges(this, edgesCache);
   }
   wrapped({ deleted });

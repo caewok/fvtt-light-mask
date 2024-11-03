@@ -14,18 +14,18 @@ PATCHES.BASIC = {};
 
 /**
  * Modify edge types to include cached edges for the light source.
- * @param {Edge} edge                     The Edge being considered
- * @param {Record<EdgeTypes, 0|1|2>} edgeTypes Which types of edges are being used? 0=no, 1=maybe, 2=always
- * @param {PIXI.Rectangle} bounds         The overall bounding box
- * @returns {boolean}                     Should the edge be included?
+ * @returns {Record<EdgeTypes, 0|1|2>} edgeTypes Which types of edges are being used? 0=no, 1=maybe, 2=always
  */
-function _testEdgeInclusion(wrapped, edge, edgeTypes, bounds) {
+const CACHED_ID = `${MODULE_ID}.cachedWall`;
+function _determineEdgeTypes(wrapped) {
+  const edgeTypes = wrapped();
   const obj = this.config.source?.object;
   if ( obj ) {
-    log(`Sweep of ${obj.id} ${obj.isPreview ? ".preview" : ""}`);
-    edgeTypes[`${MODULE_ID}.cachedWall.${obj.id}${obj.isPreview ? ".preview" : ""}`] = 1;
+    let id = `${CACHED_ID}.${obj.id}`;
+    if ( obj.isPreview ) id += ".preview";
+    edgeTypes[id] = 1;
   }
-  return wrapped(edge, edgeTypes, bounds);
+  return edgeTypes;
 }
 
-PATCHES.BASIC.WRAPS = { _testEdgeInclusion };
+PATCHES.BASIC.WRAPS = { _determineEdgeTypes };

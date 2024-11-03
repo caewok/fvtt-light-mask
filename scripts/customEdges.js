@@ -68,7 +68,7 @@ export function updateCachedEdges(placeable, edgesCache) {
   for ( const cacheData of edgesCache ) {
     const edgeConfig = foundry.utils.duplicate(cacheData);
     const id = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}.wall.${cacheData.id}`;
-    log(`updateCachedEdges|updating cached edge ${id}`);
+    // log(`updateCachedEdges|updating cached edge ${id}`);
 
     edgeConfig.type = `${MODULE_ID}.cachedWall.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
     edgeConfig.object = placeable;
@@ -129,8 +129,10 @@ export function getCachedWallEdgeData(idString) {
 export function removeCachedEdges(placeable) {
   const clName = placeable.constructor.name;
   const keyString = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
-  log(`removeCachedEdges|removing cached edges ${keyString}`);
-  getCachedEdgeKeys(placeable).forEach(key => canvas.edges.delete(key));
+//   log(`removeCachedEdges|removing cached edges ${keyString}`);
+  const edges = getCachedEdgeKeys(placeable);
+  if ( !edges.length ) return;
+  edges.forEach(key => canvas.edges.delete(key));
   // canvas.perception.renderFlags.set({ refreshEdges: true });
   canvas.perception.update({ refreshEdges: true, initializeLighting: true });
 }
@@ -153,7 +155,7 @@ export function getCachedEdgeKeys(placeable) {
  * @return {Object[]} edges_cache
  */
 export function shiftCustomEdgeCache(edgesCache, delta) {
-  log(`shiftCustomEdgeCache delta is ${delta.x}, ${delta.y}`, edgesCache);
+//   log(`shiftCustomEdgeCache delta is ${delta.x}, ${delta.y}`, edgesCache);
   edgesCache = foundry.utils.duplicate(edgesCache);
   edgesCache.forEach(e => {
     const old = foundry.utils.duplicate(e.c); // Debugging.

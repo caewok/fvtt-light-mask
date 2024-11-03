@@ -34,7 +34,7 @@ export function activateListenersV2(app, html) {
 }
 
 function shapeChanged(event) {
-  log("shapeChanged!", event, this);
+  // log("shapeChanged!", event, this);
   configShapeSubmenu(event.target.value);
 }
 
@@ -64,7 +64,7 @@ function configShapeSubmenu(shape) {
  * @param {string} type   See const.js for type.
  */
 export async function injectConfiguration(app, html, data, type) {
-  log(`injectConfiguration for ${type}`, app, html, data);
+  // log(`injectConfiguration for ${type}`, app, html, data);
 
   // If default token config, make sure the default flags are set if not already.
   // Setting flags directly fails, so do manually.
@@ -107,7 +107,7 @@ export async function injectConfiguration(app, html, data, type) {
  * @param {PointerEvent} event    The originating click event
  */
 function onAddWallIDs(event) {
-  log("lightMaskOnAddWallIDs", event, this);
+  // log("lightMaskOnAddWallIDs", event, this);
 
   // Confirm the walls are valid.
   let idString;

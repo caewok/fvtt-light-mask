@@ -130,7 +130,9 @@ export function removeCachedEdges(placeable) {
   const clName = placeable.constructor.name;
   const keyString = `${MODULE_ID}.${clName}.${placeable.id}${placeable.isPreview ? ".preview" : ""}`;
 //   log(`removeCachedEdges|removing cached edges ${keyString}`);
-  getCachedEdgeKeys(placeable).forEach(key => canvas.edges.delete(key));
+  const edges = getCachedEdgeKeys(placeable);
+  if ( !edges.length ) return;
+  edges.forEach(key => canvas.edges.delete(key));
   // canvas.perception.renderFlags.set({ refreshEdges: true });
   canvas.perception.update({ refreshEdges: true, initializeLighting: true });
 }

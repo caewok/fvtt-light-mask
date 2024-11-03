@@ -1,3 +1,6 @@
+## 0.8.2
+Improve performance for token animation after a drag operation. Addresses #20.
+
 ## 0.8.1
 Fix for scene not loading due to errors with rendering cached walls when Elevation Ruler v0.10.12 is active.
 

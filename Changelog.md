@@ -1,5 +1,5 @@
 ## 0.8.3
-Fix for E
+Possible fix for error when creating ellipse. Issue #21.
 
 ## 0.8.2
 Improve performance for token animation after a drag operation. Addresses #20.

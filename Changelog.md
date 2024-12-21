@@ -1,3 +1,6 @@
+## 0.8.3
+Fix for E
+
 ## 0.8.2
 Improve performance for token animation after a drag operation. Addresses #20.
 

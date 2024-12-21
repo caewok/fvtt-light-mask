@@ -35,7 +35,7 @@ export function boundaryPolygon() {
 
     case "ellipse": {
       const minor = (getFlag(doc, FLAGS.ELLIPSE.MINOR) || 1) * canvas.dimensions.size / canvas.dimensions.distance;
-      return new Ellipse(origin.x, origin.y, radius, minor, { rotation });
+      return (new Ellipse(origin.x, origin.y, radius, minor, { rotation })).toPolygon(); // Issue #21.
     }
 
     case "polygon": {

@@ -63,7 +63,7 @@ export function updateCachedEdges(placeable, edgesCache) {
   if ( !edgesCache || !edgesCache.length ) return removeCachedEdges(placeable);
 
   // Edge cache
-  const Edge = foundry.canvas.edges.Edge;
+  const Edge = foundry.canvas.geometry.edges.Edge;
   const clName = placeable.constructor.name;
   for ( const cacheData of edgesCache ) {
     const edgeConfig = foundry.utils.duplicate(cacheData);

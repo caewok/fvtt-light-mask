@@ -80,6 +80,15 @@ function _attachPartListeners(wrapper, partId, htmlElement, options) {
  * TODO: Do something here if the wall is selected?
  * @param {object} [change]  A change to preview.
  */
+function _onChangeForm(wrapper, formConfig, event) {
+  wrapper(formConfig, event);
+}
+
+/**
+ * Changes to preview in the lighting config.
+ * TODO: Do something here if the wall is selected?
+ * @param {object} [change]  A change to preview.
+ */
 function _previewChanges(wrapper, change) {
   wrapper(change);
 }
@@ -93,8 +102,8 @@ function _previewChanges(wrapper, change) {
  * @returns {object}                            Prepared submission data as an object
  * @throws {Error}                              Subclasses may throw validation errors here to prevent form submission
  */
-function _prepareSubmitData(wrapper, event, form, formData) {
-  return wrapper(event, form, formData);
+function _prepareSubmitData(wrapper, event, form, formData, updateData) {
+  return wrapper(event, form, formData, updateData);
 }
 
 PATCHES.BASIC.WRAPS = {
@@ -102,6 +111,7 @@ PATCHES.BASIC.WRAPS = {
   _preparePartContext,
   _attachPartListeners,
   _previewChanges,
-  _prepareSubmitData
+  _prepareSubmitData,
+  _onChangeForm,
 };
 

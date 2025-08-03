@@ -6,12 +6,7 @@ PIXI
 
 import { log } from "./util.js";
 import { MODULE_ID, FLAGS, SHAPE } from "./const.js";
-import {
-  getCachedWallEdgeData,
-  shiftCustomEdgeCache,
-  updateCachedEdges,
-  removeCachedEdges,
-  getCachedEdgeKeys } from "./customEdges.js";
+import { CustomEdges } from "./CustomEdges.js";
 
 /* Update workflow
 
@@ -124,11 +119,10 @@ export function preCreateAmbientSourceHook(document, data, options, userId) { //
  * @param {string} userId                           The ID of the User who triggered the creation workflow
  */
 export function createAmbientSourceHook(document, _options, _userId) {
-  const edgesCache = document?.flags?.[MODULE_ID]?.[FLAGS.CUSTOM_WALLS.EDGES];
   const object = document.object;
-  if ( !edgesCache || !object ) return;
-  // log(`createAmbientSourceHook|Updating cached edges for source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
-  updateCachedEdges(object);
+  if ( !object ) return;
+  const customEdges = new CustomEdges(object);
+  customEdges.updateCachedEdges();
 }
 
 /**
@@ -161,7 +155,7 @@ export function preUpdateAmbientSourceHook(doc, changes, _options, _userId) {
     // log(`\tNew wall cache`);
     changes.flags ??= {};
     changes.flags[MODULE_ID] ??= {};
-    edgesCache = changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = getCachedWallEdgeData(idStringC);
+    edgesCache = changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = CustomEdges.getCachedWallEdgeData(idStringC);
   }
   if ( !positionChanged ) return;
 
@@ -174,7 +168,7 @@ export function preUpdateAmbientSourceHook(doc, changes, _options, _userId) {
       y: newPosition.y - doc.y
     }
     // log(`\tShifting cached edge data by ${delta.x},${delta.y}`);
-    edgesCache = shiftCustomEdgeCache(edgesCache, delta);
+    edgesCache = CustomEdges.shiftCustomEdgeCache(edgesCache, delta);
     changes.flags ??= {};
     changes.flags[MODULE_ID] ??= {};
     changes.flags[MODULE_ID][FLAGS.CUSTOM_WALLS.EDGES] = edgesCache
@@ -199,7 +193,8 @@ export function updateAmbientSourceHook(doc, changed, _options, _userId) {
   if ( !edgesCache || !object ) return;
   // log(`updateAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
   // log(`\tUpdating cached edges `);
-  updateCachedEdges(object);
+  const customEdges = new CustomEdges(object);
+  customEdges.updateCachedEdges();
 
   // Refresh the source shape.
   // log(`\tRefreshing source`);
@@ -263,8 +258,9 @@ export function refreshAmbientSourceHook(object, flags) {
   // Set the preview edges based on the underlying document, with a position offset.
   const originalPosition = PIXI.Point.fromObject(object._original.document);
   const delta = currPreviewPosition.subtract(originalPosition);
-  const edgesCache = shiftCustomEdgeCache(origEdgesCache, delta);
-  updateCachedEdges(object, edgesCache);
+  const edgesCache = CustomEdges.shiftCustomEdgeCache(origEdgesCache, delta);
+  const customEdges = new CustomEdges(object);
+  customEdges.updateCachedEdges(edgesCache);
 }
 
 /**
@@ -274,7 +270,8 @@ export function refreshAmbientSourceHook(object, flags) {
  */
 export function destroyAmbientSourceHook(object) {
   // log(`destroyAmbientSourceHook|Source ${object.constructor.name} ${object.id}${object.isPreview ? ".preview" : ""}`);
-  removeCachedEdges(object);
+  const customEdges = new CustomEdges(object);
+  customEdges.removeCachedEdges();
 }
 
 // ----- NOTE: Placeable wraps ---- //
@@ -289,10 +286,10 @@ export function initializeSource(wrapped, {deleted=false}={}) {
 
   // If no edges defined for this (likely preview) source, update the edges.
   // Need to do that here b/c no way to hook the preview object creation before it is drawn.
-  let edgesCache = this.document.getFlag(MODULE_ID, FLAGS.CUSTOM_WALLS.EDGES);
-  if ( !deleted && edgesCache && edgesCache.length && !getCachedEdgeKeys(this).length ) {
-    // log(`\tUpdating edges cache.`);
-    updateCachedEdges(this, edgesCache);
+
+  if ( !deleted ) {
+    const customEdges = new CustomEdges(this);
+    customEdges.updateCachedEdges();
   }
   wrapped({ deleted });
 }

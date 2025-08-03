@@ -1,7 +1,6 @@
 /* globals
 FormDataExtended,
 foundry,
-getTemplate,
 Hooks
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
@@ -18,7 +17,7 @@ Hooks.once("init", async function() {
   if ( Object.hasOwn(other, "tabs") ) delete other.tabs;
 
   // Wrap the body template by registering it as a partial and reusing it.
-  await getTemplate(body.template);
+  await foundry.applications.handlebars.getTemplate(body.template);
   // Handlebars.registerPartial("AmbientSoundBody", body.template);
 
 

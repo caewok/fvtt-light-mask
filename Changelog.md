@@ -1,3 +1,6 @@
+## 0.8.4
+Fix for error when playing door sound. Closes issue #23.
+
 ## 0.8.3
 Possible fix for error when creating ellipse. Issue #21.
 

@@ -63,7 +63,7 @@ export function boundaryPolygon() {
  */
 export function _getPolygonConfiguration(wrapper) {
   const cfg = wrapper();
-  if ( this instanceof foundry.canvas.sources.GlobalLightSource ) return cfg;
+  if ( this instanceof foundry.canvas.sources.GlobalLightSource || !this.object ) return cfg;
 
   const doc = this.object.document;
   const shape = getFlag(doc, FLAGS.SHAPE) || "circle";

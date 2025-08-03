@@ -15,6 +15,7 @@ import { PATCHES as PATCHES_AmbientLight } from "./AmbientLight.js";
 import { PATCHES as PATCHES_Token } from "./Token.js";
 import { PATCHES as PATCHES_TokenConfig } from "./TokenConfig.js";
 import { PATCHES as PATCHES_CanvasEdges } from "./customEdges.js";
+import { PATCHES as PATCHES_Settings } from "./ModuleSettingsAbstract.js";
 
 const PATCHES = {
   AmbientLight: PATCHES_AmbientLight,
@@ -23,6 +24,7 @@ const PATCHES = {
   "foundry.applications.sheets.AmbientLightConfig": PATCHES_AmbientLightConfig,
   "foundry.applications.sheets.AmbientSoundConfig": PATCHES_AmbientSoundConfig,
 //   AmbientSoundDocument: PATCHES_AmbientSoundDocument,
+  ClientSettings: PATCHES_Settings,
   ClockwiseSweepPolygon: PATCHES_ClockwiseSweepPolygon,
   "foundry.canvas.sources.PointLightSource": PATCHES_LightSource,
   "foundry.canvas.sources.PointSoundSource": PATCHES_SoundSource,

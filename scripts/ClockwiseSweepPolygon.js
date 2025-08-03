@@ -18,7 +18,8 @@ PATCHES.BASIC = {};
 function _determineEdgeTypes(wrapped) {
   const edgeTypes = wrapped();
   const obj = this.config.source?.object;
-  if ( obj ) edgeTypes[CustomEdges.edgeTypeForPlaceable(obj)] = 1;
+  const edgeType = { mode: 1, priority: Number.NEGATIVE_INFINITY };
+  if ( obj ) edgeTypes[CustomEdges.edgeTypeForPlaceable(obj)] = edgeType;
   return edgeTypes;
 }
 

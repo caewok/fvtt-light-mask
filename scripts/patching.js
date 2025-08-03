@@ -18,18 +18,18 @@ import { PATCHES as PATCHES_CanvasEdges } from "./customEdges.js";
 import { PATCHES as PATCHES_Settings } from "./ModuleSettingsAbstract.js";
 
 const PATCHES = {
-  AmbientLight: PATCHES_AmbientLight,
-  AmbientSound: PATCHES_AmbientSound,
-  "foundry.canvas.edges.CanvasEdges": PATCHES_CanvasEdges,
+  "foundry.canvas.placeables.AmbientLight": PATCHES_AmbientLight,
+  "foundry.canvas.placeables.AmbientSound": PATCHES_AmbientSound,
+  "foundry.canvas.geometry.edges.CanvasEdges": PATCHES_CanvasEdges,
   "foundry.applications.sheets.AmbientLightConfig": PATCHES_AmbientLightConfig,
   "foundry.applications.sheets.AmbientSoundConfig": PATCHES_AmbientSoundConfig,
 //   AmbientSoundDocument: PATCHES_AmbientSoundDocument,
-  ClientSettings: PATCHES_Settings,
-  ClockwiseSweepPolygon: PATCHES_ClockwiseSweepPolygon,
+  "foundry.helpers.ClientSettings": PATCHES_Settings,
+  "foundry.canvas.geometry.ClockwiseSweepPolygon": PATCHES_ClockwiseSweepPolygon,
   "foundry.canvas.sources.PointLightSource": PATCHES_LightSource,
   "foundry.canvas.sources.PointSoundSource": PATCHES_SoundSource,
-  Token: PATCHES_Token,
-  TokenConfig: PATCHES_TokenConfig
+  "foundry.canvas.placeables.Token": PATCHES_Token,
+  "foundry.applications.sheets.TokenConfig": PATCHES_TokenConfig
 };
 
 export const PATCHER = new Patcher();

@@ -1,3 +1,11 @@
+## 0.9.0
+Updated for Foundry v13. For v12, use the 0.8 series.
+
+### KNOWN ISSUES
+- Sounds will not preview. Attempting to make sound previews work like lights results in an error re the sound source. So I disabled that for now pending further investigation.
+- Sounds will not preview on drag. See above.
+- Lights will not preview on drag. It appears the preview object used for dragging is not the same as the one used in the config. So the config preview object is fine, but the dragged object (cloned on drag) is not. This looks like a base Foundry issue, but needs more investigation.
+
 ## 0.8.4
 Fix for error when playing door sound. Closes issue #23.
 

@@ -1,7 +1,7 @@
 /* globals
+foundry,
 Hooks,
 game,
-loadTemplates,
 Handlebars
 */
 
@@ -36,7 +36,7 @@ Hooks.once("init", async function() {
 
 Hooks.once("setup", async function() {
   log("Setup...");
-  loadTemplates(Object.values(TEMPLATES));
+  foundry.applications.handlebars.loadTemplates(Object.values(TEMPLATES));
 });
 
 /**

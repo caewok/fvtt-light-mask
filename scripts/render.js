@@ -1,5 +1,4 @@
 /* globals
-FormDataExtended,
 foundry,
 renderTemplate,
 DefaultTokenConfig
@@ -31,6 +30,22 @@ export function activateListenersV2(app, html) {
 
   const wallIdsTextbox = html.querySelector(".lightmaskCachedWallIDs");
   wallIdsTextbox.addEventListener("change", onAddWallIDs.bind(app));
+
+  initializeShapeSubmenu(app, html);
+}
+
+function initializeShapeSubmenu(app, html) {
+  const shape = app.preview?.flags?.[MODULE_ID]?.[FLAGS.SHAPE];
+  if ( !shape ) return;
+
+  const elems = html.getElementsByClassName(`form-group ${MODULE_ID}`);
+  const shapeKey = SHAPE.INVERT_TYPES[shape];
+  const shapeId = CONFIG_BLOCK_IDS[shapeKey];
+  if ( !shapeId ) return;
+
+  for ( const elem of elems ) {
+    if ( elem.id === shapeId ) elem.style.display = "block";
+  }
 }
 
 function shapeChanged(event) {

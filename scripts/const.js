@@ -58,7 +58,7 @@ export const SHAPE = {
     ELLIPSE: "ellipse",
     POLYGON: "polygon",
     STAR: "star",
-    NONE: "none"
+    NONE: "none",
   },
 
   LABELS: {
@@ -66,11 +66,15 @@ export const SHAPE = {
     ellipse: "lightmask.Ellipse",
     polygon: "lightmask.RegularPolygon",
     star: "lightmask.RegularStar",
-    none: "lightmask.None"
+    none: "lightmask.None",
   },
 
   TYPESET: new Set("circle", "ellipse", "polygon", "star", "none")
 };
+
+SHAPE.INVERT_TYPES = {};
+Object.entries(SHAPE.TYPES).forEach(([key, value]) => SHAPE.INVERT_TYPES[value] = key);
+
 
 SHAPE.TYPESET = new Set(Object.values(SHAPE.TYPES));
 

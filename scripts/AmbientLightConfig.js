@@ -22,6 +22,20 @@ Hooks.once("init", function() {
   }
 });
 
+/**
+ * Hook the light config render.
+ * @param {ApplicationV2} application          The Application instance being rendered
+ * @param {HTMLElement} element                The inner HTML of the document that will be displayed and may be modified
+ * @param {ApplicationRenderContext} context   The application rendering context data
+ * @param {ApplicationRenderOptions} options   The application rendering options
+ */
+function renderAmbientLightConfig(app, element, context, options) {
+  activateListenersV2(app, element);
+}
+
+
+PATCHES.BASIC.HOOKS = { renderAmbientLightConfig };
+
 // ----- NOTE: WRAPS ----- //
 
 /**
@@ -69,20 +83,29 @@ async function _preparePartContext(wrapper, partId, context, options) {
  * @param {ApplicationRenderOptions} options    Rendering options passed to the render method
  * @protected
  */
-function _attachPartListeners(wrapper, partId, htmlElement, options) {
-  wrapper(partId, htmlElement, options);
-  if ( partId !== MODULE_ID ) return;
-  activateListenersV2(this, htmlElement);
-}
+// function _attachPartListeners(wrapper, partId, htmlElement, options) {
+//   wrapper(partId, htmlElement, options);
+//   if ( partId !== MODULE_ID ) return;
+//   activateListenersV2(this, htmlElement);
+// }
 
 /**
  * Changes to preview in the lighting config.
  * TODO: Do something here if the wall is selected?
  * @param {object} [change]  A change to preview.
  */
-function _previewChanges(wrapper, change) {
-  wrapper(change);
-}
+// function _onChangeForm(wrapper, formConfig, event) {
+//   wrapper(formConfig, event);
+// }
+
+/**
+ * Changes to preview in the lighting config.
+ * TODO: Do something here if the wall is selected?
+ * @param {object} [change]  A change to preview.
+ */
+// function _previewChanges(wrapper, change) {
+//   wrapper(change);
+// }
 
 /**
  * Prepare data used to update the Item upon form submission.
@@ -93,15 +116,16 @@ function _previewChanges(wrapper, change) {
  * @returns {object}                            Prepared submission data as an object
  * @throws {Error}                              Subclasses may throw validation errors here to prevent form submission
  */
-function _prepareSubmitData(wrapper, event, form, formData) {
-  return wrapper(event, form, formData);
-}
+// function _prepareSubmitData(wrapper, event, form, formData, updateData) {
+//   return wrapper(event, form, formData, updateData);
+// }
 
 PATCHES.BASIC.WRAPS = {
   _prepareContext,
   _preparePartContext,
-  _attachPartListeners,
-  _previewChanges,
-  _prepareSubmitData
+//  _attachPartListeners,
+//   _previewChanges,
+//   _prepareSubmitData,
+//   _onChangeForm,
 };
 

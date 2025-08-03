@@ -1,5 +1,4 @@
 /* globals
-FormDataExtended,
 foundry,
 renderTemplate,
 DefaultTokenConfig

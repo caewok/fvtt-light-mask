@@ -1,5 +1,4 @@
 /* globals
-FormDataExtended,
 foundry,
 Hooks
 */
@@ -95,13 +94,19 @@ async function _preparePartContext(wrapper, partId, context, options) {
   context = await wrapper(partId, context, options);
 
   // Create the preview on first render.
-//   if ( options.isFirstRender && this.document.object ) {
-//     const clone = this.document.object.clone();
-//     this.preview = clone.document;
-//   }
+  if ( options.isFirstRender && context.document.object ) {
+    const clone = this.document.object.clone();
+    this.preview = clone.document;
+  }
 
   // Redo the document in context to point to preview.
-//   const document = this.preview ?? this.document;
+  const document = this.preview ?? this.document;
+  Object.assign(context, {
+    document,
+    sound: document,
+    source: document._source,
+  });
+
 //   context.sound = document;
 //   context.source = document.toObject();
 //   context.fields = document.schema.fields;
@@ -135,7 +140,7 @@ function _attachPartListeners(wrapper, partId, htmlElement, options) {
  */
 async function _preRender(wrapper, context, options) {
   await wrapper(context, options);
-  if ( this.preview ) {
+  if ( this.preview?.rendered ) {
     await this.preview.object.draw();
     this.document.object.initializeSoundSource({deleted: true});
     this.preview.object.layer.preview.addChild(this.preview.object);
@@ -148,18 +153,18 @@ async function _preRender(wrapper, context, options) {
  * Reset preview if necessary.
  */
 function _onClose(wrapper, options) {
+  wrapper(options);
   if ( this.preview ) this._resetPreview();
   if ( this.document.object ) this.document.object.initializeSoundSource();
-  wrapper(options);
 }
 
 /**
  * Wrap AmbientSoundConfig.prototype._onChangeForm
  * Update preview data.
  */
-async function _onChangeForm(wrapper, formConfig, event) {
-  await wrapper(formConfig, event);
-  const formData = new FormDataExtended(this.element);
+function _onChangeForm(wrapper, formConfig, event) {
+  wrapper(formConfig, event);
+  const formData = new foundry.applications.ux.FormDataExtended(this.element);
   this._previewChanges(formData.object);
 }
 
@@ -171,7 +176,7 @@ PATCHES.BASIC.WRAPS = {
   _attachPartListeners,
 //   _preRender,
 //   _onClose,
-//   _onChangeForm
+//   _onChangeForm,
 };
 
 // ----- NOTE: Methods ----- //
@@ -188,7 +193,7 @@ PATCHES.BASIC.WRAPS = {
 function _previewChanges(change) {
   if ( !this.preview ) return;
   if ( change ) this.preview.updateSource(change);
-  if ( this.preview.object?.destroyed === false ) {
+  if ( this.preview?.rendered ) {
     this.preview.object.renderFlags.set({refresh: true});
     this.preview.object.initializeSoundSource();
   }
@@ -200,19 +205,17 @@ function _previewChanges(change) {
  */
 function _resetPreview() {
   if ( !this.preview ) return;
-  if ( this.preview.object?.destroyed === false ) {
-    this.preview.object.destroy({children: true});
-  }
+  if ( this.preview.rendered ) this.preview.object.destroy({children: true});
   this.preview = null;
-  const object = this.document.object;
-  if ( object?.destroyed === false ) {
+  if ( this.document.rendered ) {
+    const object = this.document.object;
     object.renderable = true;
     object.initializeSoundSource();
     object.renderFlags.set({refresh: true});
   }
 }
 
-// PATCHES.BASIC.METHODS = {
-//   _previewChanges,
-//   _resetPreview
-// };
+PATCHES.BASIC.METHODS = {
+  // _previewChanges,
+  // _resetPreview
+};

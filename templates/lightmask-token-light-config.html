@@ -4,7 +4,7 @@
     <div class="form-group">
       <label>{{ localize "Rotation" }} <span class="units">({{ localize "Degrees" }})</span></label>
       <div class="form-fields">
-        {{ rangePicker id="lightmaskrotation" name="flags.lightmask.rotation" class="lightmask" value=object.flags.lightmask.rotation min="0" max="360" step="1" }}
+        <range-picker id="lightmaskrotation" class="lightmask" name="flags.lightmask.rotation" value={{object.flags.lightmask.rotation}} min="0" max="360" step="1"></range-picker>
       </div>
     </div>
 

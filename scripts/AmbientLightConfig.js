@@ -29,7 +29,7 @@ Hooks.once("init", function() {
  * @param {ApplicationRenderContext} context   The application rendering context data
  * @param {ApplicationRenderOptions} options   The application rendering options
  */
-function renderAmbientLightConfig(app, element, context, options) {
+function renderAmbientLightConfig(app, element, _context, _options) {
   activateListenersV2(app, element);
 }
 

@@ -1,4 +1,5 @@
 /* globals
+CONFIG,
 foundry,
 Hooks,
 game,
@@ -9,15 +10,16 @@ Handlebars
 
 import { MODULE_ID, TEMPLATES, SHAPE, FLAGS } from "./const.js";
 import { log, getFlag, setFlag } from "./util.js";
-import { registerGeometry } from "./geometry/registration.js";
 import { initializePatching, PATCHER } from "./patching.js";
+
+// Load the geometry library.
+import "./geometry/registration.js";
 
 // Hooks
 Hooks.once("init", async function() {
   log("Initializing...");
   // CONFIG.debug.hooks = true;
 
-  registerGeometry();
   initializePatching();
 
   Handlebars.registerHelper("max2", function(a, b) { return Math.max(a, b); });

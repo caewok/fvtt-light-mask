@@ -3,7 +3,7 @@
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-import { injectConfiguration, activateListenersV2 } from "./render.js";
+import { activateListeners } from "./render.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -19,7 +19,7 @@ PATCHES.BASIC = {};
  * @param {ApplicationRenderOptions} options   The application rendering options
  */
 function renderTokenConfig(app, element, _context, _options) {
-  activateListenersV2(app, element);
+  activateListeners(app, element);
 }
 
 PATCHES.BASIC.HOOKS = { renderTokenConfig };

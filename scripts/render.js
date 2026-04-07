@@ -1,27 +1,17 @@
 /* globals
-foundry,
-renderTemplate,
-DefaultTokenConfig
+canvas,
+fromUuidSync,
+ui,
 */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 "use strict";
 
-import { log, getFlag, noFlag } from "./util.js";
-import { FLAGS, MODULE_ID, TEMPLATES, HTML_INJECTION, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
+import { FLAGS, MODULE_ID, SHAPE, CONFIG_BLOCK_IDS } from "./const.js";
 // import {
 //   lightMaskUpdateCustomEdgeCache,
 //   lightMaskShiftCustomEdgeCache } from "./preUpdate.js";
 
-/**
- * Catch when user clicks the button to add custom wall ids, changes the shape, or clicks the checkbox.
- */
 export function activateListeners(app, html) {
-  html.on("change", "#lightmaskshapes", shapeChanged.bind(app));
-  html.on("click", ".saveWallsButton", onAddWallIDs.bind(app));
-  html.on("change", ".lightmaskCachedWallIDs", onAddWallIDs.bind(app));
-}
-
-export function activateListenersV2(app, html) {
   const shapeSelector = html.querySelector("#lightmaskshapes");
   shapeSelector.addEventListener("change", shapeChanged.bind(app));
 
@@ -73,47 +63,6 @@ function configShapeSubmenu(shape) {
       elemEllipse.style.display = "block";
       break;
   }
-}
-
-/**
- * @param {string} type   See const.js for type.
- */
-export async function injectConfiguration(app, html, data, type) {
-  // log(`injectConfiguration for ${type}`, app, html, data);
-
-  // If default token config, make sure the default flags are set if not already.
-  // Setting flags directly fails, so do manually.
-  const isDefaultConfig = app.isPrototype || app instanceof DefaultTokenConfig; // PrototypeToken or DefaultToken
-  if ( isDefaultConfig ) {
-    data.object.flags ??= {};
-    data.object.flags[MODULE_ID] ??= {};
-    data.object.flags[MODULE_ID][FLAGS.SHAPE] ??= SHAPE.TYPES.CIRCLE;
-    data.object.flags[MODULE_ID][FLAGS.SIDES] ??= 3;
-    data.object.flags[MODULE_ID][FLAGS.POINTS] ??= 5;
-    data.object.flags[MODULE_ID][FLAGS.ELLIPSE.MINOR] ??= 1;
-  }
-
-  // Do not display wall caching selectors for the token prototype or
-  // default token config, because those only function at a per-scene level
-
-  // Avoid name collisions by using "lightmask"
-  const renderData = {};
-  renderData.lightmask = {
-    shapes: SHAPE.LABELS,
-    displayCached: !isDefaultConfig
-  };
-
-  foundry.utils.mergeObject(data, renderData, {inplace: true});
-
-  const form = html.find(HTML_INJECTION[type]);
-  const snippet = await renderTemplate(TEMPLATES[type], data);
-
-  form.append(snippet);
-  app.setPosition(app.position);
-
-  const d = type === "TOKEN" ? "object" : "data";
-  const shape = data[d]?.flags?.lightmask?.shape;
-  if ( shape ) configShapeSubmenu(shape);
 }
 
 /**

@@ -6,7 +6,7 @@ Hooks
 "use strict";
 
 import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
-import { activateListenersV2 } from "./render.js";
+import { activateListeners } from "./render.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -30,7 +30,7 @@ Hooks.once("init", function() {
  * @param {ApplicationRenderOptions} options   The application rendering options
  */
 function renderAmbientLightConfig(app, element, _context, _options) {
-  activateListenersV2(app, element);
+  activateListeners(app, element);
 }
 
 
@@ -86,7 +86,7 @@ async function _preparePartContext(wrapper, partId, context, options) {
 // function _attachPartListeners(wrapper, partId, htmlElement, options) {
 //   wrapper(partId, htmlElement, options);
 //   if ( partId !== MODULE_ID ) return;
-//   activateListenersV2(this, htmlElement);
+//   activateListeners(this, htmlElement);
 // }
 
 /**

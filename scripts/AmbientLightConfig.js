@@ -30,6 +30,7 @@ Hooks.once("init", function() {
  * @param {ApplicationRenderOptions} options   The application rendering options
  */
 function renderAmbientLightConfig(app, element, _context, _options) {
+  app.position.width = Math.max(app.position.width || 0, 600); // Make tabs long enough for the title.
   activateListeners(app, element);
 }
 

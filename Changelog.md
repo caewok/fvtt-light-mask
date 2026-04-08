@@ -1,3 +1,9 @@
+## 0.9.2
+Fix error re origin when selecting star or polygon shapes.
+Expand width of the light config so the tab names fit on one line. Similarly for token configs.
+Add back the tab to token config and prototype config to select light mask properties.
+Update libGeometry to v0.5.3.
+
 ## 0.9.1
 Update libGeometry to v0.5.0.
 

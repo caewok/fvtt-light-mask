@@ -29,7 +29,8 @@ const PATCHES = {
   "foundry.canvas.sources.PointLightSource": PATCHES_LightSource,
   "foundry.canvas.sources.PointSoundSource": PATCHES_SoundSource,
   "foundry.canvas.placeables.Token": PATCHES_Token,
-  "foundry.applications.sheets.TokenConfig": PATCHES_TokenConfig
+  "foundry.applications.sheets.TokenConfig": PATCHES_TokenConfig,
+  "foundry.applications.sheets.PrototypeTokenConfig": PATCHES_TokenConfig,
 };
 
 export const PATCHER = new Patcher();

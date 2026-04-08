@@ -6,7 +6,7 @@ Hooks
 "use strict";
 
 import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
-import { activateListenersV2 } from "./render.js";
+import { activateListeners } from "./render.js";
 
 // Hook init to update the PARTS of the sound config
 Hooks.once("init", async function() {
@@ -129,7 +129,7 @@ async function _preparePartContext(wrapper, partId, context, options) {
 function _attachPartListeners(wrapper, partId, htmlElement, options) {
   wrapper(partId, htmlElement, options);
   if ( partId !== MODULE_ID ) return;
-  activateListenersV2(this, htmlElement);
+  activateListeners(this, htmlElement);
 }
 
 // ----- Create preview as with lights ---- //

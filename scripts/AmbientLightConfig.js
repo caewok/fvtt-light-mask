@@ -6,7 +6,7 @@ Hooks
 "use strict";
 
 import { MODULE_ID, TEMPLATES, ICONS, SHAPE } from "./const.js";
-import { activateListenersV2 } from "./render.js";
+import { activateListeners } from "./render.js";
 
 // Patches for the AmbientSoundConfig class
 export const PATCHES = {};
@@ -30,7 +30,8 @@ Hooks.once("init", function() {
  * @param {ApplicationRenderOptions} options   The application rendering options
  */
 function renderAmbientLightConfig(app, element, _context, _options) {
-  activateListenersV2(app, element);
+  app.position.width = Math.max(app.position.width || 0, 600); // Make tabs long enough for the title.
+  activateListeners(app, element);
 }
 
 
@@ -75,57 +76,8 @@ async function _preparePartContext(wrapper, partId, context, options) {
   return context;
 }
 
-/**
- * Monitor for shape selection changing, which changes how the value is set.
- * Attach event listeners to rendered template parts.
- * @param {string} partId                       The id of the part being rendered
- * @param {HTMLElement} htmlElement             The rendered HTML element for the part
- * @param {ApplicationRenderOptions} options    Rendering options passed to the render method
- * @protected
- */
-// function _attachPartListeners(wrapper, partId, htmlElement, options) {
-//   wrapper(partId, htmlElement, options);
-//   if ( partId !== MODULE_ID ) return;
-//   activateListenersV2(this, htmlElement);
-// }
-
-/**
- * Changes to preview in the lighting config.
- * TODO: Do something here if the wall is selected?
- * @param {object} [change]  A change to preview.
- */
-// function _onChangeForm(wrapper, formConfig, event) {
-//   wrapper(formConfig, event);
-// }
-
-/**
- * Changes to preview in the lighting config.
- * TODO: Do something here if the wall is selected?
- * @param {object} [change]  A change to preview.
- */
-// function _previewChanges(wrapper, change) {
-//   wrapper(change);
-// }
-
-/**
- * Prepare data used to update the Item upon form submission.
- * TODO: Does this need an update for cached edges? Or is this captured in the hooks?
- * @param {SubmitEvent} event                   The originating form submission event
- * @param {HTMLFormElement} form                The form element that was submitted
- * @param {FormDataExtended} formData           Processed data for the submitted form
- * @returns {object}                            Prepared submission data as an object
- * @throws {Error}                              Subclasses may throw validation errors here to prevent form submission
- */
-// function _prepareSubmitData(wrapper, event, form, formData, updateData) {
-//   return wrapper(event, form, formData, updateData);
-// }
-
 PATCHES.BASIC.WRAPS = {
   _prepareContext,
   _preparePartContext,
-//  _attachPartListeners,
-//   _previewChanges,
-//   _prepareSubmitData,
-//   _onChangeForm,
 };
 

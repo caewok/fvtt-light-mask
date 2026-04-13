@@ -14,7 +14,7 @@ import { PATCHES as PATCHES_AmbientSound } from "./AmbientSound.js";
 import { PATCHES as PATCHES_AmbientLight } from "./AmbientLight.js";
 import { PATCHES as PATCHES_Token } from "./Token.js";
 import { PATCHES as PATCHES_TokenConfig } from "./TokenConfig.js";
-import { PATCHES as PATCHES_CanvasEdges } from "./customEdges.js";
+import { PATCHES as PATCHES_CanvasEdges } from "./CustomEdges.js";
 import { PATCHES as PATCHES_Settings } from "./ModuleSettingsAbstract.js";
 
 const PATCHES = {

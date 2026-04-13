@@ -1,3 +1,7 @@
+## 0.9.3
+Fix import error for patching.js. Closes #31.
+Update libGeometry to v0.5.4.
+
 ## 0.9.2
 Fix error re origin when selecting star or polygon shapes.
 Expand width of the light config so the tab names fit on one line. Similarly for token configs.
